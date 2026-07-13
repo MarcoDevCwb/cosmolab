@@ -1,4 +1,4 @@
-import { Text } from "@react-three/drei"
+import { Line, Text } from "@react-three/drei"
 import { useFrame } from "@react-three/fiber"
 import { useEffect, useMemo, useRef } from "react"
 import {
@@ -11,35 +11,30 @@ import {
   MeshStandardMaterial,
   Vector3,
 } from "three"
-import { getOrbitalState } from "../../physics/orbits"
-import type {
-  CelestialBodyDefinition,
-  CelestialBodyId,
-  CelestialBodySnapshot,
-} from "../../types/celestial"
+import { SCIENTIFIC_BODY_CATALOG } from "../../engine/catalog/solarSystemCatalog"
+import type { CelestialBodyDefinition, CelestialBodyId } from "../../types/celestial"
+import type { BodySceneState, TrajectorySample } from "../../types/simulation"
 import { createBodyTextures } from "./proceduralTextures"
 
 type CelestialBodyProps = {
   body: CelestialBodyDefinition
   compact: boolean
-  getSimulationDays: () => number
-  getParentPosition: (bodyId: CelestialBodyId) => Vector3
-  onPositionChange: (bodyId: CelestialBodyId, position: Vector3) => void
-  onSnapshotChange: (bodyId: CelestialBodyId, snapshot: CelestialBodySnapshot) => void
+  getBodyState: (bodyId: CelestialBodyId) => BodySceneState
+  trajectoryPast: TrajectorySample[]
+  trajectoryFuture: TrajectorySample[]
   onSelect: (bodyId: CelestialBodyId) => void
   selected: boolean
   showVector: boolean
 }
 
-const ORIGIN = new Vector3()
+const WORKING_DIRECTION = new Vector3()
 
 export function CelestialBody({
   body,
   compact,
-  getSimulationDays,
-  getParentPosition,
-  onPositionChange,
-  onSnapshotChange,
+  getBodyState,
+  trajectoryPast,
+  trajectoryFuture,
   onSelect,
   selected,
   showVector,
@@ -58,6 +53,16 @@ export function CelestialBody({
   const sphereSegments = compact ? 40 : 64
   const glowSegments = compact ? 28 : 48
   const textures = useMemo(() => createBodyTextures(body.id), [body.id])
+  const trailPoints = useMemo(
+    () =>
+      [...trajectoryPast, ...trajectoryFuture]
+        .map((sample) => [
+          sample.renderPosition.x,
+          sample.renderPosition.y,
+          sample.renderPosition.z,
+        ] as const),
+    [trajectoryFuture, trajectoryPast],
+  )
 
   useEffect(() => {
     return () => {
@@ -67,22 +72,24 @@ export function CelestialBody({
   }, [textures])
 
   useFrame((state) => {
-    const simulationDays = getSimulationDays()
-    const orbitalState = getOrbitalState(body, simulationDays)
-    const parentPosition = body.parentId ? getParentPosition(body.parentId) : ORIGIN
-    const worldPosition = orbitalState.localPosition.clone().add(parentPosition)
+    const bodyState = getBodyState(body.id)
+    const axialTilt = SCIENTIFIC_BODY_CATALOG[body.id].axialTiltDegrees
 
     if (groupRef.current) {
-      groupRef.current.position.copy(worldPosition)
+      groupRef.current.position.set(
+        bodyState.renderPosition.x,
+        bodyState.renderPosition.y,
+        bodyState.renderPosition.z,
+      )
     }
 
     if (spinRef.current) {
-      spinRef.current.rotation.z = MathUtils.degToRad(body.axialTiltDegrees)
-      spinRef.current.rotation.y = (simulationDays / body.rotationPeriodDays) * Math.PI * 2
+      spinRef.current.rotation.z = MathUtils.degToRad(axialTilt)
+      spinRef.current.rotation.y = bodyState.siderealAngleRad
     }
 
     if (cloudRef.current) {
-      cloudRef.current.rotation.y = (simulationDays / Math.max(body.rotationPeriodDays * 1.18, 0.4)) * Math.PI * 2
+      cloudRef.current.rotation.y = bodyState.siderealAngleRad * 1.08
     }
 
     if (glowRef.current) {
@@ -91,30 +98,39 @@ export function CelestialBody({
     }
 
     if (materialRef.current && body.kind !== "star") {
-      const sunDirection = worldPosition.clone().normalize().multiplyScalar(-1)
-      const dayFacing = Math.max(sunDirection.z, 0)
+      const dayFacing = Math.max(bodyState.sunDirection.z, 0)
       materialRef.current.emissiveIntensity = selected ? 0.08 + dayFacing * 0.08 : 0.04 + dayFacing * 0.04
     }
 
     if (arrowRef.current) {
-      if (orbitalState.localVelocity.lengthSq() > 0.0001) {
+      const direction = WORKING_DIRECTION.set(
+        bodyState.renderVelocityDirection.x,
+        bodyState.renderVelocityDirection.y,
+        bodyState.renderVelocityDirection.z,
+      )
+
+      if (direction.lengthSq() > 0.0001) {
         arrowRef.current.visible = showVector
-        arrowRef.current.setDirection(orbitalState.localVelocity.clone().normalize())
+        arrowRef.current.setDirection(direction.normalize())
         arrowRef.current.setLength(arrowLength, body.radius * 0.55, body.radius * 0.34)
       } else {
         arrowRef.current.visible = false
       }
     }
-
-    onPositionChange(body.id, worldPosition)
-    onSnapshotChange(body.id, {
-      distanceKm: orbitalState.distanceKm,
-      orbitalSpeedKmPerSecond: orbitalState.orbitalSpeedKmPerSecond,
-    })
   })
 
   return (
     <group ref={groupRef} onClick={() => onSelect(body.id)}>
+      {selected && trailPoints.length > 2 && (
+        <Line
+          points={trailPoints}
+          color={body.vectorColor}
+          lineWidth={compact ? 1.2 : 1.8}
+          transparent
+          opacity={compact ? 0.24 : 0.42}
+        />
+      )}
+
       {selected && (
         <Text
           position={[0, body.radius + 1, 0]}

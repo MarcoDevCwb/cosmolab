@@ -1,15 +1,32 @@
 import { Canvas, useFrame } from "@react-three/fiber"
 import { OrbitControls, Sparkles, Stars } from "@react-three/drei"
-import { useMemo, useRef } from "react"
+import { useEffect, useMemo, useRef } from "react"
 import type { OrbitControls as OrbitControlsImpl } from "three-stdlib"
 import { Color, Vector3 } from "three"
 import { CELESTIAL_BODIES } from "../../data/celestialBodies"
+import {
+  advanceJulianDate,
+  buildScientificSnapshot,
+  sampleSceneState,
+} from "../../engine/simulation/scientificCore"
 import { useSimulationStore } from "../../store/useSimulationStore"
-import type { CelestialBodyId, CelestialBodySnapshot } from "../../types/celestial"
+import type { CelestialBodyId } from "../../types/celestial"
+import type { BodySceneState } from "../../types/simulation"
 import { CelestialBody } from "./CelestialBody"
 import { OrbitPath } from "./OrbitPath"
 
-const ORIGIN = new Vector3(0, 0, 0)
+const TARGET_VECTOR = new Vector3()
+
+const EMPTY_SCENE_STATE: BodySceneState = {
+  id: "sun",
+  positionKm: { x: 0, y: 0, z: 0 },
+  velocityKmPerSecond: { x: 0, y: 0, z: 0 },
+  accelerationKmPerSecond2: { x: 0, y: 0, z: 0 },
+  renderPosition: { x: 0, y: 0, z: 0 },
+  renderVelocityDirection: { x: 0, y: 0, z: 0 },
+  siderealAngleRad: 0,
+  sunDirection: { x: 0, y: 0, z: 0 },
+}
 
 type SolarSystemSceneProps = {
   compact: boolean
@@ -17,19 +34,13 @@ type SolarSystemSceneProps = {
 
 function SolarSystemRig({ compact }: SolarSystemSceneProps) {
   const controlsRef = useRef<OrbitControlsImpl | null>(null)
-  const bodyPositionsRef = useRef<Record<CelestialBodyId, Vector3>>({
-    sun: new Vector3(),
-    earth: new Vector3(),
-    moon: new Vector3(),
-    mars: new Vector3(),
-  })
-  const bodySnapshotsRef = useRef<Record<CelestialBodyId, CelestialBodySnapshot>>({
-    sun: { distanceKm: 0, orbitalSpeedKmPerSecond: 0 },
-    earth: { distanceKm: 0, orbitalSpeedKmPerSecond: 0 },
-    moon: { distanceKm: 0, orbitalSpeedKmPerSecond: 0 },
-    mars: { distanceKm: 0, orbitalSpeedKmPerSecond: 0 },
-  })
-  const simulationDaysRef = useRef(0)
+  const currentJulianDateRef = useRef(useSimulationStore.getState().currentJulianDate)
+  const sceneStateRef = useRef(
+    sampleSceneState(
+      useSimulationStore.getState().currentJulianDate,
+      useSimulationStore.getState().referenceFrame,
+    ),
+  )
   const hudTickRef = useRef(0)
 
   const paused = useSimulationStore((state) => state.paused)
@@ -37,43 +48,56 @@ function SolarSystemRig({ compact }: SolarSystemSceneProps) {
   const showOrbits = useSimulationStore((state) => state.showOrbits)
   const showVectors = useSimulationStore((state) => state.showVectors)
   const timeScale = useSimulationStore((state) => state.timeScale)
+  const currentJulianDate = useSimulationStore((state) => state.currentJulianDate)
+  const referenceFrame = useSimulationStore((state) => state.referenceFrame)
+  const simulationMode = useSimulationStore((state) => state.simulationMode)
+  const snapshot = useSimulationStore((state) => state.snapshot)
   const setSelectedBodyId = useSimulationStore((state) => state.setSelectedBodyId)
-  const setSimulationDays = useSimulationStore((state) => state.setSimulationDays)
-  const setBodySnapshots = useSimulationStore((state) => state.setBodySnapshots)
+  const setClockState = useSimulationStore((state) => state.setClockState)
+  const setSnapshot = useSimulationStore((state) => state.setSnapshot)
 
-  const orbitalBodies = useMemo(
-    () => CELESTIAL_BODIES.filter((body) => body.orbitRadius > 0 && !body.parentId),
-    [],
-  )
+  const orbitalBodies = useMemo(() => CELESTIAL_BODIES.filter((body) => body.id !== "sun"), [])
 
-  const getSimulationDays = () => simulationDaysRef.current
+  useEffect(() => {
+    currentJulianDateRef.current = currentJulianDate
+    sceneStateRef.current = sampleSceneState(currentJulianDate, referenceFrame)
+  }, [currentJulianDate, referenceFrame])
 
-  const getBodyPosition = (bodyId: CelestialBodyId) => bodyPositionsRef.current[bodyId] ?? ORIGIN
+  useEffect(() => {
+    const nextSnapshot = buildScientificSnapshot(
+      currentJulianDateRef.current,
+      referenceFrame,
+      simulationMode,
+    )
+    setSnapshot(nextSnapshot)
+  }, [referenceFrame, setSnapshot, simulationMode])
 
-  const handlePositionChange = (bodyId: CelestialBodyId, position: Vector3) => {
-    bodyPositionsRef.current[bodyId] = position.clone()
-  }
-
-  const handleSnapshotChange = (bodyId: CelestialBodyId, snapshot: CelestialBodySnapshot) => {
-    bodySnapshotsRef.current[bodyId] = snapshot
-  }
+  const getBodyState = (bodyId: CelestialBodyId) => sceneStateRef.current[bodyId] ?? EMPTY_SCENE_STATE
 
   useFrame((_, delta) => {
     if (!paused) {
-      simulationDaysRef.current += delta * timeScale
+      currentJulianDateRef.current = advanceJulianDate(currentJulianDateRef.current, delta, timeScale)
     }
 
+    sceneStateRef.current = sampleSceneState(currentJulianDateRef.current, referenceFrame)
+
     hudTickRef.current += delta
-    if (hudTickRef.current >= 0.08) {
-      setSimulationDays(simulationDaysRef.current)
-      setBodySnapshots({ ...bodySnapshotsRef.current })
+    if (hudTickRef.current >= 0.12) {
+      const nextSnapshot = buildScientificSnapshot(
+        currentJulianDateRef.current,
+        referenceFrame,
+        simulationMode,
+      )
+      setClockState(nextSnapshot.currentUnixMs, nextSnapshot.currentJulianDate)
+      setSnapshot(nextSnapshot)
       hudTickRef.current = 0
     }
 
-    const focusedPosition = bodyPositionsRef.current[selectedBodyId] ?? ORIGIN
+    const focusedPosition = getBodyState(selectedBodyId).renderPosition
     if (controlsRef.current) {
       const damping = 1 - Math.exp(-delta * 2.8)
-      controlsRef.current.target.lerp(focusedPosition, damping)
+      TARGET_VECTOR.set(focusedPosition.x, focusedPosition.y, focusedPosition.z)
+      controlsRef.current.target.lerp(TARGET_VECTOR, damping)
       controlsRef.current.update()
     }
   })
@@ -114,7 +138,12 @@ function SolarSystemRig({ compact }: SolarSystemSceneProps) {
 
       {showOrbits &&
         orbitalBodies.map((body) => (
-          <OrbitPath key={`${body.id}-orbit`} body={body} compact={compact} />
+          <OrbitPath
+            key={`${body.id}-orbit`}
+            body={body}
+            compact={compact}
+            trajectory={snapshot?.bodyStates[body.id].trajectoryFuture ?? []}
+          />
         ))}
 
       {CELESTIAL_BODIES.map((body) => (
@@ -122,10 +151,9 @@ function SolarSystemRig({ compact }: SolarSystemSceneProps) {
           key={body.id}
           body={body}
           compact={compact}
-          getSimulationDays={getSimulationDays}
-          getParentPosition={getBodyPosition}
-          onPositionChange={handlePositionChange}
-          onSnapshotChange={handleSnapshotChange}
+          getBodyState={getBodyState}
+          trajectoryPast={snapshot?.bodyStates[body.id].trajectoryPast ?? []}
+          trajectoryFuture={snapshot?.bodyStates[body.id].trajectoryFuture ?? []}
           onSelect={setSelectedBodyId}
           selected={selectedBodyId === body.id}
           showVector={showVectors && (!compact || selectedBodyId === body.id)}

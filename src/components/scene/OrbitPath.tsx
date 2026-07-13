@@ -1,21 +1,32 @@
 import { Line } from "@react-three/drei"
 import { useMemo } from "react"
 import type { CelestialBodyDefinition } from "../../types/celestial"
-import { getOrbitalState } from "../../physics/orbits"
+import type { TrajectorySample } from "../../types/simulation"
 
 type OrbitPathProps = {
   body: CelestialBodyDefinition
   compact: boolean
+  trajectory: TrajectorySample[]
 }
 
-export function OrbitPath({ body, compact }: OrbitPathProps) {
+export function OrbitPath({ body, compact, trajectory }: OrbitPathProps) {
   const points = useMemo(() => {
-    const samples = compact ? 132 : 220
-    return Array.from({ length: samples + 1 }, (_, index) => {
-      const angleDays = (index / samples) * body.orbitPeriodDays
-      return getOrbitalState(body, angleDays).localPosition
-    })
-  }, [body, compact])
+    const nextPoints = trajectory.map((sample) => [
+      sample.renderPosition.x,
+      sample.renderPosition.y,
+      sample.renderPosition.z,
+    ] as const)
+
+    if (nextPoints.length > 0) {
+      nextPoints.push(nextPoints[0])
+    }
+
+    return nextPoints
+  }, [trajectory])
+
+  if (points.length < 2) {
+    return null
+  }
 
   return (
     <Line
