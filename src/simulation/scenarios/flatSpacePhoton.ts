@@ -8,6 +8,7 @@
 
 import { buildInitialState } from "../../physics/relativity/initialConditions"
 import { minkowskiMetric } from "../../physics/relativity/metrics/minkowski"
+import { createStraightnessTracker } from "../observables"
 import type { SimulationScenario } from "./types"
 
 // Percurso de -400.000 km a +400.000 km em x, com desvio lateral y fixo.
@@ -39,5 +40,10 @@ export function createFlatSpacePhotonScenario(): SimulationScenario {
 
     // Encerra ao completar a travessia da janela visível.
     stopCondition: (state) => state[1] > -START_X_M,
+
+    createObservables: () =>
+      createStraightnessTracker(
+        buildInitialState(minkowskiMetric, [0, START_X_M, OFFSET_Y_M, 0], [1, 0, 0], "null"),
+      ),
   }
 }

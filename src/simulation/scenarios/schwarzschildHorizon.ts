@@ -21,6 +21,7 @@
 import { GRAVITATIONAL_CONSTANT, SOLAR_MASS_KG, SPEED_OF_LIGHT } from "../../physics/constants"
 import { buildInitialState } from "../../physics/relativity/initialConditions"
 import { createSchwarzschildMetric } from "../../physics/relativity/metrics/schwarzschild"
+import { createInfallTracker } from "../observables"
 import type { ExperimentParams, SimulationScenario } from "./types"
 
 const STOP_RADIUS_IN_RS = 1.02
@@ -63,5 +64,7 @@ export function createSchwarzschildHorizonScenario(params: ExperimentParams): Si
 
     // Interrompe antes da degeneração de coordenada em r = r_s.
     stopCondition: (state) => state[1] <= STOP_RADIUS_IN_RS * rs,
+
+    createObservables: () => createInfallTracker(rs),
   }
 }

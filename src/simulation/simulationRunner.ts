@@ -21,6 +21,7 @@ import type { Vector4 } from "../physics/relativity/tensor"
 import type { ValidationReport } from "../physics/relativity/validation"
 import { buildValidationReport } from "../physics/relativity/validation"
 import { rungeKutta4Step } from "./integrators/rungeKutta4"
+import type { ObservableTracker, ScenarioObservable } from "./observables"
 import type { ScenarioId, SimulationScenario } from "./scenarios"
 
 export type TrajectorySamplePoint = {
@@ -50,6 +51,8 @@ export type RelativitySnapshot = {
 
   halted: boolean
   samples: TrajectorySamplePoint[]
+  /** Observáveis físicos do cenário (números-herói). */
+  observables: ScenarioObservable[]
 }
 
 function relativeDrift(current: number, initial: number): number {
@@ -66,6 +69,7 @@ export class GeodesicSimulationRunner {
   private samples: TrajectorySamplePoint[] = []
   private derivatives: (state: readonly number[]) => GeodesicState
   private initialValidation: ValidationReport
+  private observables: ObservableTracker | null
   private halted = false
 
   constructor(scenario: SimulationScenario) {
@@ -73,6 +77,7 @@ export class GeodesicSimulationRunner {
     this.state = [...scenario.initialState]
     this.derivatives = createGeodesicDerivatives(scenario.metric)
     this.initialValidation = buildValidationReport(scenario.metric, this.state, scenario.kind)
+    this.observables = scenario.createObservables?.() ?? null
     this.recordSample()
   }
 
@@ -102,6 +107,7 @@ export class GeodesicSimulationRunner {
       this.state = next
       this.lambdaM += h
       remaining -= h
+      this.observables?.update(this.state)
 
       if (this.lambdaM - this.lastSampleLambdaM >= this.scenario.sampleIntervalLambdaM) {
         this.recordSample()
@@ -119,6 +125,7 @@ export class GeodesicSimulationRunner {
     this.lastSampleLambdaM = 0
     this.samples = []
     this.halted = false
+    this.observables = this.scenario.createObservables?.() ?? null
     this.recordSample()
   }
 
@@ -155,6 +162,7 @@ export class GeodesicSimulationRunner {
 
       halted: this.halted,
       samples: [...this.samples],
+      observables: this.observables?.read(this.state) ?? [],
     }
   }
 

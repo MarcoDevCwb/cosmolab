@@ -9,6 +9,7 @@
 import type { SpacetimeMetric } from "../../physics/relativity/metric"
 import type { GeodesicState } from "../../physics/relativity/geodesic"
 import type { GeodesicKind } from "../../physics/relativity/initialConditions"
+import type { ObservableTracker } from "../observables"
 
 export type ScenarioId =
   | "flat-space-photon"
@@ -68,4 +69,7 @@ export type SimulationScenario = {
 
   /** Condição de parada física (ex.: aproximação do horizonte). */
   stopCondition?: (state: GeodesicState) => boolean
+
+  /** Rastreador de observáveis do cenário (números-herói da HUD). */
+  createObservables?: () => ObservableTracker
 }

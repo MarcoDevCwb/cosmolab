@@ -17,6 +17,7 @@
 import { GRAVITATIONAL_CONSTANT, SOLAR_MASS_KG, SPEED_OF_LIGHT } from "../../physics/constants"
 import { buildInitialState } from "../../physics/relativity/initialConditions"
 import { createSchwarzschildMetric } from "../../physics/relativity/metrics/schwarzschild"
+import { createPrecessionTracker } from "../observables"
 import type { ExperimentParams, SimulationScenario } from "./types"
 
 /** Duração-alvo de uma órbita na tela [s de tempo real]. */
@@ -74,5 +75,7 @@ export function createRelativisticOrbitScenario(params: ExperimentParams): Simul
 
     // Escape (fração > 1): encerra ao sair da região de interesse.
     stopCondition: (state) => state[1] > 40 * r0,
+
+    createObservables: () => createPrecessionTracker(metric, rs),
   }
 }

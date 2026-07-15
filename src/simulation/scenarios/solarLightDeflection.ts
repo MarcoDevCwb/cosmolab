@@ -18,6 +18,7 @@
 import { SOLAR_MASS_KG, SOLAR_RADIUS_M, schwarzschildRadius } from "../../physics/constants"
 import { equatorialStateFromCartesian } from "../../physics/relativity/equatorial"
 import { createSchwarzschildMetric } from "../../physics/relativity/metrics/schwarzschild"
+import { createDeflectionTracker } from "../observables"
 import type { ExperimentParams, SimulationScenario } from "./types"
 
 /** b = R☉ expresso em r_s do Sol — o preset histórico de Eddington. */
@@ -55,6 +56,12 @@ export function createLightDeflectionScenario(params: ExperimentParams): Simulat
     schwarzschildRadiusM: rs,
 
     initialState: equatorialStateFromCartesian(metric, startX, b, 1, 0, "null"),
+
+    createObservables: () =>
+      createDeflectionTracker(
+        equatorialStateFromCartesian(metric, startX, b, 1, 0, "null"),
+        (2 * rs) / b,
+      ),
 
     stepLambdaM: b / 200,
     lambdaRateMPerSecond: pathLengthM / CROSSING_WALL_TIME_S,
