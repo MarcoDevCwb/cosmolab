@@ -5,6 +5,7 @@ import {
 } from "../../physics/relativity/metrics/schwarzschild"
 import { SCENARIO_SUMMARIES, createScenario } from "../../simulation/scenarios"
 import type { ExperimentParams, ScenarioId } from "../../simulation/scenarios"
+import type { ScientificStatus } from "../../simulation/scenarios/types"
 import { useSimulationStore } from "../../store/useSimulationStore"
 import {
   formatMeters,
@@ -24,6 +25,15 @@ import {
 
 type RelativityHudProps = {
   compact: boolean
+}
+
+/** Rótulos do status científico (princípio: modelos têm status explícito). */
+const SCIENTIFIC_STATUS_LABELS: Record<ScientificStatus, string> = {
+  validated: "validado",
+  "accepted-model": "modelo aceito",
+  theoretical: "teórico",
+  speculative: "especulativo",
+  "toy-model": "modelo didático",
 }
 
 type SliderSpec = {
@@ -272,15 +282,21 @@ export function RelativityHud({ compact }: RelativityHudProps) {
             <small>observador no infinito</small>
           </div>
           <div className="clock-card">
-            <span className="hud-stat-label">Tempo próprio</span>
+            <span className="hud-stat-label">
+              {scenario.kind === "null" ? "Intervalo próprio" : "Tempo próprio"}
+            </span>
             <strong>
               {snapshot
                 ? snapshot.properTimeS === null
-                  ? "0 (fóton)"
+                  ? "0 (exato)"
                   : formatSeconds(snapshot.properTimeS)
                 : "—"}
             </strong>
-            <small>relógio da partícula</small>
+            <small>
+              {scenario.kind === "null"
+                ? "geodésica nula: não há relógio próprio"
+                : "relógio da partícula"}
+            </small>
           </div>
         </div>
       </section>
@@ -288,7 +304,15 @@ export function RelativityHud({ compact }: RelativityHudProps) {
       <aside className="hud-side glass-panel">
         <div className="focus-heading">
           <div className="hud-section-kicker">cenário ativo</div>
-          <span className={snapshot?.halted ? "focus-chip halted" : "focus-chip"}>{status}</span>
+          <div className="chip-cluster">
+            <span
+              className="focus-chip status-validated"
+              title="Status científico: reproduzido numericamente contra resultados analíticos nos testes do projeto"
+            >
+              {SCIENTIFIC_STATUS_LABELS[scenario.scientificStatus]}
+            </span>
+            <span className={snapshot?.halted ? "focus-chip halted" : "focus-chip"}>{status}</span>
+          </div>
         </div>
 
         <div className="hud-section-title">
@@ -299,15 +323,26 @@ export function RelativityHud({ compact }: RelativityHudProps) {
 
         {heroObservables.map((observable) => (
           <div className="hero-card" key={observable.id}>
-            <span className="hud-stat-label">{observable.label}</span>
+            <div className="hero-head">
+              <span className="hud-stat-label">{observable.label}</span>
+              <span
+                className="provenance-badge"
+                title="Origem do valor: integração numérica exata na métrica, sem aproximações"
+              >
+                {observable.provenance === "numeric" ? "numérico" : observable.provenance}
+              </span>
+            </div>
             <strong className="hero-value">
               {formatObservable(observable.value, observable.unit)}
             </strong>
             {observable.reference !== undefined && Number.isFinite(observable.reference) && (
               <small>
-                referência: {formatObservable(observable.reference, observable.unit)}
-                {observable.referenceLabel ? ` — ${observable.referenceLabel}` : ""}
+                {formatObservable(observable.reference, observable.unit)} —{" "}
+                {observable.referenceLabel ?? "referência analítica"}
               </small>
+            )}
+            {observable.regimeWarning && (
+              <p className="param-warning">{observable.regimeWarning}</p>
             )}
           </div>
         ))}

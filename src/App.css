@@ -1148,3 +1148,37 @@
   height: 32px;
   font-size: 9.5px;
 }
+
+/* ===== Fase 1: proveniência, status científico ===== */
+
+.hero-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.provenance-badge {
+  flex-shrink: 0;
+  padding: 3px 8px;
+  border: 1px solid rgba(74, 222, 128, 0.35);
+  border-radius: 999px;
+  color: rgba(134, 239, 172, 0.9);
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  cursor: help;
+}
+
+.chip-cluster {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.focus-chip.status-validated {
+  border-color: rgba(74, 222, 128, 0.4);
+  color: rgba(134, 239, 172, 0.92);
+  cursor: help;
+}

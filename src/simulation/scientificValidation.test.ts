@@ -23,6 +23,7 @@ import {
   equatorialCartesianDirection,
   equatorialStateFromCartesian,
 } from "../physics/relativity/equatorial"
+import { specificAngularMomentum } from "../physics/relativity/validation"
 import { createGeodesicDerivatives } from "../physics/relativity/geodesic"
 import { buildInitialState } from "../physics/relativity/initialConditions"
 import { createSchwarzschildMetric } from "../physics/relativity/metrics/schwarzschild"
@@ -47,6 +48,17 @@ describe("cenário 1 — espaço plano", () => {
 })
 
 describe("cenário 2 — deflexão da luz pelo Sol", () => {
+  it("parâmetro de impacto satisfaz a definição formal b = L/E do fóton", () => {
+    const metric = createSchwarzschildMetric(SOLAR_MASS_KG)
+    const b = SOLAR_RADIUS_M
+    const state = equatorialStateFromCartesian(metric, -1000 * SOLAR_RADIUS_M, b, 1, 0, "null")
+
+    const impactFromConstants =
+      Math.abs(specificAngularMomentum(metric, state)) / specificEnergy(metric, state)
+    // b geométrico (offset assintótico) ≡ L/E a menos de correções O(r_s/r₀).
+    expect(Math.abs(impactFromConstants - b) / b).toBeLessThan(1e-6)
+  })
+
   it("reproduz α = 4GM☉/(c²b) ≈ 1,75″ dentro de 1%", () => {
     const metric = createSchwarzschildMetric(SOLAR_MASS_KG)
     const b = SOLAR_RADIUS_M
@@ -119,12 +131,12 @@ describe("cenário 3 — órbitas em Schwarzschild", () => {
   })
 
   it("precessão medida converge para 6πGM/(c²p) em campo fraco", () => {
-    // r₀ = 60 r_s, quase circular: regime onde a fórmula de campo fraco de
-    // Weinberg (Δφ = 6πGM/(c²p)) vale com correções O(M/p) ~ 1%.
+    // r₀ = 200 r_s, quase circular: regime onde a fórmula de campo fraco de
+    // Weinberg (Δφ = 6πGM/(c²p)) vale com correção de 2ª ordem ~(3/2)(6M/p) ≈ 2%.
     const scenario = createScenario("relativistic-orbit", {
       massSolar: 10,
       impactParameterRs: 0,
-      startRadiusRs: 60,
+      startRadiusRs: 200,
       angularVelocityFraction: 0.98,
       spinFraction: 0,
     })
@@ -147,10 +159,45 @@ describe("cenário 3 — órbitas em Schwarzschild", () => {
     expect(precession).toBeDefined()
     expect(precession!.reference).toBeDefined()
     expect(precession!.value).toBeGreaterThan(0)
-    // Medição por detecção de periastro tem resolução de ~1 passo de φ;
-    // tolerância de 10% cobre isso + as correções pós-newtonianas.
-    expect(precession!.value / precession!.reference!).toBeGreaterThan(0.9)
-    expect(precession!.value / precession!.reference!).toBeLessThan(1.1)
+    // Com periastro INTERPOLADO a resolução é sub-passo; a janela [1,00, 1,04]
+    // reflete apenas a correção pós-newtoniana de 2ª ordem (sempre positiva).
+    expect(precession!.value / precession!.reference!).toBeGreaterThan(0.99)
+    expect(precession!.value / precession!.reference!).toBeLessThan(1.04)
+  })
+
+  it("RK4 converge em 4ª ordem: reduzir h à metade reduz o erro ~16×", () => {
+    // Órbita EXCÊNTRICA (a circular é ponto fixo exato do RK4 e não gera
+    // erro). Referência de Richardson: solução com passo h/8 no mesmo λ.
+    const r0 = 8 * rs
+    const omega = Math.sqrt(rs / (2 * r0 ** 3))
+    const uTime = 1 / Math.sqrt(1 - rs / r0 - r0 * r0 * omega * omega)
+    const state0 = buildInitialState(
+      metric,
+      [0, r0, Math.PI / 2, 0],
+      [0, 0, 0.9 * omega * uTime],
+      "timelike",
+    )
+    const derivatives = createGeodesicDerivatives(metric)
+
+    const totalLambdaM = 3e6
+    const radiusAfter = (stepM: number) => {
+      let state = state0
+      const steps = Math.round(totalLambdaM / stepM)
+      for (let i = 0; i < steps; i += 1) {
+        state = rungeKutta4Step(derivatives, state, stepM)
+      }
+      return state[1]
+    }
+
+    const reference = radiusAfter(750)
+    const coarseError = Math.abs(radiusAfter(6e3) - reference)
+    const fineError = Math.abs(radiusAfter(3e3) - reference)
+
+    // Erro global O(h⁴) ⇒ razão teórica 16; janela ampla cobre efeitos de
+    // arredondamento e termos de ordem superior.
+    expect(coarseError).toBeGreaterThan(0)
+    expect(coarseError / fineError).toBeGreaterThan(8)
+    expect(coarseError / fineError).toBeLessThan(32)
   })
 
   it("órbita excêntrica do cenário conserva E, L e norma por várias voltas", () => {
