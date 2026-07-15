@@ -248,7 +248,6 @@
   font-size: 16px;
   line-height: 1.35;
   letter-spacing: -0.04em;
-  overflow-wrap: anywhere;
 }
 
 .hud-side {
@@ -788,4 +787,136 @@
 .cosmos-shell.compact .param-cluster {
   gap: 7px;
   margin-top: 10px;
+}
+
+/* ===== Relativity lab v0.3: HUD premium ===== */
+
+.context-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 10px;
+}
+
+.context-chip {
+  padding: 5px 11px;
+  border: 1px solid rgba(125, 211, 252, 0.22);
+  border-radius: 999px;
+  background: rgba(8, 15, 29, 0.6);
+  color: rgba(186, 230, 253, 0.92);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+}
+
+.clock-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  margin-top: 16px;
+}
+
+.clock-card {
+  padding: 14px 14px 12px;
+  border: 1px solid rgba(148, 163, 184, 0.14);
+  border-radius: 18px;
+  background: rgba(15, 23, 42, 0.55);
+}
+
+.clock-card strong {
+  display: block;
+  margin-top: 6px;
+  color: #ecfeff;
+  font-size: 21px;
+  line-height: 1.2;
+  letter-spacing: -0.03em;
+  font-variant-numeric: tabular-nums;
+}
+
+.clock-card small {
+  display: block;
+  margin-top: 4px;
+  color: rgba(148, 163, 184, 0.65);
+  font-size: 10.5px;
+}
+
+.hero-card {
+  margin: 4px 0 14px;
+  padding: 18px 16px 15px;
+  border: 1px solid rgba(125, 211, 252, 0.35);
+  border-radius: 20px;
+  background:
+    radial-gradient(circle at 20% 0%, rgba(125, 211, 252, 0.16), transparent 55%),
+    radial-gradient(circle at 90% 100%, rgba(240, 171, 252, 0.1), transparent 50%),
+    rgba(8, 15, 29, 0.7);
+}
+
+.hero-value {
+  display: block;
+  margin-top: 7px;
+  font-size: 34px;
+  line-height: 1.05;
+  letter-spacing: -0.035em;
+  font-variant-numeric: tabular-nums;
+  background: linear-gradient(90deg, #7dd3fc, #f0abfc);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.hero-card small {
+  display: block;
+  margin-top: 9px;
+  color: rgba(148, 163, 184, 0.78);
+  font-size: 11px;
+  line-height: 1.45;
+}
+
+.focus-chip.halted {
+  border-color: rgba(251, 191, 36, 0.5);
+  color: #fbbf24;
+}
+
+.validation-details {
+  margin-top: 4px;
+}
+
+.validation-details summary {
+  cursor: pointer;
+  list-style: none;
+  padding: 9px 12px;
+  border: 1px solid rgba(148, 163, 184, 0.16);
+  border-radius: 14px;
+  background: rgba(15, 23, 42, 0.45);
+  color: rgba(186, 230, 253, 0.85);
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  transition: border-color 0.2s ease;
+}
+
+.validation-details summary::before {
+  content: "▸ ";
+  color: rgba(125, 211, 252, 0.8);
+}
+
+.validation-details[open] summary::before {
+  content: "▾ ";
+}
+
+.validation-details summary:hover {
+  border-color: rgba(125, 211, 252, 0.4);
+}
+
+.validation-details > .telemetry-grid {
+  margin-top: 10px;
+}
+
+.cosmos-shell.compact .hero-value {
+  font-size: 27px;
+}
+
+.cosmos-shell.compact .clock-card strong {
+  font-size: 17px;
 }

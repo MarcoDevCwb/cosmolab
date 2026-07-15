@@ -6,63 +6,24 @@ import {
 import { SCENARIO_SUMMARIES, createScenario } from "../../simulation/scenarios"
 import type { ExperimentParams, ScenarioId } from "../../simulation/scenarios"
 import { useSimulationStore } from "../../store/useSimulationStore"
+import {
+  formatMeters,
+  formatObservable,
+  formatRs,
+  formatSeconds,
+  formatSolarMasses,
+} from "./formatters"
 
 /**
  * HUD do laboratório relativístico.
  *
  * Exibe dados publicados pelo runner e controla os PARÂMETROS do
- * experimento (massa, parâmetro de impacto, raio, velocidade). Nenhuma
- * equação física é avaliada aqui — apenas formatação de unidades; os limiares
- * físicos exibidos (b crítico, ISCO) vêm de physics/.
+ * experimento. Nenhuma equação física é avaliada aqui — apenas formatação;
+ * os limiares físicos exibidos (b crítico, ISCO) vêm de physics/.
  */
 
 type RelativityHudProps = {
   compact: boolean
-}
-
-function formatSeconds(seconds: number): string {
-  const absolute = Math.abs(seconds)
-  if (absolute === 0) {
-    return "0 s"
-  }
-  if (absolute < 1e-3) {
-    return `${(seconds * 1e6).toFixed(2)} µs`
-  }
-  if (absolute < 1) {
-    return `${(seconds * 1e3).toFixed(3)} ms`
-  }
-  if (absolute < 120) {
-    return `${seconds.toFixed(3)} s`
-  }
-  return `${(seconds / 60).toFixed(2)} min`
-}
-
-function formatMeters(meters: number): string {
-  const absolute = Math.abs(meters)
-  if (absolute >= 1e9) {
-    return `${(meters / 1e9).toFixed(3)} × 10⁶ km`
-  }
-  if (absolute >= 1e3) {
-    return `${(meters / 1e3).toFixed(2)} km`
-  }
-  return `${meters.toFixed(1)} m`
-}
-
-function formatSolarMasses(massSolar: number): string {
-  if (massSolar >= 1e6) {
-    return `${(massSolar / 1e6).toFixed(1)} milhões M☉`
-  }
-  if (massSolar >= 1000) {
-    return `${(massSolar / 1000).toFixed(1)} mil M☉`
-  }
-  return `${massSolar.toFixed(1)} M☉`
-}
-
-function formatRs(valueRs: number): string {
-  if (valueRs >= 10_000) {
-    return `${valueRs.toExponential(2)} r_s`
-  }
-  return `${valueRs.toFixed(1)} r_s`
 }
 
 type SliderSpec = {
@@ -153,7 +114,7 @@ function physicalWarning(scenarioId: ScenarioId, params: ExperimentParams): stri
     scenarioId === "solar-light-deflection" &&
     params.impactParameterRs < PHOTON_CRITICAL_IMPACT_RS
   ) {
-    return `b < b_crítico = (3√3/2) r_s ≈ ${PHOTON_CRITICAL_IMPACT_RS.toFixed(2)} r_s: o fóton será CAPTURADO pelo buraco negro.`
+    return `b < b_crítico ≈ ${PHOTON_CRITICAL_IMPACT_RS.toFixed(2)} r_s: o fóton será CAPTURADO pelo buraco negro.`
   }
 
   if (scenarioId === "relativistic-orbit" && params.startRadiusRs < ISCO_RADIUS_RS) {
@@ -178,13 +139,18 @@ export function RelativityHud({ compact }: RelativityHudProps) {
   const sliders = SLIDERS_BY_SCENARIO[activeScenarioId]
   const warning = physicalWarning(activeScenarioId, experimentParams)
 
+  const heroObservables = snapshot?.observables.filter((observable) => observable.hero) ?? []
+  const secondaryObservables = snapshot?.observables.filter((observable) => !observable.hero) ?? []
+
+  const status = snapshot?.halted ? "parado" : paused ? "pausado" : "integrando"
+
   return (
     <div className={compact ? "hud-layer compact" : "hud-layer"}>
       <section className="hud-header glass-panel">
         <div className="eyebrow-row">
           <span className="eyebrow">
             <span className="eyebrow-dot" />
-            relativity lab v0.2
+            relativity lab v0.3
           </span>
 
           <div className="mode-pills">
@@ -204,11 +170,18 @@ export function RelativityHud({ compact }: RelativityHudProps) {
 
         <h1 className="hud-title">CosmoLab</h1>
 
+        <div className="context-chips">
+          <span className="context-chip">{scenario.metric.name.replace(/\s*\(\d+\)/, "")}</span>
+          <span className="context-chip">
+            {scenario.kind === "null" ? "geodésica nula · fóton" : "geodésica timelike · massiva"}
+          </span>
+        </div>
+
         {!compact && (
           <p className="hud-copy">
-            Laboratório de geodésicas: ajuste massa, trajetória e velocidade — o motor integra a
-            equação da geodésica (RK4) na métrica exata e a malha mostra a geometria espacial real
-            (paraboloide de Flamm). O Three.js apenas desenha.
+            Ajuste os parâmetros — o motor integra a equação da geodésica (RK4) na métrica exata e
+            a malha mostra a geometria espacial real (paraboloide de Flamm), colorida pela
+            dilatação temporal.
           </p>
         )}
 
@@ -258,20 +231,13 @@ export function RelativityHud({ compact }: RelativityHudProps) {
           </div>
         )}
 
-        <div className={compact ? "hud-stats two-column" : "hud-stats"}>
-          <div className="hud-stat">
-            <span className="hud-stat-label">Métrica</span>
-            <strong>{scenario.metric.name.replace(/\s*\(\d+\)/, "")}</strong>
-          </div>
-          <div className="hud-stat">
-            <span className="hud-stat-label">Geodésica</span>
-            <strong>{scenario.kind === "null" ? "nula (fóton)" : "timelike (massiva)"}</strong>
-          </div>
-          <div className="hud-stat">
+        <div className="clock-grid">
+          <div className="clock-card">
             <span className="hud-stat-label">Tempo coordenado</span>
             <strong>{snapshot ? formatSeconds(snapshot.coordinateTimeS) : "—"}</strong>
+            <small>observador no infinito</small>
           </div>
-          <div className="hud-stat">
+          <div className="clock-card">
             <span className="hud-stat-label">Tempo próprio</span>
             <strong>
               {snapshot
@@ -280,6 +246,7 @@ export function RelativityHud({ compact }: RelativityHudProps) {
                   : formatSeconds(snapshot.properTimeS)
                 : "—"}
             </strong>
+            <small>relógio da partícula</small>
           </div>
         </div>
       </section>
@@ -287,7 +254,7 @@ export function RelativityHud({ compact }: RelativityHudProps) {
       <aside className="hud-side glass-panel">
         <div className="focus-heading">
           <div className="hud-section-kicker">cenário ativo</div>
-          <span className="focus-chip">{snapshot?.halted ? "parado" : "integrando"}</span>
+          <span className={snapshot?.halted ? "focus-chip halted" : "focus-chip"}>{status}</span>
         </div>
 
         <div className="hud-section-title">
@@ -295,42 +262,43 @@ export function RelativityHud({ compact }: RelativityHudProps) {
         </div>
 
         <p className={compact ? "body-summary compact" : "body-summary"}>{scenario.description}</p>
-        {!compact && scenario.expectation && <p className="hud-note">{scenario.expectation}</p>}
+
+        {heroObservables.map((observable) => (
+          <div className="hero-card" key={observable.id}>
+            <span className="hud-stat-label">{observable.label}</span>
+            <strong className="hero-value">
+              {formatObservable(observable.value, observable.unit)}
+            </strong>
+            {observable.reference !== undefined && Number.isFinite(observable.reference) && (
+              <small>
+                referência: {formatObservable(observable.reference, observable.unit)}
+                {observable.referenceLabel ? ` — ${observable.referenceLabel}` : ""}
+              </small>
+            )}
+          </div>
+        ))}
+
+        {snapshot?.halted && (
+          <p className="hud-note">
+            Integração interrompida: limite físico ou de coordenadas do cenário atingido (a carta
+            de Schwarzschild degenera em r = r_s).
+          </p>
+        )}
 
         <div className="telemetry-grid telemetry-grid-advanced">
           <div className="telemetry-card">
             <span>Massa central</span>
             <strong>
               {scenario.centralMassKg
-                ? `${scenario.centralMassKg.toExponential(3)} kg (${formatSolarMasses(
-                    scenario.centralMassKg / SOLAR_MASS_KG,
-                  )})`
+                ? formatSolarMasses(scenario.centralMassKg / SOLAR_MASS_KG)
                 : "—"}
             </strong>
           </div>
           <div className="telemetry-card">
-            <span>Raio de Schwarzschild r_s</span>
+            <span>Raio de Schwarzschild</span>
             <strong>
               {scenario.schwarzschildRadiusM ? formatMeters(scenario.schwarzschildRadiusM) : "—"}
             </strong>
-          </div>
-          <div className="telemetry-card">
-            <span>Energia específica E</span>
-            <strong>{snapshot ? snapshot.validation.energy.toFixed(9) : "—"}</strong>
-          </div>
-          <div className="telemetry-card">
-            <span>Momento angular L</span>
-            <strong>
-              {snapshot ? `${snapshot.validation.angularMomentum.toExponential(4)} m` : "—"}
-            </strong>
-          </div>
-          <div className="telemetry-card">
-            <span>Erro numérico |g·u·u − ε|</span>
-            <strong>{snapshot ? snapshot.validation.normError.toExponential(2) : "—"}</strong>
-          </div>
-          <div className="telemetry-card">
-            <span>Deriva de E</span>
-            <strong>{snapshot ? snapshot.energyDriftRelative.toExponential(2) : "—"}</strong>
           </div>
           {scenario.metric.chart === "spherical" && (
             <div className="telemetry-card">
@@ -347,18 +315,47 @@ export function RelativityHud({ compact }: RelativityHudProps) {
               </strong>
             </div>
           )}
-          <div className="telemetry-card">
-            <span>Parâmetro afim λ</span>
-            <strong>{snapshot ? formatMeters(snapshot.lambdaM) : "—"}</strong>
-          </div>
+          {secondaryObservables.map((observable) => (
+            <div className="telemetry-card" key={observable.id}>
+              <span>{observable.label}</span>
+              <strong>{formatObservable(observable.value, observable.unit)}</strong>
+            </div>
+          ))}
         </div>
 
-        {!compact && (
-          <p className="hud-note">
-            E = −g₀μu^μ (adimensional, E/mc²) e L = g₃μu^μ [m] são constantes de Killing; a deriva
-            relativa e o erro de norma medem a qualidade da integração RK4.
-          </p>
-        )}
+        <details className="validation-details">
+          <summary>validação numérica</summary>
+          <div className="telemetry-grid">
+            <div className="telemetry-card">
+              <span>Energia específica E</span>
+              <strong>{snapshot ? snapshot.validation.energy.toFixed(9) : "—"}</strong>
+            </div>
+            <div className="telemetry-card">
+              <span>Momento angular L</span>
+              <strong>
+                {snapshot ? `${snapshot.validation.angularMomentum.toExponential(4)} m` : "—"}
+              </strong>
+            </div>
+            <div className="telemetry-card">
+              <span>Erro de norma</span>
+              <strong>{snapshot ? snapshot.validation.normError.toExponential(2) : "—"}</strong>
+            </div>
+            <div className="telemetry-card">
+              <span>Deriva de E</span>
+              <strong>{snapshot ? snapshot.energyDriftRelative.toExponential(2) : "—"}</strong>
+            </div>
+            <div className="telemetry-card">
+              <span>Parâmetro afim λ</span>
+              <strong>{snapshot ? formatMeters(snapshot.lambdaM) : "—"}</strong>
+            </div>
+          </div>
+          {!compact && (
+            <p className="hud-note">
+              E = −g₀μu^μ e L = g₃μu^μ são constantes de Killing; a deriva relativa e o erro de
+              norma |g·u·u − ε| medem a qualidade da integração RK4.
+            </p>
+          )}
+        </details>
       </aside>
     </div>
   )

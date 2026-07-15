@@ -161,7 +161,7 @@ export function createInfallTracker(schwarzschildRadiusM: number): ObservableTra
       return [
         {
           id: "time-dilation",
-          label: "Dilatação temporal dt/dτ",
+          label: "Dilatação temporal",
           value: state[4],
           unit: "ratio",
           hero: true,
