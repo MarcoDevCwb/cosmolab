@@ -43,6 +43,10 @@ export function createLightDeflectionScenario(params: ExperimentParams): Simulat
     id: "solar-light-deflection",
     label: "Deflexão da luz",
     scientificStatus: "validated",
+    references: [
+      "Weinberg, S. — Gravitation and Cosmology (1972), §8.5",
+      "Dyson, Eddington & Davidson — Phil. Trans. R. Soc. A 220 (1920)",
+    ],
     description:
       "Geodésica nula exata de Schwarzschild para um fóton com parâmetro de impacto b ajustável. Aproxime b de 2,6 r_s e veja a captura.",
     expectation: `Campo fraco: α = 2·r_s/b ≈ ${

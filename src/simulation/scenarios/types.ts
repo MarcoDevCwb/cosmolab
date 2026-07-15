@@ -95,6 +95,9 @@ export type SimulationScenario = {
   /** Condição de parada física (ex.: aproximação do horizonte). */
   stopCondition?: (state: GeodesicState) => boolean
 
+  /** Referências científicas (autor — obra, ano, seção). */
+  references: string[]
+
   /** Rastreador de observáveis do cenário (números-herói da HUD). */
   createObservables?: () => ObservableTracker
 

@@ -58,6 +58,11 @@ export function createKerrFrameDraggingScenario(params: ExperimentParams): Simul
     id: "kerr-frame-dragging",
     label: "Kerr — arrasto de referenciais",
     scientificStatus: "validated",
+    references: [
+      "Kerr, R. P. — Phys. Rev. Lett. 11, 237 (1963)",
+      "Boyer & Lindquist — J. Math. Phys. 8, 265 (1967)",
+      "Bardeen, Press & Teukolsky — ApJ 178, 347 (1972)",
+    ],
     description:
       "Partícula com momento angular ZERO largada perto de um buraco negro em rotação: o espaço-tempo a arrasta em φ (Lense–Thirring). Ajuste o spin a/M.",
     expectation:

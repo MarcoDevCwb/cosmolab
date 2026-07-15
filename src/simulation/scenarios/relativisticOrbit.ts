@@ -63,6 +63,11 @@ export function createRelativisticOrbitScenario(params: ExperimentParams): Simul
     id: "relativistic-orbit",
     label: "Órbita relativística",
     scientificStatus: "validated",
+    references: [
+      "Weinberg, S. — Gravitation and Cosmology (1972), §8.6",
+      "Misner, Thorne & Wheeler — Gravitation (1973), ex. 25.19",
+      "Goldstein — Classical Mechanics (3ª ed.), cap. 3 (elipse de Kepler)",
+    ],
     description:
       "Partícula massiva com raio e velocidade iniciais ajustáveis: 100% = órbita circular; menos = roseta de precessão; perto da ISCO (3 r_s), mergulho.",
     expectation: "Roseta de precessão: Δφ ≈ 6πGM/[c²a(1-e²)] por órbita.",

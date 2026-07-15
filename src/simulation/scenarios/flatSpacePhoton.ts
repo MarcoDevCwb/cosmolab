@@ -21,6 +21,10 @@ export function createFlatSpacePhotonScenario(): SimulationScenario {
     id: "flat-space-photon",
     label: "Espaço plano — fóton",
     scientificStatus: "validated",
+    references: [
+      "Minkowski, H. — Raum und Zeit (1908)",
+      "Hairer, Nørsett & Wanner — Solving ODEs I (1993), §II.1 (RK4)",
+    ],
     description:
       "Geodésica nula na métrica de Minkowski: linha reta percorrida à velocidade da luz. Cenário de controle do integrador.",
     expectation: "Trajetória exatamente retilínea; erro de norma ≈ erro de máquina.",

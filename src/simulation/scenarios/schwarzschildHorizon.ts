@@ -43,6 +43,10 @@ export function createSchwarzschildHorizonScenario(params: ExperimentParams): Si
     id: "schwarzschild-horizon",
     label: "Horizonte de Schwarzschild",
     scientificStatus: "validated",
+    references: [
+      "Misner, Thorne & Wheeler — Gravitation (1973), §25.5",
+      "Wald, R. — General Relativity (1984), §6.3",
+    ],
     description:
       "Queda radial livre do repouso em raio ajustável: tempo próprio finito, tempo coordenado divergente ao se aproximar do horizonte.",
     expectation: "τ permanece finito; t (observador distante) cresce sem limite quando r → r_s.",
