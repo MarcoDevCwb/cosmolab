@@ -72,4 +72,14 @@ export type SimulationScenario = {
 
   /** Rastreador de observáveis do cenário (números-herói da HUD). */
   createObservables?: () => ObservableTracker
+
+  /**
+   * Trajetória de comparação em coordenadas polares equatoriais (ex.: a
+   * elipse newtoniana fechada sob os mesmos parâmetros iniciais), para a
+   * renderização sobrepor à geodésica.
+   */
+  comparisonPath?: {
+    label: string
+    points: { r: number; phi: number }[]
+  }
 }

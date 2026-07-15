@@ -118,6 +118,40 @@ describe("cenário 3 — órbitas em Schwarzschild", () => {
     expect(coordinatePeriodS / keplerPeriodS).toBeLessThan(1.0001)
   })
 
+  it("precessão medida converge para 6πGM/(c²p) em campo fraco", () => {
+    // r₀ = 60 r_s, quase circular: regime onde a fórmula de campo fraco de
+    // Weinberg (Δφ = 6πGM/(c²p)) vale com correções O(M/p) ~ 1%.
+    const scenario = createScenario("relativistic-orbit", {
+      massSolar: 10,
+      impactParameterRs: 0,
+      startRadiusRs: 60,
+      angularVelocityFraction: 0.98,
+    })
+    const runner = new GeodesicSimulationRunner(scenario)
+    const lambdaPerOrbit = scenario.stepLambdaM * 4000
+
+    let precession: { value: number; reference?: number } | undefined
+    for (let orbit = 0; orbit < 5 && !precession; orbit += 1) {
+      runner.advanceLambda(lambdaPerOrbit)
+      const measured = runner
+        .snapshot()
+        .observables.find(
+          (observable) => observable.id === "precession" && Number.isFinite(observable.value),
+        )
+      if (measured) {
+        precession = measured
+      }
+    }
+
+    expect(precession).toBeDefined()
+    expect(precession!.reference).toBeDefined()
+    expect(precession!.value).toBeGreaterThan(0)
+    // Medição por detecção de periastro tem resolução de ~1 passo de φ;
+    // tolerância de 10% cobre isso + as correções pós-newtonianas.
+    expect(precession!.value / precession!.reference!).toBeGreaterThan(0.9)
+    expect(precession!.value / precession!.reference!).toBeLessThan(1.1)
+  })
+
   it("órbita excêntrica do cenário conserva E, L e norma por várias voltas", () => {
     const runner = new GeodesicSimulationRunner(createScenario("relativistic-orbit"))
     runner.advanceLambda(3e7) // ~5 órbitas

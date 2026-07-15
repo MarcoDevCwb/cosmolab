@@ -15,6 +15,7 @@
  */
 
 import { GRAVITATIONAL_CONSTANT, SOLAR_MASS_KG, SPEED_OF_LIGHT } from "../../physics/constants"
+import { keplerEllipse } from "../../physics/newtonian/kepler"
 import { buildInitialState } from "../../physics/relativity/initialConditions"
 import { createSchwarzschildMetric } from "../../physics/relativity/metrics/schwarzschild"
 import { createPrecessionTracker } from "../observables"
@@ -49,9 +50,14 @@ export function createRelativisticOrbitScenario(params: ExperimentParams): Simul
   const uPhi = params.angularVelocityFraction * omega * uTimeCircular
 
   // Período kepleriano coordenado T = 2π√(r³/GM) define as escalas de λ.
-  const coordinatePeriodS =
-    2 * Math.PI * Math.sqrt(r0 ** 3 / (GRAVITATIONAL_CONSTANT * massKg))
+  const gm = GRAVITATIONAL_CONSTANT * massKg
+  const coordinatePeriodS = 2 * Math.PI * Math.sqrt(r0 ** 3 / gm)
   const lambdaPerOrbitM = SPEED_OF_LIGHT * coordinatePeriodS
+
+  // Contraste newtoniano: elipse fechada com a MESMA velocidade angular
+  // coordenada inicial dφ/dt — a diferença visível é a precessão da RG.
+  const tangentialVelocity = params.angularVelocityFraction * Math.sqrt(gm / r0)
+  const newtonianEllipse = keplerEllipse(gm, r0, tangentialVelocity)
 
   return {
     id: "relativistic-orbit",
@@ -77,5 +83,9 @@ export function createRelativisticOrbitScenario(params: ExperimentParams): Simul
     stopCondition: (state) => state[1] > 40 * r0,
 
     createObservables: () => createPrecessionTracker(metric, rs),
+
+    comparisonPath: newtonianEllipse
+      ? { label: "Órbita de Newton (fechada)", points: newtonianEllipse }
+      : undefined,
   }
 }

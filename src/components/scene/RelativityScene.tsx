@@ -7,7 +7,10 @@ import { GeodesicSimulationRunner } from "../../simulation/simulationRunner"
 import { createScenario } from "../../simulation/scenarios"
 import { createEmbeddedSurfaceMapper } from "../../rendering/scene/coordinateMapping"
 import { flammEmbeddingHeight } from "../../physics/relativity/embedding"
-import { PHOTON_SPHERE_RADIUS_RS } from "../../physics/relativity/metrics/schwarzschild"
+import {
+  ISCO_RADIUS_RS,
+  PHOTON_SPHERE_RADIUS_RS,
+} from "../../physics/relativity/metrics/schwarzschild"
 import { useSimulationStore } from "../../store/useSimulationStore"
 
 /**
@@ -190,21 +193,40 @@ function RelativityRig({ compact }: RelativitySceneProps) {
   const funnelDepthUnits =
     (0 - flammEmbeddingHeight(rsM, SURFACE_RIM_UNITS * scale)) / scale
 
-  // Esfera de fótons desenhada sobre a superfície (r = 1,5 r_s).
-  const photonSphereRadiusM = rsM * PHOTON_SPHERE_RADIUS_RS
-  const photonSpherePoints = useMemo(() => {
-    if (rsM <= 0) {
-      return null
-    }
-
+  // Anéis causais sobre a superfície: esfera de fótons (1,5 r_s) e ISCO (3 r_s).
+  const buildSurfaceRing = (radiusM: number) => {
     const rimHeightM = flammEmbeddingHeight(rsM, SURFACE_RIM_UNITS * scale)
-    const y = (flammEmbeddingHeight(rsM, photonSphereRadiusM) - rimHeightM) / scale
-    const radiusUnits = photonSphereRadiusM / scale
+    const y = (flammEmbeddingHeight(rsM, radiusM) - rimHeightM) / scale
+    const radiusUnits = radiusM / scale
     return Array.from({ length: 97 }, (_, i) => {
       const phi = (i / 96) * Math.PI * 2
       return [radiusUnits * Math.cos(phi), y, radiusUnits * Math.sin(phi)] as const
     })
-  }, [rsM, scale, photonSphereRadiusM])
+  }
+
+  const photonSpherePoints = useMemo(
+    () => (rsM > 0 ? buildSurfaceRing(rsM * PHOTON_SPHERE_RADIUS_RS) : null),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [rsM, scale],
+  )
+  const iscoPoints = useMemo(
+    () => (rsM > 0 && scenario.kind === "timelike" ? buildSurfaceRing(rsM * ISCO_RADIUS_RS) : null),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [rsM, scale, scenario.kind],
+  )
+
+  // Contraste newtoniano (elipse fechada) mapeado na mesma superfície.
+  const comparisonPoints = useMemo(() => {
+    if (!scenario.comparisonPath) {
+      return null
+    }
+    return scenario.comparisonPath.points.map((point) => {
+      const mapped = mapToSurface([0, point.r, Math.PI / 2, point.phi])
+      return [mapped.x, mapped.y, mapped.z] as const
+    })
+  }, [scenario, mapToSurface])
+
+  const ringsVisible = rsM > 0 && rsM / scale > 0.02
 
   return (
     <>
@@ -227,8 +249,37 @@ function RelativityRig({ compact }: RelativitySceneProps) {
       )}
 
       {/* Esfera de fótons r = 1,5 r_s: última órbita circular da luz. */}
-      {photonSpherePoints && horizonRadiusUnits !== null && horizonRadiusUnits > 0.02 && (
+      {photonSpherePoints && ringsVisible && (
         <Line points={photonSpherePoints} color="#fdba74" lineWidth={1.8} transparent opacity={0.8} />
+      )}
+
+      {/* ISCO r = 3 r_s: última órbita circular estável de partículas massivas. */}
+      {iscoPoints && ringsVisible && (
+        <Line
+          points={iscoPoints}
+          color="#22d3ee"
+          lineWidth={1.5}
+          transparent
+          opacity={0.55}
+          dashed
+          dashSize={0.18}
+          gapSize={0.12}
+        />
+      )}
+
+      {/* Contraste newtoniano: a elipse FECHADA de Kepler sob os mesmos
+          parâmetros — a diferença para a geodésica é a precessão da RG. */}
+      {comparisonPoints && (
+        <Line
+          points={comparisonPoints}
+          color="#94a3b8"
+          lineWidth={1.4}
+          transparent
+          opacity={0.5}
+          dashed
+          dashSize={0.22}
+          gapSize={0.14}
+        />
       )}
 
       {/* Trajetória integrada sobre a superfície: cauda esmaece, cabeça brilha. */}
@@ -284,6 +335,57 @@ function RelativityRig({ compact }: RelativitySceneProps) {
   )
 }
 
+/** Legenda dos marcadores causais desenhados na cena. */
+function SceneLegend() {
+  const activeScenarioId = useSimulationStore((state) => state.activeScenarioId)
+  const experimentParams = useSimulationStore((state) => state.experimentParams)
+  const scenario = createScenario(activeScenarioId, experimentParams)
+
+  const rsM = scenario.schwarzschildRadiusM ?? 0
+  const ringsVisible = rsM > 0 && rsM / scenario.renderScaleM > 0.02
+  const isPhoton = scenario.kind === "null"
+
+  if (!ringsVisible && !scenario.comparisonPath) {
+    return null
+  }
+
+  return (
+    <div className="scene-legend" aria-hidden>
+      {ringsVisible && (
+        <span>
+          <i className="legend-dot" style={{ background: "#0b0b0f", boxShadow: "0 0 0 1.5px #7c3aed" }} />
+          horizonte r_s
+        </span>
+      )}
+      {ringsVisible && (
+        <span>
+          <i className="legend-dot" style={{ background: "#fdba74" }} />
+          esfera de fótons 1,5 r_s
+        </span>
+      )}
+      {ringsVisible && !isPhoton && (
+        <span>
+          <i className="legend-dot" style={{ background: "#22d3ee" }} />
+          ISCO 3 r_s
+        </span>
+      )}
+      {scenario.comparisonPath && (
+        <span style={{ color: "#94a3b8" }}>
+          <i className="legend-dash" />
+          {scenario.comparisonPath.label}
+        </span>
+      )}
+      <span>
+        <i
+          className="legend-dot"
+          style={{ background: isPhoton ? "#7dd3fc" : "#f0abfc" }}
+        />
+        {isPhoton ? "geodésica nula (Einstein)" : "geodésica (Einstein)"}
+      </span>
+    </div>
+  )
+}
+
 export function RelativityScene({ compact }: RelativitySceneProps) {
   return (
     <section className="cosmos-stage" aria-label="Cena 3D do laboratório relativístico">
@@ -294,6 +396,7 @@ export function RelativityScene({ compact }: RelativitySceneProps) {
       >
         <RelativityRig compact={compact} />
       </Canvas>
+      {!compact && <SceneLegend />}
     </section>
   )
 }
