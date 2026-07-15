@@ -62,6 +62,7 @@ export function createRelativisticOrbitScenario(params: ExperimentParams): Simul
   return {
     id: "relativistic-orbit",
     label: "Órbita relativística",
+    scientificStatus: "validated",
     description:
       "Partícula massiva com raio e velocidade iniciais ajustáveis: 100% = órbita circular; menos = roseta de precessão; perto da ISCO (3 r_s), mergulho.",
     expectation: "Roseta de precessão: Δφ ≈ 6πGM/[c²a(1-e²)] por órbita.",

@@ -20,6 +20,7 @@ export function createFlatSpacePhotonScenario(): SimulationScenario {
   return {
     id: "flat-space-photon",
     label: "Espaço plano — fóton",
+    scientificStatus: "validated",
     description:
       "Geodésica nula na métrica de Minkowski: linha reta percorrida à velocidade da luz. Cenário de controle do integrador.",
     expectation: "Trajetória exatamente retilínea; erro de norma ≈ erro de máquina.",

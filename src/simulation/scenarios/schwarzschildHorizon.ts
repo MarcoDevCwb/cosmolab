@@ -42,6 +42,7 @@ export function createSchwarzschildHorizonScenario(params: ExperimentParams): Si
   return {
     id: "schwarzschild-horizon",
     label: "Horizonte de Schwarzschild",
+    scientificStatus: "validated",
     description:
       "Queda radial livre do repouso em raio ajustável: tempo próprio finito, tempo coordenado divergente ao se aproximar do horizonte.",
     expectation: "τ permanece finito; t (observador distante) cresce sem limite quando r → r_s.",

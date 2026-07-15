@@ -42,6 +42,7 @@ export function createLightDeflectionScenario(params: ExperimentParams): Simulat
   return {
     id: "solar-light-deflection",
     label: "Deflexão da luz",
+    scientificStatus: "validated",
     description:
       "Geodésica nula exata de Schwarzschild para um fóton com parâmetro de impacto b ajustável. Aproxime b de 2,6 r_s e veja a captura.",
     expectation: `Campo fraco: α = 2·r_s/b ≈ ${

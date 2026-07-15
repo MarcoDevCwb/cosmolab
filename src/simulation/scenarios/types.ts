@@ -11,6 +11,17 @@ import type { GeodesicState } from "../../physics/relativity/geodesic"
 import type { GeodesicKind } from "../../physics/relativity/initialConditions"
 import type { ObservableTracker } from "../observables"
 
+/**
+ * Status epistemológico do modelo físico do cenário — exibido na UI para
+ * separar física consolidada de hipóteses (princípio 5 do CosmoLab).
+ */
+export type ScientificStatus =
+  | "validated" // reproduzido numericamente contra resultado analítico/experimental
+  | "accepted-model" // física padrão consolidada, sem validação analítica direta aqui
+  | "theoretical" // consequência formal da teoria, ainda não observada
+  | "speculative" // hipótese exploratória, fora do consenso
+  | "toy-model" // simplificação didática deliberada
+
 export type ScenarioId =
   | "flat-space-photon"
   | "solar-light-deflection"
@@ -44,6 +55,8 @@ export type ExperimentParams = {
 export type SimulationScenario = {
   id: ScenarioId
   label: string
+  /** Status epistemológico do modelo (exibido como selo na HUD). */
+  scientificStatus: ScientificStatus
   /** Descrição física curta exibida na HUD. */
   description: string
   /** Resultado teórico de referência (quando existir) para conferência visual. */

@@ -57,6 +57,7 @@ export function createKerrFrameDraggingScenario(params: ExperimentParams): Simul
   return {
     id: "kerr-frame-dragging",
     label: "Kerr — arrasto de referenciais",
+    scientificStatus: "validated",
     description:
       "Partícula com momento angular ZERO largada perto de um buraco negro em rotação: o espaço-tempo a arrasta em φ (Lense–Thirring). Ajuste o spin a/M.",
     expectation:
