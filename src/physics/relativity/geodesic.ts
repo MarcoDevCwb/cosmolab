@@ -29,11 +29,11 @@ import { contractRank3WithVector } from "./tensor"
  */
 export type GeodesicState = number[]
 
-export function positionOf(state: GeodesicState): Vector4 {
+export function positionOf(state: readonly number[]): Vector4 {
   return [state[0], state[1], state[2], state[3]]
 }
 
-export function velocityOf(state: GeodesicState): Vector4 {
+export function velocityOf(state: readonly number[]): Vector4 {
   return [state[4], state[5], state[6], state[7]]
 }
 
@@ -47,7 +47,7 @@ export function makeGeodesicState(position: Vector4, velocity: Vector4): Geodesi
  * numericamente (métricas plugin sem forma analítica).
  */
 export function createGeodesicDerivatives(metric: SpacetimeMetric, scaleFloor?: Vector4) {
-  return function geodesicDerivatives(state: GeodesicState): GeodesicState {
+  return function geodesicDerivatives(state: readonly number[]): GeodesicState {
     const position = positionOf(state)
     const velocity = velocityOf(state)
     const gamma = resolveChristoffel(metric, position, scaleFloor)
