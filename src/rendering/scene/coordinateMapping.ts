@@ -10,6 +10,7 @@
  * da cena (y = 0).
  */
 
+import { flammEmbeddingHeight } from "../../physics/relativity/embedding"
 import type { SpatialChart } from "../../physics/relativity/metric"
 import type { Vector4 } from "../../physics/relativity/tensor"
 
@@ -51,5 +52,36 @@ export function mapCoordinatesToRenderSpace(
     x: position[1] / renderScaleM,
     y: position[3] / renderScaleM,
     z: position[2] / renderScaleM,
+  }
+}
+
+/**
+ * Mapeador para a superfície de imersão de Flamm: a posição espacial é
+ * projetada no plano da cena e a altura vem de z(r) do paraboloide
+ * (physics/relativity/embedding.ts), rebaixada para que a borda externa
+ * (r = rimRadiusM) fique em y = 0 — o "funil" desce a partir do plano.
+ *
+ * Continua sendo apenas mudança de carta + escala: a forma vem da física.
+ */
+export function createEmbeddedSurfaceMapper(
+  chart: SpatialChart,
+  renderScaleM: number,
+  schwarzschildRadiusM: number,
+  rimRadiusM: number,
+) {
+  const rimHeightM = flammEmbeddingHeight(schwarzschildRadiusM, rimRadiusM)
+
+  return function mapToEmbeddedSurface(position: Vector4): RenderPosition {
+    const flat = mapCoordinatesToRenderSpace(position, chart, renderScaleM)
+    const radiusM =
+      chart === "spherical"
+        ? position[1]
+        : Math.hypot(position[1], position[2], position[3])
+
+    return {
+      x: flat.x,
+      y: (flammEmbeddingHeight(schwarzschildRadiusM, radiusM) - rimHeightM) / renderScaleM,
+      z: flat.z,
+    }
   }
 }

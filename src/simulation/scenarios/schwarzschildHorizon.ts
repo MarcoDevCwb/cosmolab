@@ -1,12 +1,11 @@
 /**
  * Cenário 4 — Queda radial rumo ao horizonte de Schwarzschild.
  *
- * Física: partícula massiva solta do repouso em r₀ = 6 r_s de um buraco
- * negro de 10 M☉. Dois relógios divergem dramaticamente (MTW §25.5;
- * Wald §6.3):
+ * Física: partícula massiva solta do REPOUSO em r₀ (ajustável). Dois
+ * relógios divergem dramaticamente (MTW §25.5; Wald §6.3):
  *
  * - Tempo próprio τ: a queda até o horizonte é FINITA
- *   (τ ~ (r₀³/(2GM))^{1/2}, milissegundos nesta escala).
+ *   (τ ≈ (π/2)·√(r₀³/(2GM)) para queda até o centro).
  * - Tempo coordenado t (observador distante): t → ∞ quando r → r_s;
  *   a partícula parece "congelar" no horizonte.
  *
@@ -16,33 +15,39 @@
  * (Eddington–Finkelstein), previsto para versão futura.
  *
  * Energia conservada da queda a partir do repouso: E = √f(r₀), e
- * dr/dτ = -c√(E² - f(r)) — usado como verificação analítica nos testes.
+ * dr/dλ = -√(E² - f(r)) — usado como verificação analítica nos testes.
  */
 
-import { SOLAR_MASS_KG } from "../../physics/constants"
+import { GRAVITATIONAL_CONSTANT, SOLAR_MASS_KG, SPEED_OF_LIGHT } from "../../physics/constants"
 import { buildInitialState } from "../../physics/relativity/initialConditions"
 import { createSchwarzschildMetric } from "../../physics/relativity/metrics/schwarzschild"
-import type { SimulationScenario } from "./types"
+import type { ExperimentParams, SimulationScenario } from "./types"
 
-const CENTRAL_MASS_KG = 10 * SOLAR_MASS_KG
-const DROP_RADIUS_IN_RS = 6
 const STOP_RADIUS_IN_RS = 1.02
+/** Duração-alvo da queda na tela [s de tempo real]. */
+const FALL_WALL_TIME_S = 25
 
-export function createSchwarzschildHorizonScenario(): SimulationScenario {
-  const metric = createSchwarzschildMetric(CENTRAL_MASS_KG)
+export function createSchwarzschildHorizonScenario(params: ExperimentParams): SimulationScenario {
+  const massKg = params.massSolar * SOLAR_MASS_KG
+  const metric = createSchwarzschildMetric(massKg)
   const rs = metric.schwarzschildRadiusM
-  const r0 = DROP_RADIUS_IN_RS * rs
+  const r0 = params.startRadiusRs * rs
+
+  // Escala de λ da queda: c·τ_queda ≈ c·(π/2)·√(r₀³/(2GM)).
+  const properFallTimeS =
+    (Math.PI / 2) * Math.sqrt(r0 ** 3 / (2 * GRAVITATIONAL_CONSTANT * massKg))
+  const lambdaTotalM = SPEED_OF_LIGHT * properFallTimeS
 
   return {
     id: "schwarzschild-horizon",
     label: "Horizonte de Schwarzschild",
     description:
-      "Queda radial livre do repouso em 6 r_s: tempo próprio finito, tempo coordenado divergente ao se aproximar do horizonte.",
+      "Queda radial livre do repouso em raio ajustável: tempo próprio finito, tempo coordenado divergente ao se aproximar do horizonte.",
     expectation: "τ permanece finito; t (observador distante) cresce sem limite quando r → r_s.",
 
     metric,
     kind: "timelike",
-    centralMassKg: CENTRAL_MASS_KG,
+    centralMassKg: massKg,
     schwarzschildRadiusM: rs,
 
     // Repouso: u^i = 0 ⇒ u⁰ = 1/√f(r₀) resolvido pela normalização.
@@ -50,11 +55,11 @@ export function createSchwarzschildHorizonScenario(): SimulationScenario {
 
     // Passo pequeno: perto do horizonte f → 0 torna o sistema rígido e o
     // RK4 de passo fixo perde precisão (passo adaptativo é evolução prevista).
-    stepLambdaM: 100,
-    lambdaRateMPerSecond: 3e4,
-    sampleIntervalLambdaM: 2e3,
+    stepLambdaM: lambdaTotalM / 7000,
+    lambdaRateMPerSecond: lambdaTotalM / FALL_WALL_TIME_S,
+    sampleIntervalLambdaM: lambdaTotalM / 300,
     maxSamples: 500,
-    renderScaleM: 3e4,
+    renderScaleM: r0 / 5.9,
 
     // Interrompe antes da degeneração de coordenada em r = r_s.
     stopCondition: (state) => state[1] <= STOP_RADIUS_IN_RS * rs,

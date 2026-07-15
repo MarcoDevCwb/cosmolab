@@ -248,6 +248,7 @@
   font-size: 16px;
   line-height: 1.35;
   letter-spacing: -0.04em;
+  overflow-wrap: anywhere;
 }
 
 .hud-side {
@@ -738,3 +739,53 @@
 }
 
 
+
+.param-cluster {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 14px;
+  pointer-events: auto;
+}
+
+.param-row {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.param-label {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  font-size: 0.72rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: rgba(148, 163, 184, 0.85);
+}
+
+.param-label strong {
+  font-size: 0.82rem;
+  letter-spacing: 0;
+  text-transform: none;
+  color: #e2e8f0;
+  font-variant-numeric: tabular-nums;
+}
+
+.param-row input[type="range"] {
+  width: 100%;
+  accent-color: #7dd3fc;
+  cursor: pointer;
+}
+
+.param-warning {
+  margin: 2px 0 0;
+  font-size: 0.78rem;
+  line-height: 1.4;
+  color: #fbbf24;
+}
+
+.cosmos-shell.compact .param-cluster {
+  gap: 7px;
+  margin-top: 10px;
+}

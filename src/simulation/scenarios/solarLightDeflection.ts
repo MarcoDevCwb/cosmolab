@@ -1,59 +1,68 @@
 /**
- * Cenário 2 — Deflexão gravitacional da luz pelo Sol.
+ * Cenário 2 — Deflexão gravitacional da luz.
  *
- * Física: um fóton que tangencia o limbo solar (parâmetro de impacto
- * b = R☉) é defletido pelo campo do Sol. Previsão da relatividade geral em
- * campo fraco (Einstein 1915; confirmada por Eddington, eclipse de 1919):
+ * Física: um fóton com parâmetro de impacto b é defletido pela massa central.
+ * Previsão em campo fraco (Einstein 1915; confirmada por Eddington, 1919):
  *
- *   α = 4GM☉ / (c² b) = 2 r_s / b ≈ 1,75 segundos de arco para b = R☉
+ *   α = 4GM / (c² b) = 2 r_s / b
  *
- * — o dobro do valor newtoniano. Referência: Weinberg, "Gravitation and
- * Cosmology" (1972), §8.5.
+ * Para o preset solar (M = 1 M☉, b = R☉ ≈ 235.700 r_s): α ≈ 1,75″.
+ * Reduzindo b em direção a b_c = (3√3/2) r_s ≈ 2,6 r_s, a deflexão cresce
+ * sem limite — abaixo de b_c o fóton é CAPTURADO (cruza a esfera de fótons
+ * e cai no horizonte). Referência: Weinberg (1972), §8.5; MTW §25.6.
  *
- * O fóton parte de x = -60 R☉ rumo a +x com y = b; o motor integra a
- * geodésica nula exata de Schwarzschild (sem aproximação de campo fraco).
+ * O motor integra a geodésica nula exata de Schwarzschild, sem aproximação
+ * de campo fraco: o regime forte emerge naturalmente dos mesmos Γ.
  */
 
-import { SOLAR_MASS_KG, SOLAR_RADIUS_M } from "../../physics/constants"
+import { SOLAR_MASS_KG, SOLAR_RADIUS_M, schwarzschildRadius } from "../../physics/constants"
 import { equatorialStateFromCartesian } from "../../physics/relativity/equatorial"
 import { createSchwarzschildMetric } from "../../physics/relativity/metrics/schwarzschild"
-import type { SimulationScenario } from "./types"
+import type { ExperimentParams, SimulationScenario } from "./types"
 
-const IMPACT_PARAMETER_M = SOLAR_RADIUS_M
-const START_X_M = -60 * SOLAR_RADIUS_M
+/** b = R☉ expresso em r_s do Sol — o preset histórico de Eddington. */
+export const SOLAR_IMPACT_PARAMETER_RS = SOLAR_RADIUS_M / schwarzschildRadius(SOLAR_MASS_KG)
 
-export function createSolarLightDeflectionScenario(): SimulationScenario {
-  const metric = createSchwarzschildMetric(SOLAR_MASS_KG)
+/** Distância de partida, em múltiplos de b (região assintoticamente plana). */
+const START_DISTANCE_IN_B = 60
+/** Duração-alvo da travessia na tela [s de tempo real]. */
+const CROSSING_WALL_TIME_S = 25
+
+export function createLightDeflectionScenario(params: ExperimentParams): SimulationScenario {
+  const massKg = params.massSolar * SOLAR_MASS_KG
+  const metric = createSchwarzschildMetric(massKg)
+  const rs = metric.schwarzschildRadiusM
+  const b = params.impactParameterRs * rs
+  const startX = -START_DISTANCE_IN_B * b
+  const pathLengthM = 2 * START_DISTANCE_IN_B * b
+
+  const deflectionArcsec = ((2 * rs) / b) * (180 / Math.PI) * 3600
 
   return {
     id: "solar-light-deflection",
-    label: "Deflexão da luz pelo Sol",
+    label: "Deflexão da luz",
     description:
-      "Geodésica nula exata de Schwarzschild para um fóton tangenciando o limbo solar (b = R☉).",
-    expectation: "α = 4GM☉/(c²b) ≈ 1,75″ de deflexão total (Eddington, 1919).",
+      "Geodésica nula exata de Schwarzschild para um fóton com parâmetro de impacto b ajustável. Aproxime b de 2,6 r_s e veja a captura.",
+    expectation: `Campo fraco: α = 2·r_s/b ≈ ${
+      deflectionArcsec >= 3600
+        ? `${(deflectionArcsec / 3600).toFixed(2)}°`
+        : `${deflectionArcsec.toFixed(2)}″`
+    } de deflexão total.`,
 
     metric,
     kind: "null",
-    centralMassKg: SOLAR_MASS_KG,
-    schwarzschildRadiusM: metric.schwarzschildRadiusM,
+    centralMassKg: massKg,
+    schwarzschildRadiusM: rs,
 
-    initialState: equatorialStateFromCartesian(
-      metric,
-      START_X_M,
-      IMPACT_PARAMETER_M,
-      1,
-      0,
-      "null",
-    ),
+    initialState: equatorialStateFromCartesian(metric, startX, b, 1, 0, "null"),
 
-    stepLambdaM: SOLAR_RADIUS_M / 200,
-    lambdaRateMPerSecond: 2.8e9,
-    sampleIntervalLambdaM: SOLAR_RADIUS_M / 4,
+    stepLambdaM: b / 200,
+    lambdaRateMPerSecond: pathLengthM / CROSSING_WALL_TIME_S,
+    sampleIntervalLambdaM: b / 4,
     maxSamples: 600,
-    renderScaleM: 5e9,
-    centralBodyRadiusM: SOLAR_RADIUS_M,
+    renderScaleM: (START_DISTANCE_IN_B * b) / 8,
 
     // Para após a passagem: r crescente além da janela de partida.
-    stopCondition: (state) => state[1] > Math.abs(START_X_M) * 1.05 && state[5] > 0,
+    stopCondition: (state) => state[1] > Math.abs(startX) * 1.05 && state[5] > 0,
   }
 }

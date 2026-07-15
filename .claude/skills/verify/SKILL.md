@@ -24,12 +24,14 @@ temporário + o Chromium já em cache:
   (atenção: `chrome-linux64`, não `chrome-linux`).
 - `page.goto` com `waitUntil: "load"` — `networkidle` NUNCA dispara
   (WebSocket de HMR/render loop) e estoura timeout.
-- Esperar `.lab-switch` aparecer antes de interagir.
+- Esperar `.param-cluster` aparecer antes de interagir.
+- Sliders `input[type=range]`: `locator.fill()` falha com "Malformed
+  value"; use setter nativo via `evaluate` + dispatch de evento `input`.
 
 ## Fluxos que valem dirigir
 
-- Alternância `sistema solar` ↔ `relatividade` no `.lab-switch` (rodapé).
-- Nos 4 cenários de relatividade: cartões `.telemetry-card` devem mostrar
-  erro numérico ~1e-15 e deriva de E ~1e-15; `pausar` congela τ;
-  `reiniciar` zera λ.
+- Nos 4 cenários: cartões `.telemetry-card` devem mostrar erro numérico
+  ~1e-15 e deriva de E ~1e-15; `pausar` congela τ; `reiniciar` zera λ.
+- Sliders: b < 2,6 r_s deve exibir `.param-warning` de captura; slider de
+  massa reescala r_s nos cartões mantendo a forma da trajetória.
 - Console do navegador limpo (sem pageerror/console.error).

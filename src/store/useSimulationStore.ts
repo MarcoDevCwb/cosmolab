@@ -1,28 +1,37 @@
 import { create } from "zustand"
 import type { RelativitySnapshot } from "../simulation/simulationRunner"
-import type { ScenarioId } from "../simulation/scenarios"
+import { DEFAULT_EXPERIMENT_PARAMS } from "../simulation/scenarios"
+import type { ExperimentParams, ScenarioId } from "../simulation/scenarios"
 
 /**
  * Estado global da UI do laboratório relativístico.
- * Contém apenas estado de interface e snapshots publicados pelo runner —
- * nenhum cálculo físico acontece aqui.
+ * Contém apenas estado de interface, parâmetros escolhidos pelo usuário e
+ * snapshots publicados pelo runner — nenhum cálculo físico acontece aqui.
  */
 type SimulationState = {
   paused: boolean
   activeScenarioId: ScenarioId
+  experimentParams: ExperimentParams
   relativitySnapshot: RelativitySnapshot | null
   /** Incrementado a cada pedido de reinício do experimento. */
   relativityResetNonce: number
   setPaused: (paused: boolean) => void
   togglePaused: () => void
   setActiveScenarioId: (activeScenarioId: ScenarioId) => void
+  /** Ajusta parâmetros do experimento; o runner é recriado com eles. */
+  setExperimentParams: (partial: Partial<ExperimentParams>) => void
+  /** Volta os parâmetros ao preset do cenário ativo. */
+  resetExperimentParams: () => void
   setRelativitySnapshot: (relativitySnapshot: RelativitySnapshot) => void
   requestRelativityReset: () => void
 }
 
+const INITIAL_SCENARIO: ScenarioId = "solar-light-deflection"
+
 export const useSimulationStore = create<SimulationState>((set) => ({
   paused: false,
-  activeScenarioId: "solar-light-deflection",
+  activeScenarioId: INITIAL_SCENARIO,
+  experimentParams: DEFAULT_EXPERIMENT_PARAMS[INITIAL_SCENARIO],
   relativitySnapshot: null,
   relativityResetNonce: 0,
   setPaused: (paused) => set({ paused }),
@@ -30,7 +39,17 @@ export const useSimulationStore = create<SimulationState>((set) => ({
   setActiveScenarioId: (activeScenarioId) =>
     set((state) => ({
       activeScenarioId,
+      experimentParams: DEFAULT_EXPERIMENT_PARAMS[activeScenarioId],
       relativitySnapshot: null,
+      relativityResetNonce: state.relativityResetNonce + 1,
+    })),
+  setExperimentParams: (partial) =>
+    set((state) => ({
+      experimentParams: { ...state.experimentParams, ...partial },
+    })),
+  resetExperimentParams: () =>
+    set((state) => ({
+      experimentParams: DEFAULT_EXPERIMENT_PARAMS[state.activeScenarioId],
       relativityResetNonce: state.relativityResetNonce + 1,
     })),
   setRelativitySnapshot: (relativitySnapshot) => set({ relativitySnapshot }),

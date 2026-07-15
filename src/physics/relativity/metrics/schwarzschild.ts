@@ -29,6 +29,19 @@ import type { CoordinateBound, SpacetimeMetric } from "../metric"
 import type { Matrix4, Rank3, Vector4 } from "../tensor"
 import { zeroRank3 } from "../tensor"
 
+/**
+ * Raios característicos do exterior de Schwarzschild, em unidades de r_s
+ * (MTW cap. 25; Wald §6.3):
+ * - Esfera de fótons r = 1,5 r_s: última órbita circular (instável) da luz.
+ * - ISCO r = 3 r_s (= 6GM/c²): última órbita circular ESTÁVEL de partículas
+ *   massivas; abaixo dela qualquer perturbação leva ao mergulho.
+ * - Parâmetro de impacto crítico b_c = (3√3/2) r_s ≈ 2,598 r_s: fótons com
+ *   b < b_c são capturados pelo buraco negro; b > b_c são defletidos.
+ */
+export const PHOTON_SPHERE_RADIUS_RS = 1.5
+export const ISCO_RADIUS_RS = 3
+export const PHOTON_CRITICAL_IMPACT_RS = (3 * Math.sqrt(3)) / 2
+
 export type SchwarzschildMetric = SpacetimeMetric & {
   /** Massa central M [kg]. */
   readonly massKg: number

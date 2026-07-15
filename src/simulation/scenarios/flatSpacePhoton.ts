@@ -14,6 +14,7 @@ import type { SimulationScenario } from "./types"
 const START_X_M = -4e8
 const OFFSET_Y_M = 1e8
 
+// Não há parâmetros ajustáveis: Minkowski não tem massa nem escala própria.
 export function createFlatSpacePhotonScenario(): SimulationScenario {
   return {
     id: "flat-space-photon",

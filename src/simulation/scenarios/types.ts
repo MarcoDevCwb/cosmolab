@@ -16,6 +16,27 @@ export type ScenarioId =
   | "relativistic-orbit"
   | "schwarzschild-horizon"
 
+/**
+ * Parâmetros ajustáveis do experimento (a "bancada" do laboratório).
+ *
+ * Distâncias são expressas em unidades de r_s (raio de Schwarzschild da massa
+ * escolhida): a física de geodésicas em Schwarzschild é invariante de escala
+ * nessas unidades, então mover o slider de massa muda os valores físicos
+ * (km, segundos) sem mudar a forma da trajetória — e os sliders geométricos
+ * (b/r_s, r₀/r_s) mudam a forma. Cada cenário usa o subconjunto que lhe
+ * faz sentido; os demais campos são ignorados.
+ */
+export type ExperimentParams = {
+  /** Massa central em massas solares M☉. */
+  massSolar: number
+  /** Parâmetro de impacto do fóton, em unidades de r_s. */
+  impactParameterRs: number
+  /** Raio inicial da partícula, em unidades de r_s. */
+  startRadiusRs: number
+  /** Velocidade angular inicial como fração da órbita circular (1 = circular). */
+  angularVelocityFraction: number
+}
+
 export type SimulationScenario = {
   id: ScenarioId
   label: string
@@ -44,8 +65,6 @@ export type SimulationScenario = {
   maxSamples: number
   /** Metros por unidade de cena na renderização. */
   renderScaleM: number
-  /** Raio físico do corpo central [m] para desenho (ex.: R☉); opcional. */
-  centralBodyRadiusM?: number
 
   /** Condição de parada física (ex.: aproximação do horizonte). */
   stopCondition?: (state: GeodesicState) => boolean
