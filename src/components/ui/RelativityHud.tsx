@@ -150,7 +150,7 @@ export function RelativityHud({ compact }: RelativityHudProps) {
         <div className="eyebrow-row">
           <span className="eyebrow">
             <span className="eyebrow-dot" />
-            relativity lab v0.3
+            relativity lab v0.4
           </span>
 
           <div className="mode-pills">
@@ -185,11 +185,13 @@ export function RelativityHud({ compact }: RelativityHudProps) {
           </p>
         )}
 
-        <div className="mode-pills" role="tablist" aria-label="Cenários">
+        <div className="scenario-tabs" role="tablist" aria-label="Cenários">
           {SCENARIO_SUMMARIES.map((summary) => (
             <button
               key={summary.id}
               type="button"
+              role="tab"
+              aria-selected={activeScenarioId === summary.id}
               className={activeScenarioId === summary.id ? "mode-pill primary" : "mode-pill"}
               onClick={() => setActiveScenarioId(summary.id)}
             >

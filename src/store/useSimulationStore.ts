@@ -22,6 +22,8 @@ type SimulationState = {
   setExperimentParams: (partial: Partial<ExperimentParams>) => void
   /** Volta os parâmetros ao preset do cenário ativo. */
   resetExperimentParams: () => void
+  /** Restaura cenário + parâmetros vindos de uma URL compartilhada. */
+  hydrateExperiment: (scenarioId: ScenarioId, params: ExperimentParams) => void
   setRelativitySnapshot: (relativitySnapshot: RelativitySnapshot) => void
   requestRelativityReset: () => void
 }
@@ -50,6 +52,13 @@ export const useSimulationStore = create<SimulationState>((set) => ({
   resetExperimentParams: () =>
     set((state) => ({
       experimentParams: DEFAULT_EXPERIMENT_PARAMS[state.activeScenarioId],
+      relativityResetNonce: state.relativityResetNonce + 1,
+    })),
+  hydrateExperiment: (scenarioId, params) =>
+    set((state) => ({
+      activeScenarioId: scenarioId,
+      experimentParams: params,
+      relativitySnapshot: null,
       relativityResetNonce: state.relativityResetNonce + 1,
     })),
   setRelativitySnapshot: (relativitySnapshot) => set({ relativitySnapshot }),

@@ -1,10 +1,32 @@
+import { useEffect } from "react"
 import "./App.css"
 import { RelativityScene } from "./components/scene/RelativityScene"
 import { RelativityHud } from "./components/ui/RelativityHud"
 import { useCompactMode } from "./hooks/useCompactMode"
+import { readExperimentFromUrl, writeExperimentToUrl } from "./store/urlState"
+import { useSimulationStore } from "./store/useSimulationStore"
+
+// Lido UMA vez na carga do módulo: o efeito de sincronização reescreve a
+// query string, então a URL compartilhada precisa ser capturada antes.
+const sharedExperiment = readExperimentFromUrl()
 
 function App() {
   const compact = useCompactMode()
+  const activeScenarioId = useSimulationStore((state) => state.activeScenarioId)
+  const experimentParams = useSimulationStore((state) => state.experimentParams)
+  const hydrateExperiment = useSimulationStore((state) => state.hydrateExperiment)
+
+  // URL compartilhável: hidrata o experimento na carga...
+  useEffect(() => {
+    if (sharedExperiment) {
+      hydrateExperiment(sharedExperiment.scenarioId, sharedExperiment.params)
+    }
+  }, [hydrateExperiment])
+
+  // ...e mantém a query string sincronizada com o experimento atual.
+  useEffect(() => {
+    writeExperimentToUrl(activeScenarioId, experimentParams)
+  }, [activeScenarioId, experimentParams])
 
   return (
     <main className={compact ? "cosmos-app compact" : "cosmos-app"}>
