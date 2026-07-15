@@ -13,6 +13,8 @@ type SimulationState = {
   activeScenarioId: ScenarioId
   experimentParams: ExperimentParams
   relativitySnapshot: RelativitySnapshot | null
+  /** FPS medido pelo loop de renderização (telemetria de UI). */
+  renderFps: number
   /** Incrementado a cada pedido de reinício do experimento. */
   relativityResetNonce: number
   setPaused: (paused: boolean) => void
@@ -25,6 +27,7 @@ type SimulationState = {
   /** Restaura cenário + parâmetros vindos de uma URL compartilhada. */
   hydrateExperiment: (scenarioId: ScenarioId, params: ExperimentParams) => void
   setRelativitySnapshot: (relativitySnapshot: RelativitySnapshot) => void
+  setRenderFps: (renderFps: number) => void
   requestRelativityReset: () => void
 }
 
@@ -35,6 +38,7 @@ export const useSimulationStore = create<SimulationState>((set) => ({
   activeScenarioId: INITIAL_SCENARIO,
   experimentParams: DEFAULT_EXPERIMENT_PARAMS[INITIAL_SCENARIO],
   relativitySnapshot: null,
+  renderFps: 0,
   relativityResetNonce: 0,
   setPaused: (paused) => set({ paused }),
   togglePaused: () => set((state) => ({ paused: !state.paused })),
@@ -62,6 +66,7 @@ export const useSimulationStore = create<SimulationState>((set) => ({
       relativityResetNonce: state.relativityResetNonce + 1,
     })),
   setRelativitySnapshot: (relativitySnapshot) => set({ relativitySnapshot }),
+  setRenderFps: (renderFps) => set({ renderFps }),
   requestRelativityReset: () =>
     set((state) => ({ relativityResetNonce: state.relativityResetNonce + 1 })),
 }))
