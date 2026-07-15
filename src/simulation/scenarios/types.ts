@@ -44,6 +44,8 @@ export type SimulationScenario = {
   maxSamples: number
   /** Metros por unidade de cena na renderização. */
   renderScaleM: number
+  /** Raio físico do corpo central [m] para desenho (ex.: R☉); opcional. */
+  centralBodyRadiusM?: number
 
   /** Condição de parada física (ex.: aproximação do horizonte). */
   stopCondition?: (state: GeodesicState) => boolean

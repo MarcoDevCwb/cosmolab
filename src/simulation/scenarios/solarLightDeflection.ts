@@ -51,6 +51,7 @@ export function createSolarLightDeflectionScenario(): SimulationScenario {
     sampleIntervalLambdaM: SOLAR_RADIUS_M / 4,
     maxSamples: 600,
     renderScaleM: 5e9,
+    centralBodyRadiusM: SOLAR_RADIUS_M,
 
     // Para após a passagem: r crescente além da janela de partida.
     stopCondition: (state) => state[1] > Math.abs(START_X_M) * 1.05 && state[5] > 0,

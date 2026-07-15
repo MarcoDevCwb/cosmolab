@@ -736,3 +736,20 @@
     display: none;
   }
 }
+
+.lab-switch {
+  position: absolute;
+  left: 50%;
+  bottom: 22px;
+  transform: translateX(-50%);
+  z-index: 20;
+  display: flex;
+  gap: 6px;
+  padding: 8px;
+  pointer-events: auto;
+}
+
+.cosmos-shell.compact .lab-switch {
+  bottom: 12px;
+  padding: 6px;
+}
