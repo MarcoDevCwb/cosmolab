@@ -1,5 +1,6 @@
 import { Canvas, useFrame } from "@react-three/fiber"
 import { Line, OrbitControls, Stars } from "@react-three/drei"
+import { Bloom, EffectComposer } from "@react-three/postprocessing"
 import { useEffect, useMemo, useRef } from "react"
 import { BufferGeometry, Float32BufferAttribute } from "three"
 import { GeodesicSimulationRunner } from "../../simulation/simulationRunner"
@@ -29,15 +30,25 @@ const SURFACE_RIM_UNITS = 11
 const SURFACE_RINGS = 44
 const SURFACE_SPOKES = 72
 
+/** Cor base da malha longe da massa (azul profundo). */
+const SURFACE_BASE_RGB = [0.08, 0.23, 0.72] as const
+/** Cor da malha onde a dilatação temporal é extrema (violeta quente). */
+const SURFACE_HOT_RGB = [0.86, 0.5, 1.0] as const
+
 /**
  * Malha de arame do paraboloide de Flamm: anéis (r constante) + raios
  * (φ constante), com amostragem radial quadrática (mais densa perto do
  * horizonte, onde a curvatura se concentra).
+ *
+ * A COR de cada vértice codifica a dilatação temporal gravitacional
+ * 1 − √f(r) (f = 1 − r_s/r): azul onde relógios correm normais, violeta
+ * brilhante onde o tempo quase congela — um mapa de calor físico, não
+ * decorativo.
  */
 function buildFlammWireframe(schwarzschildRadiusM: number, renderScaleM: number): BufferGeometry {
   const rimRadiusM = SURFACE_RIM_UNITS * renderScaleM
   const rimHeightM = flammEmbeddingHeight(schwarzschildRadiusM, rimRadiusM)
-  const innerRadiusM = Math.max(schwarzschildRadiusM, rimRadiusM * 1e-4)
+  const innerRadiusM = Math.max(schwarzschildRadiusM * 1.0005, rimRadiusM * 1e-4)
 
   const radiusAt = (ringIndex: number) => {
     const t = ringIndex / SURFACE_RINGS
@@ -46,21 +57,34 @@ function buildFlammWireframe(schwarzschildRadiusM: number, renderScaleM: number)
   const heightAt = (radiusM: number) =>
     (flammEmbeddingHeight(schwarzschildRadiusM, radiusM) - rimHeightM) / renderScaleM
 
+  // Dilatação temporal 1 − √f, realçada para leitura visual (γ 0,55).
+  const dilationAt = (radiusM: number) => {
+    if (schwarzschildRadiusM <= 0) {
+      return 0
+    }
+    const lapse = Math.max(1 - schwarzschildRadiusM / radiusM, 0)
+    return Math.min((1 - Math.sqrt(lapse)) ** 0.55 * 1.15, 1)
+  }
+
   const positions: number[] = []
-  const pushSegment = (
-    r1: number,
-    phi1: number,
-    r2: number,
-    phi2: number,
-  ) => {
+  const colors: number[] = []
+  const pushVertex = (radiusM: number, phi: number) => {
     positions.push(
-      (r1 / renderScaleM) * Math.cos(phi1),
-      heightAt(r1),
-      (r1 / renderScaleM) * Math.sin(phi1),
-      (r2 / renderScaleM) * Math.cos(phi2),
-      heightAt(r2),
-      (r2 / renderScaleM) * Math.sin(phi2),
+      (radiusM / renderScaleM) * Math.cos(phi),
+      heightAt(radiusM),
+      (radiusM / renderScaleM) * Math.sin(phi),
     )
+    const mix = dilationAt(radiusM)
+    const glow = 1 + mix * 1.6
+    colors.push(
+      (SURFACE_BASE_RGB[0] + (SURFACE_HOT_RGB[0] - SURFACE_BASE_RGB[0]) * mix) * glow,
+      (SURFACE_BASE_RGB[1] + (SURFACE_HOT_RGB[1] - SURFACE_BASE_RGB[1]) * mix) * glow,
+      (SURFACE_BASE_RGB[2] + (SURFACE_HOT_RGB[2] - SURFACE_BASE_RGB[2]) * mix) * glow,
+    )
+  }
+  const pushSegment = (r1: number, phi1: number, r2: number, phi2: number) => {
+    pushVertex(r1, phi1)
+    pushVertex(r2, phi2)
   }
 
   for (let ring = 0; ring <= SURFACE_RINGS; ring += 1) {
@@ -81,6 +105,7 @@ function buildFlammWireframe(schwarzschildRadiusM: number, renderScaleM: number)
 
   const geometry = new BufferGeometry()
   geometry.setAttribute("position", new Float32BufferAttribute(positions, 3))
+  geometry.setAttribute("color", new Float32BufferAttribute(colors, 3))
   return geometry
 }
 
@@ -132,16 +157,32 @@ function RelativityRig({ compact }: RelativitySceneProps) {
     [scenario, scale, rsM],
   )
 
-  const trajectoryPoints = useMemo(() => {
+  const trajectory = useMemo(() => {
     if (!snapshot || snapshot.samples.length < 2) {
       return null
     }
 
-    return snapshot.samples.map((sample) => {
+    const count = snapshot.samples.length
+    const head: readonly [number, number, number] =
+      scenario.kind === "null" ? [0.55, 0.95, 1.35] : [1.25, 0.75, 1.35]
+    const tail: readonly [number, number, number] = [0.05, 0.09, 0.2]
+
+    const points: [number, number, number][] = []
+    const colors: [number, number, number][] = []
+    snapshot.samples.forEach((sample, index) => {
       const mapped = mapToSurface(sample.position)
-      return [mapped.x, mapped.y, mapped.z] as const
+      points.push([mapped.x, mapped.y, mapped.z])
+      // Cauda esmaece para o fundo; cabeça brilha (realçada pelo bloom).
+      const t = (index / Math.max(count - 1, 1)) ** 1.6
+      colors.push([
+        tail[0] + (head[0] - tail[0]) * t,
+        tail[1] + (head[1] - tail[1]) * t,
+        tail[2] + (head[2] - tail[2]) * t,
+      ])
     })
-  }, [snapshot, mapToSurface])
+
+    return { points, colors }
+  }, [snapshot, mapToSurface, scenario])
 
   const currentPosition = snapshot ? mapToSurface(snapshot.position) : null
 
@@ -171,9 +212,10 @@ function RelativityRig({ compact }: RelativitySceneProps) {
       <ambientLight intensity={0.35} />
       <pointLight position={[14, 18, 10]} intensity={120} decay={2} color="#dbeafe" />
 
-      {/* Geometria espacial real: paraboloide de Flamm (plano se r_s = 0). */}
+      {/* Geometria espacial real: paraboloide de Flamm (plano se r_s = 0),
+          colorido pela dilatação temporal gravitacional 1 − √f(r). */}
       <lineSegments geometry={surfaceGeometry}>
-        <lineBasicMaterial color="#1d4ed8" transparent opacity={0.34} />
+        <lineBasicMaterial vertexColors transparent opacity={0.5} toneMapped={false} />
       </lineSegments>
 
       {/* Horizonte de eventos r = r_s no fundo do funil. */}
@@ -186,26 +228,28 @@ function RelativityRig({ compact }: RelativitySceneProps) {
 
       {/* Esfera de fótons r = 1,5 r_s: última órbita circular da luz. */}
       {photonSpherePoints && horizonRadiusUnits !== null && horizonRadiusUnits > 0.02 && (
-        <Line points={photonSpherePoints} color="#fb923c" lineWidth={1.4} transparent opacity={0.6} />
+        <Line points={photonSpherePoints} color="#fdba74" lineWidth={1.8} transparent opacity={0.8} />
       )}
 
-      {/* Trajetória integrada, desenhada sobre a superfície de imersão. */}
-      {trajectoryPoints && (
+      {/* Trajetória integrada sobre a superfície: cauda esmaece, cabeça brilha. */}
+      {trajectory && (
         <Line
-          points={trajectoryPoints}
-          color={scenario.kind === "null" ? "#7dd3fc" : "#f0abfc"}
-          lineWidth={compact ? 1.6 : 2.2}
+          points={trajectory.points}
+          vertexColors={trajectory.colors}
+          color="#ffffff"
+          lineWidth={compact ? 1.8 : 2.4}
           transparent
-          opacity={0.95}
+          opacity={0.98}
+          toneMapped={false}
         />
       )}
 
-      {/* Posição atual da partícula/fóton. */}
+      {/* Posição atual da partícula/fóton (o brilho vem do bloom). */}
       {currentPosition && (
         <mesh position={[currentPosition.x, currentPosition.y, currentPosition.z]}>
-          <sphereGeometry args={[compact ? 0.16 : 0.12, 24, 24]} />
+          <sphereGeometry args={[compact ? 0.15 : 0.11, 24, 24]} />
           <meshBasicMaterial
-            color={scenario.kind === "null" ? "#e0f2fe" : "#fdf4ff"}
+            color={scenario.kind === "null" ? "#bfe9ff" : "#fce7ff"}
             toneMapped={false}
           />
         </mesh>
@@ -230,6 +274,12 @@ function RelativityRig({ compact }: RelativitySceneProps) {
         minDistance={1.5}
         maxDistance={140}
       />
+
+      {/* Pós-processamento: bloom suave dá o brilho "premium" a fóton,
+          trilha, esfera de fótons e à garganta violeta do funil. */}
+      <EffectComposer>
+        <Bloom mipmapBlur intensity={0.85} luminanceThreshold={0.32} luminanceSmoothing={0.55} />
+      </EffectComposer>
     </>
   )
 }
