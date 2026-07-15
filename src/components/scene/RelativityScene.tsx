@@ -131,6 +131,10 @@ function RelativityRig({ compact }: RelativitySceneProps) {
   const scenario = runner.scenario
   const scale = scenario.renderScaleM
   const rsM = scenario.schwarzschildRadiusM ?? 0
+  // A imersão de Flamm vale para Schwarzschild; em cartas onde não se aplica
+  // (ex.: Kerr) a superfície honesta é o plano.
+  const flammRsM = scenario.surface === "flat" ? 0 : rsM
+  const horizonM = scenario.horizonRadiusM ?? rsM
 
   useFrame((_, delta) => {
     if (!paused) {
@@ -147,17 +151,17 @@ function RelativityRig({ compact }: RelativitySceneProps) {
   const snapshot = relativitySnapshot?.scenarioId === scenario.id ? relativitySnapshot : null
 
   // Superfície de Flamm e mapeador de trajetória compartilham a mesma borda.
-  const surfaceGeometry = useMemo(() => buildFlammWireframe(rsM, scale), [rsM, scale])
+  const surfaceGeometry = useMemo(() => buildFlammWireframe(flammRsM, scale), [flammRsM, scale])
   useEffect(() => () => surfaceGeometry.dispose(), [surfaceGeometry])
   const mapToSurface = useMemo(
     () =>
       createEmbeddedSurfaceMapper(
         scenario.metric.chart,
         scale,
-        rsM,
+        flammRsM,
         SURFACE_RIM_UNITS * scale,
       ),
-    [scenario, scale, rsM],
+    [scenario, scale, flammRsM],
   )
 
   const trajectory = useMemo(() => {
@@ -189,14 +193,17 @@ function RelativityRig({ compact }: RelativitySceneProps) {
 
   const currentPosition = snapshot ? mapToSurface(snapshot.position) : null
 
-  const horizonRadiusUnits = rsM > 0 ? rsM / scale : null
+  const horizonRadiusUnits = horizonM > 0 ? horizonM / scale : null
   const funnelDepthUnits =
-    (0 - flammEmbeddingHeight(rsM, SURFACE_RIM_UNITS * scale)) / scale
+    (0 - flammEmbeddingHeight(flammRsM, SURFACE_RIM_UNITS * scale)) / scale
+  const ergosphereRadiusUnits = scenario.ergosphereEquatorRadiusM
+    ? scenario.ergosphereEquatorRadiusM / scale
+    : null
 
   // Anéis causais sobre a superfície: esfera de fótons (1,5 r_s) e ISCO (3 r_s).
   const buildSurfaceRing = (radiusM: number) => {
-    const rimHeightM = flammEmbeddingHeight(rsM, SURFACE_RIM_UNITS * scale)
-    const y = (flammEmbeddingHeight(rsM, radiusM) - rimHeightM) / scale
+    const rimHeightM = flammEmbeddingHeight(flammRsM, SURFACE_RIM_UNITS * scale)
+    const y = (flammEmbeddingHeight(flammRsM, radiusM) - rimHeightM) / scale
     const radiusUnits = radiusM / scale
     return Array.from({ length: 97 }, (_, i) => {
       const phi = (i / 96) * Math.PI * 2
@@ -205,14 +212,17 @@ function RelativityRig({ compact }: RelativitySceneProps) {
   }
 
   const photonSpherePoints = useMemo(
-    () => (rsM > 0 ? buildSurfaceRing(rsM * PHOTON_SPHERE_RADIUS_RS) : null),
+    () => (flammRsM > 0 ? buildSurfaceRing(flammRsM * PHOTON_SPHERE_RADIUS_RS) : null),
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [rsM, scale],
+    [flammRsM, scale],
   )
   const iscoPoints = useMemo(
-    () => (rsM > 0 && scenario.kind === "timelike" ? buildSurfaceRing(rsM * ISCO_RADIUS_RS) : null),
+    () =>
+      flammRsM > 0 && scenario.kind === "timelike"
+        ? buildSurfaceRing(flammRsM * ISCO_RADIUS_RS)
+        : null,
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [rsM, scale, scenario.kind],
+    [flammRsM, scale, scenario.kind],
   )
 
   // Contraste newtoniano (elipse fechada) mapeado na mesma superfície.
@@ -226,7 +236,7 @@ function RelativityRig({ compact }: RelativitySceneProps) {
     })
   }, [scenario, mapToSurface])
 
-  const ringsVisible = rsM > 0 && rsM / scale > 0.02
+  const ringsVisible = flammRsM > 0 && flammRsM / scale > 0.02
 
   return (
     <>
@@ -240,12 +250,39 @@ function RelativityRig({ compact }: RelativitySceneProps) {
         <lineBasicMaterial vertexColors transparent opacity={0.5} toneMapped={false} />
       </lineSegments>
 
-      {/* Horizonte de eventos r = r_s no fundo do funil. */}
+      {/* Horizonte de eventos (r_s em Schwarzschild, r₊ em Kerr). */}
       {horizonRadiusUnits !== null && (
         <mesh position={[0, funnelDepthUnits, 0]}>
           <sphereGeometry args={[Math.max(horizonRadiusUnits, 0.04), 48, 48]} />
           <meshBasicMaterial color="#000000" />
         </mesh>
+      )}
+
+      {/* Ergosfera de Kerr (equador): entre r₊ e r_E ninguém fica parado. */}
+      {ergosphereRadiusUnits !== null && horizonRadiusUnits !== null && (
+        <>
+          <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.005, 0]}>
+            <ringGeometry args={[horizonRadiusUnits, ergosphereRadiusUnits, 96]} />
+            <meshBasicMaterial color="#fbbf24" transparent opacity={0.13} side={2} />
+          </mesh>
+          <Line
+            points={Array.from({ length: 97 }, (_, i) => {
+              const phi = (i / 96) * Math.PI * 2
+              return [
+                ergosphereRadiusUnits * Math.cos(phi),
+                0.006,
+                ergosphereRadiusUnits * Math.sin(phi),
+              ] as const
+            })}
+            color="#fbbf24"
+            lineWidth={1.6}
+            transparent
+            opacity={0.75}
+            dashed
+            dashSize={0.2}
+            gapSize={0.12}
+          />
+        </>
       )}
 
       {/* Esfera de fótons r = 1,5 r_s: última órbita circular da luz. */}
@@ -342,28 +379,36 @@ function SceneLegend() {
   const scenario = createScenario(activeScenarioId, experimentParams)
 
   const rsM = scenario.schwarzschildRadiusM ?? 0
-  const ringsVisible = rsM > 0 && rsM / scenario.renderScaleM > 0.02
+  const isKerr = scenario.ergosphereEquatorRadiusM !== undefined
+  const flammVisible =
+    scenario.surface !== "flat" && rsM > 0 && rsM / scenario.renderScaleM > 0.02
   const isPhoton = scenario.kind === "null"
 
-  if (!ringsVisible && !scenario.comparisonPath) {
+  if (!flammVisible && !isKerr && !scenario.comparisonPath) {
     return null
   }
 
   return (
     <div className="scene-legend" aria-hidden>
-      {ringsVisible && (
+      {(flammVisible || isKerr) && (
         <span>
           <i className="legend-dot" style={{ background: "#0b0b0f", boxShadow: "0 0 0 1.5px #7c3aed" }} />
-          horizonte r_s
+          {isKerr ? "horizonte r₊" : "horizonte r_s"}
         </span>
       )}
-      {ringsVisible && (
+      {isKerr && (
+        <span>
+          <i className="legend-dot" style={{ background: "#fbbf24" }} />
+          ergosfera (equador)
+        </span>
+      )}
+      {flammVisible && (
         <span>
           <i className="legend-dot" style={{ background: "#fdba74" }} />
           esfera de fótons 1,5 r_s
         </span>
       )}
-      {ringsVisible && !isPhoton && (
+      {flammVisible && !isPhoton && (
         <span>
           <i className="legend-dot" style={{ background: "#22d3ee" }} />
           ISCO 3 r_s

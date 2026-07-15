@@ -9,6 +9,7 @@
  */
 
 import { createFlatSpacePhotonScenario } from "./flatSpacePhoton"
+import { createKerrFrameDraggingScenario } from "./kerrFrameDragging"
 import { createRelativisticOrbitScenario } from "./relativisticOrbit"
 import { createSchwarzschildHorizonScenario } from "./schwarzschildHorizon"
 import {
@@ -27,6 +28,7 @@ export const DEFAULT_EXPERIMENT_PARAMS: Record<ScenarioId, ExperimentParams> = {
     impactParameterRs: 0,
     startRadiusRs: 0,
     angularVelocityFraction: 0,
+    spinFraction: 0,
   },
   // Eddington 1919: Sol (1 M☉) com fóton tangenciando o limbo (b = R☉).
   "solar-light-deflection": {
@@ -34,18 +36,28 @@ export const DEFAULT_EXPERIMENT_PARAMS: Record<ScenarioId, ExperimentParams> = {
     impactParameterRs: SOLAR_IMPACT_PARAMETER_RS,
     startRadiusRs: 0,
     angularVelocityFraction: 0,
+    spinFraction: 0,
   },
   "relativistic-orbit": {
     massSolar: 10,
     impactParameterRs: 0,
     startRadiusRs: 8,
     angularVelocityFraction: 0.95,
+    spinFraction: 0,
   },
   "schwarzschild-horizon": {
     massSolar: 10,
     impactParameterRs: 0,
     startRadiusRs: 6,
     angularVelocityFraction: 0,
+    spinFraction: 0,
+  },
+  "kerr-frame-dragging": {
+    massSolar: 10,
+    impactParameterRs: 0,
+    startRadiusRs: 6,
+    angularVelocityFraction: 0,
+    spinFraction: 0.9,
   },
 }
 
@@ -57,6 +69,7 @@ const SCENARIO_FACTORIES: Record<
   "solar-light-deflection": createLightDeflectionScenario,
   "relativistic-orbit": createRelativisticOrbitScenario,
   "schwarzschild-horizon": createSchwarzschildHorizonScenario,
+  "kerr-frame-dragging": createKerrFrameDraggingScenario,
 }
 
 export const SCENARIO_IDS = Object.keys(SCENARIO_FACTORIES) as ScenarioId[]
@@ -67,8 +80,9 @@ export function createScenario(id: ScenarioId, params?: ExperimentParams): Simul
 
 /** Metadados leves para menus de UI (sem instanciar estados iniciais). */
 export const SCENARIO_SUMMARIES: { id: ScenarioId; label: string }[] = [
-  { id: "flat-space-photon", label: "Espaço plano — fóton" },
+  { id: "flat-space-photon", label: "Espaço plano" },
   { id: "solar-light-deflection", label: "Deflexão da luz" },
   { id: "relativistic-orbit", label: "Órbita relativística" },
-  { id: "schwarzschild-horizon", label: "Horizonte de Schwarzschild" },
+  { id: "schwarzschild-horizon", label: "Horizonte" },
+  { id: "kerr-frame-dragging", label: "Kerr — arrasto" },
 ]

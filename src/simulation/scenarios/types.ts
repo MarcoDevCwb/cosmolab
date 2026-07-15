@@ -16,6 +16,7 @@ export type ScenarioId =
   | "solar-light-deflection"
   | "relativistic-orbit"
   | "schwarzschild-horizon"
+  | "kerr-frame-dragging"
 
 /**
  * Parâmetros ajustáveis do experimento (a "bancada" do laboratório).
@@ -36,6 +37,8 @@ export type ExperimentParams = {
   startRadiusRs: number
   /** Velocidade angular inicial como fração da órbita circular (1 = circular). */
   angularVelocityFraction: number
+  /** Spin de Kerr χ = a/M_geo ∈ [0, 1) (0 = Schwarzschild). */
+  spinFraction: number
 }
 
 export type SimulationScenario = {
@@ -66,6 +69,15 @@ export type SimulationScenario = {
   maxSamples: number
   /** Metros por unidade de cena na renderização. */
   renderScaleM: number
+  /**
+   * Superfície de imersão da cena: "flamm" (Schwarzschild, padrão) ou
+   * "flat" quando a imersão de Flamm não se aplica (ex.: Kerr).
+   */
+  surface?: "flamm" | "flat"
+  /** Raio do horizonte [m] quando difere de r_s (ex.: r₊ de Kerr). */
+  horizonRadiusM?: number
+  /** Raio equatorial da ergosfera [m] (apenas Kerr). */
+  ergosphereEquatorRadiusM?: number
 
   /** Condição de parada física (ex.: aproximação do horizonte). */
   stopCondition?: (state: GeodesicState) => boolean

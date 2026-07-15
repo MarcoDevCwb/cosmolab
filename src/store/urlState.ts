@@ -16,6 +16,7 @@ const PARAM_KEYS: Record<keyof ExperimentParams, string> = {
   impactParameterRs: "b",
   startRadiusRs: "r0",
   angularVelocityFraction: "w",
+  spinFraction: "a",
 }
 
 export function readExperimentFromUrl(): {

@@ -126,6 +126,7 @@ describe("cenário 3 — órbitas em Schwarzschild", () => {
       impactParameterRs: 0,
       startRadiusRs: 60,
       angularVelocityFraction: 0.98,
+      spinFraction: 0,
     })
     const runner = new GeodesicSimulationRunner(scenario)
     const lambdaPerOrbit = scenario.stepLambdaM * 4000

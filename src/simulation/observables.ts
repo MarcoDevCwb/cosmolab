@@ -16,7 +16,7 @@ import type { GeodesicState } from "../physics/relativity/geodesic"
 import type { SpacetimeMetric } from "../physics/relativity/metric"
 import { specificAngularMomentum } from "../physics/relativity/validation"
 
-export type ObservableUnit = "arcsec" | "deg-per-orbit" | "ratio" | "count" | "rs" | "m"
+export type ObservableUnit = "arcsec" | "deg" | "deg-per-orbit" | "ratio" | "count" | "rs" | "m"
 
 export type ScenarioObservable = {
   id: string
@@ -171,6 +171,35 @@ export function createInfallTracker(schwarzschildRadiusM: number): ObservableTra
           label: "Distância ao horizonte",
           value: (state[1] - schwarzschildRadiusM) / schwarzschildRadiusM,
           unit: "rs",
+        },
+      ]
+    },
+  }
+}
+
+/**
+ * Arrasto de referenciais (Lense–Thirring) em Kerr: a partícula parte do
+ * repouso com momento angular NULO e mesmo assim gira — φ acumulado mede o
+ * arrasto do próprio espaço-tempo. L = g_φμu^μ permanece zero (Killing ∂_φ),
+ * o que a validação numérica exibe como prova de consistência.
+ */
+export function createFrameDraggingTracker(): ObservableTracker {
+  return {
+    update() {},
+    read(state) {
+      return [
+        {
+          id: "frame-dragging",
+          label: "Arrasto acumulado (L = 0)",
+          value: state[3] * RAD_TO_DEG,
+          unit: "deg",
+          hero: true,
+        },
+        {
+          id: "dragging-turns",
+          label: "Voltas arrastadas",
+          value: state[3] / (2 * Math.PI),
+          unit: "count",
         },
       ]
     },
