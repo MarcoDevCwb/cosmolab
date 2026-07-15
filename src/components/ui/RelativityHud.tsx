@@ -106,6 +106,33 @@ const SLIDERS_BY_SCENARIO: Record<ScenarioId, SliderSpec[]> = {
       format: formatRs,
     },
   ],
+  "kerr-frame-dragging": [
+    {
+      key: "massSolar",
+      label: "Massa central",
+      min: 0,
+      max: 9,
+      step: 0.05,
+      log: true,
+      format: formatSolarMasses,
+    },
+    {
+      key: "startRadiusRs",
+      label: "Raio de partida r₀",
+      min: 1.5,
+      max: 30,
+      step: 0.1,
+      format: formatRs,
+    },
+    {
+      key: "spinFraction",
+      label: "Spin a/M",
+      min: 0,
+      max: 0.998,
+      step: 0.002,
+      format: (v) => v.toFixed(3),
+    },
+  ],
 }
 
 /** Avisos físicos por regime de parâmetros (limiares vêm de physics/). */
@@ -147,43 +174,48 @@ export function RelativityHud({ compact }: RelativityHudProps) {
   return (
     <div className={compact ? "hud-layer compact" : "hud-layer"}>
       <section className="hud-header glass-panel">
-        <div className="eyebrow-row">
+        <div className="brand-row">
           <span className="eyebrow">
             <span className="eyebrow-dot" />
-            relativity lab v0.4
+            relativity lab
           </span>
-
-          <div className="mode-pills">
-            <button type="button" className="mode-pill" onClick={togglePaused}>
-              {paused ? "retomar" : "pausar"}
-            </button>
-            <button type="button" className="mode-pill" onClick={requestRelativityReset}>
-              reiniciar
-            </button>
-            {sliders.length > 0 && (
-              <button type="button" className="mode-pill" onClick={resetExperimentParams}>
-                preset
-              </button>
-            )}
-          </div>
+          <span className="brand-version">v0.5</span>
         </div>
 
-        <h1 className="hud-title">CosmoLab</h1>
+        <h1 className="hud-title hud-title-gradient">CosmoLab</h1>
 
-        <div className="context-chips">
-          <span className="context-chip">{scenario.metric.name.replace(/\s*\(\d+\)/, "")}</span>
-          <span className="context-chip">
-            {scenario.kind === "null" ? "geodésica nula · fóton" : "geodésica timelike · massiva"}
-          </span>
+        <div className="context-line">
+          <span className="context-strong">{scenario.metric.name.replace(/\s*\(\d+\)/, "")}</span>
+          <i className="context-sep" />
+          <span>{scenario.kind === "null" ? "geodésica nula · fóton" : "geodésica timelike · massiva"}</span>
         </div>
 
         {!compact && (
           <p className="hud-copy">
-            Ajuste os parâmetros — o motor integra a equação da geodésica (RK4) na métrica exata e
-            a malha mostra a geometria espacial real (paraboloide de Flamm), colorida pela
-            dilatação temporal.
+            O motor científico integra a equação da geodésica na métrica exata — o Three.js apenas
+            desenha o resultado.
           </p>
         )}
+
+        <div className="lab-toolbar" role="group" aria-label="Controles da simulação">
+          <button type="button" className="toolbar-btn" onClick={togglePaused}>
+            <span aria-hidden>{paused ? "▶" : "❚❚"}</span>
+            {paused ? "retomar" : "pausar"}
+          </button>
+          <button type="button" className="toolbar-btn" onClick={requestRelativityReset}>
+            <span aria-hidden>↺</span>
+            reiniciar
+          </button>
+          <button
+            type="button"
+            className="toolbar-btn"
+            onClick={resetExperimentParams}
+            disabled={sliders.length === 0}
+          >
+            <span aria-hidden>✦</span>
+            preset
+          </button>
+        </div>
 
         <div className="scenario-tabs" role="tablist" aria-label="Cenários">
           {SCENARIO_SUMMARIES.map((summary) => (

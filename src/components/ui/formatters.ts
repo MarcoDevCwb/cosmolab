@@ -76,6 +76,8 @@ export function formatObservable(value: number, unit: ObservableUnit): string {
   switch (unit) {
     case "arcsec":
       return formatArcseconds(value)
+    case "deg":
+      return `${value.toFixed(value >= 100 ? 1 : 2)}°`
     case "deg-per-orbit":
       return `${value.toFixed(1)}°/volta`
     case "ratio":
