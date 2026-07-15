@@ -29,6 +29,27 @@ export type TrajectorySamplePoint = {
   position: Vector4
 }
 
+/** Ponto de histórico para os gráficos científicos (mesma cadência das amostras). */
+export type HistoryPoint = {
+  lambdaM: number
+  /** Raio areal r [m] (ou distância à origem na carta cartesiana). */
+  radiusM: number
+  /** |g_{μν}u^μu^ν − ε| no instante da amostra. */
+  normError: number
+  /** Deriva relativa de E desde λ = 0. */
+  energyDriftRelative: number
+  coordinateTimeS: number
+  properTimeS: number | null
+}
+
+/** Telemetria do integrador exposta na UI (método, passo, custo). */
+export type IntegratorStats = {
+  method: string
+  stepLambdaM: number
+  stepsTaken: number
+  cpuMs: number
+}
+
 export type RelativitySnapshot = {
   scenarioId: ScenarioId
   metricName: string
@@ -53,6 +74,9 @@ export type RelativitySnapshot = {
   samples: TrajectorySamplePoint[]
   /** Observáveis físicos do cenário (números-herói). */
   observables: ScenarioObservable[]
+  /** Séries temporais para os gráficos (janela deslizante). */
+  history: HistoryPoint[]
+  integrator: IntegratorStats
 }
 
 function relativeDrift(current: number, initial: number): number {
@@ -67,6 +91,9 @@ export class GeodesicSimulationRunner {
   private lambdaM = 0
   private lastSampleLambdaM = 0
   private samples: TrajectorySamplePoint[] = []
+  private history: HistoryPoint[] = []
+  private stepsTaken = 0
+  private cpuMs = 0
   private derivatives: (state: readonly number[]) => GeodesicState
   private initialValidation: ValidationReport
   private observables: ObservableTracker | null
@@ -92,6 +119,7 @@ export class GeodesicSimulationRunner {
       return
     }
 
+    const cpuStart = performance.now()
     const step = this.scenario.stepLambdaM
     let remaining = deltaLambdaM
 
@@ -107,6 +135,7 @@ export class GeodesicSimulationRunner {
       this.state = next
       this.lambdaM += h
       remaining -= h
+      this.stepsTaken += 1
       this.observables?.update(this.state)
 
       if (this.lambdaM - this.lastSampleLambdaM >= this.scenario.sampleIntervalLambdaM) {
@@ -117,6 +146,8 @@ export class GeodesicSimulationRunner {
         this.halted = true
       }
     }
+
+    this.cpuMs += performance.now() - cpuStart
   }
 
   reset(): void {
@@ -124,6 +155,9 @@ export class GeodesicSimulationRunner {
     this.lambdaM = 0
     this.lastSampleLambdaM = 0
     this.samples = []
+    this.history = []
+    this.stepsTaken = 0
+    this.cpuMs = 0
     this.halted = false
     this.observables = this.scenario.createObservables?.() ?? null
     this.recordSample()
@@ -163,15 +197,39 @@ export class GeodesicSimulationRunner {
       halted: this.halted,
       samples: [...this.samples],
       observables: this.observables?.read(this.state) ?? [],
+      history: [...this.history],
+      integrator: {
+        method: "RK4 (passo fixo)",
+        stepLambdaM: scenario.stepLambdaM,
+        stepsTaken: this.stepsTaken,
+        cpuMs: this.cpuMs,
+      },
     }
   }
 
   private recordSample(): void {
-    this.samples.push({ lambdaM: this.lambdaM, position: positionOf(this.state) })
+    const position = positionOf(this.state)
+    this.samples.push({ lambdaM: this.lambdaM, position })
     this.lastSampleLambdaM = this.lambdaM
+
+    const validation = buildValidationReport(this.scenario.metric, this.state, this.scenario.kind)
+    this.history.push({
+      lambdaM: this.lambdaM,
+      radiusM:
+        this.scenario.metric.chart === "spherical"
+          ? position[1]
+          : Math.hypot(position[1], position[2], position[3]),
+      normError: validation.normError,
+      energyDriftRelative: relativeDrift(validation.energy, this.initialValidation.energy),
+      coordinateTimeS: position[0] / SPEED_OF_LIGHT,
+      properTimeS: this.scenario.kind === "timelike" ? this.lambdaM / SPEED_OF_LIGHT : null,
+    })
 
     if (this.samples.length > this.scenario.maxSamples) {
       this.samples.splice(0, this.samples.length - this.scenario.maxSamples)
+    }
+    if (this.history.length > this.scenario.maxSamples) {
+      this.history.splice(0, this.history.length - this.scenario.maxSamples)
     }
   }
 }

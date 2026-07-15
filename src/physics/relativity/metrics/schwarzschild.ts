@@ -42,6 +42,19 @@ export const PHOTON_SPHERE_RADIUS_RS = 1.5
 export const ISCO_RADIUS_RS = 3
 export const PHOTON_CRITICAL_IMPACT_RS = (3 * Math.sqrt(3)) / 2
 
+/**
+ * Fator de lapso f(r) = 1 − r_s/r da métrica de Schwarzschild.
+ * √f é a taxa do relógio de um observador ESTÁTICO em r relativa ao
+ * infinito (dilatação temporal gravitacional pura). Exportado para que a
+ * renderização colora superfícies por dilatação SEM reimplementar física.
+ */
+export function schwarzschildLapse(schwarzschildRadiusM: number, radiusM: number): number {
+  if (schwarzschildRadiusM <= 0) {
+    return 1
+  }
+  return Math.max(1 - schwarzschildRadiusM / radiusM, 0)
+}
+
 export type SchwarzschildMetric = SpacetimeMetric & {
   /** Massa central M [kg]. */
   readonly massKg: number
