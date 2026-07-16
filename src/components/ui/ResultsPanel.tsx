@@ -1,9 +1,11 @@
-import { useState } from "react"
+import { useMemo, useState } from "react"
 import { SOLAR_MASS_KG } from "../../physics/constants"
 import { createScenario } from "../../simulation/scenarios"
 import type { SimulationScenario } from "../../simulation/scenarios"
 import type { RelativitySnapshot } from "../../simulation/simulationRunner"
 import { getCustomMetricDefinition } from "../../simulation/scenarios/customGeodesic"
+import { generateMetricPassport } from "../../simulation/metricPassport"
+import type { MetricPassport } from "../../simulation/metricPassport"
 import {
   buildExperimentCsv,
   buildExperimentJson,
@@ -21,7 +23,7 @@ import { formatMeters, formatObservable, formatSeconds, formatSolarMasses } from
  * Somente exibição — todo valor vem do snapshot do runner.
  */
 
-type ResultsTab = "resultados" | "validacao" | "equacoes"
+type ResultsTab = "resultados" | "validacao" | "equacoes" | "passaporte"
 
 /** Elementos de linha exibidos na aba EQUAÇÕES (texto, por métrica). */
 const LINE_ELEMENTS: Record<string, string> = {
@@ -216,6 +218,28 @@ function ValidationTabContent({
         </div>
         <div
           className="telemetry-card"
+          title="Densidade de energia local T(û,û) que as equações de campo exigem para sustentar esta métrica, medida pelo observador estático/ZAMO [J/m³]. ≈ 0 em vácuo (Schwarzschild, Kerr); NEGATIVA em wormholes."
+        >
+          <span>Densidade de energia ρ</span>
+          <strong>
+            {snapshot?.matter ? `${snapshot.matter.energyDensityJm3.toExponential(2)} J/m³` : "—"}
+          </strong>
+        </div>
+        <div
+          className="telemetry-card"
+          title="Condição Nula de Energia (Hawking & Ellis §4.3): T(k,k) ≥ 0 para todo vetor nulo k. VIOLADA ⇒ matéria exótica (wormholes atravessáveis, warp drives)."
+        >
+          <span>Condição de energia (NEC)</span>
+          <strong>
+            {snapshot?.matter
+              ? snapshot.matter.nullEnergyConditionOk
+                ? "satisfeita ✓"
+                : "VIOLADA — matéria exótica"
+              : "—"}
+          </strong>
+        </div>
+        <div
+          className="telemetry-card"
           title="Escalar de Ricci R [1/m²] na posição atual (numérico). Zero em soluções de vácuo/eletrovácuo — desvios medem erro numérico ou matéria na métrica personalizada."
         >
           <span>Escalar de Ricci R</span>
@@ -360,6 +384,86 @@ function EquationsTabContent({ scenario }: { scenario: SimulationScenario }) {
   )
 }
 
+
+const PASSPORT_ICONS: Record<string, string> = {
+  horizon: "⚫",
+  "static-limit": "🌀",
+  "ctc-region": "⏳",
+  "exotic-matter": "⚠️",
+  "curvature-singularity": "💥",
+  "asymptotically-flat": "✅",
+}
+
+/**
+ * PASSAPORTE DA MÉTRICA: dossiê automático da geometria ativa — horizontes,
+ * limite estático, regiões de CTC, matéria exótica, indício de singularidade
+ * e planicidade assintótica, com as condições matemáticas de cada achado.
+ * O scan (simulation/metricPassport.ts) roda sob demanda.
+ */
+function PassportTabContent({ scenario }: { scenario: SimulationScenario }) {
+  const [passport, setPassport] = useState<MetricPassport | null>(null)
+
+  // Escala característica e alcance do scan, por geometria.
+  const range = useMemo(() => {
+    const characteristic =
+      scenario.schwarzschildRadiusM ?? scenario.ctcRadiusM ?? scenario.renderScaleM * 4.7
+    const boundMin = scenario.metric.coordinateBounds()[1].min
+    const rMin = Math.max(boundMin > 0 ? boundMin * 1.03 : characteristic * 0.05, 1e-3)
+    const rMax = scenario.ctcRadiusM ? characteristic * 6 : characteristic * 200
+    return { rMin, rMax, characteristic }
+  }, [scenario])
+
+  const scan = () => {
+    setPassport(generateMetricPassport(scenario.metric, range.rMin, range.rMax))
+  }
+
+  const formatRadius = (radiusM: number) => {
+    if (!Number.isFinite(radiusM)) {
+      return "∞"
+    }
+    const rs = scenario.schwarzschildRadiusM
+    return rs
+      ? `${formatMeters(radiusM)} (${(radiusM / rs).toFixed(2)} r_s)`
+      : formatMeters(radiusM)
+  }
+
+  return (
+    <>
+      <p className="hud-note">
+        Varredura radial equatorial da métrica <strong>{scenario.metric.name}</strong> em r ∈ [
+        {formatMeters(range.rMin)}, {formatMeters(range.rMax)}]: horizontes (g^rr = 0), limite
+        estático (g_tt = 0), CTCs (g_φφ &lt; 0), matéria exótica (NEC) e curvatura.
+      </p>
+
+      <button type="button" className="toolbar-btn editor-apply" onClick={scan}>
+        <span aria-hidden>🛂</span>
+        {passport ? "escanear novamente" : "gerar passaporte"}
+      </button>
+
+      {passport && passport.findings.length === 0 && (
+        <p className="hud-note">Nenhuma estrutura especial no alcance escaneado.</p>
+      )}
+
+      {passport?.findings.map((finding, index) => (
+        <div className="passport-finding" key={`${finding.kind}-${index}`}>
+          <div className="passport-head">
+            <span aria-hidden>{PASSPORT_ICONS[finding.kind] ?? "•"}</span>
+            <strong>{finding.label}</strong>
+            <span className="passport-radius">
+              {finding.radiusM !== undefined
+                ? formatRadius(finding.radiusM)
+                : finding.rangeM
+                  ? `${formatRadius(finding.rangeM[0])} → ${formatRadius(finding.rangeM[1])}`
+                  : ""}
+            </span>
+          </div>
+          <small>{finding.detail}</small>
+        </div>
+      ))}
+    </>
+  )
+}
+
 export function ResultsPanel({ compact }: { compact: boolean }) {
   const [tab, setTab] = useState<ResultsTab>("resultados")
   const activeScenarioId = useSimulationStore((state) => state.activeScenarioId)
@@ -377,7 +481,7 @@ export function ResultsPanel({ compact }: { compact: boolean }) {
     <aside className={`lab-right glass-panel tab-${tab}`}>
       <div className="focus-heading">
         <div className="results-tabs" role="tablist" aria-label="Painéis de resultados">
-          {(["resultados", "validacao", "equacoes"] as const).map((id) => (
+          {(["resultados", "validacao", "equacoes", "passaporte"] as const).map((id) => (
             <button
               key={id}
               type="button"
@@ -397,6 +501,7 @@ export function ResultsPanel({ compact }: { compact: boolean }) {
         {tab === "resultados" && <ResultsTabContent scenario={scenario} snapshot={snapshot} />}
         {tab === "validacao" && <ValidationTabContent scenario={scenario} snapshot={snapshot} />}
         {tab === "equacoes" && <EquationsTabContent scenario={scenario} />}
+        {tab === "passaporte" && <PassportTabContent scenario={scenario} />}
       </div>
       {compact && null}
     </aside>

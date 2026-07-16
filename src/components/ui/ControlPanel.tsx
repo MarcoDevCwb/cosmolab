@@ -62,6 +62,18 @@ const SLIDERS_BY_SCENARIO: Record<ScenarioId, SliderSpec[]> = {
       format: formatRs,
     },
   ],
+  "shapiro-delay": [
+    MASS_SLIDER,
+    {
+      key: "impactParameterRs",
+      label: "Parâmetro de impacto b",
+      min: Math.log10(1.6),
+      max: 6,
+      step: 0.01,
+      log: true,
+      format: formatRs,
+    },
+  ],
   "relativistic-orbit": [
     MASS_SLIDER,
     { key: "startRadiusRs", label: "Raio inicial r₀", min: 2, max: 40, step: 0.1, format: formatRs },
