@@ -1,8 +1,9 @@
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import {
   ISCO_RADIUS_RS,
   PHOTON_CRITICAL_IMPACT_RS,
 } from "../../physics/relativity/metrics/schwarzschild"
+import { MISSIONS, MISSION_BY_ID } from "../../simulation/missions"
 import { SCENARIO_SUMMARIES, createScenario } from "../../simulation/scenarios"
 import {
   getCustomMetricDefinition,
@@ -214,6 +215,89 @@ function MetricEditor() {
   )
 }
 
+
+/**
+ * Modo descoberta: missões verificadas pelo MOTOR — a avaliação lê apenas
+ * snapshot + parâmetros (simulation/missions.ts); aqui só exibição.
+ */
+function MissionSection() {
+  const activeMissionId = useSimulationStore((state) => state.activeMissionId)
+  const setActiveMission = useSimulationStore((state) => state.setActiveMission)
+  const completedMissions = useSimulationStore((state) => state.completedMissions)
+  const markMissionComplete = useSimulationStore((state) => state.markMissionComplete)
+  const snapshot = useSimulationStore((state) => state.relativitySnapshot)
+  const experimentParams = useSimulationStore((state) => state.experimentParams)
+  const activeScenarioId = useSimulationStore((state) => state.activeScenarioId)
+  const [showHint, setShowHint] = useState(false)
+
+  const mission = activeMissionId ? MISSION_BY_ID.get(activeMissionId) : null
+  const onMissionScenario = mission ? activeScenarioId === mission.scenarioId : false
+  const evaluation =
+    mission && onMissionScenario
+      ? mission.evaluate(snapshot?.scenarioId === mission.scenarioId ? snapshot : null, experimentParams)
+      : null
+
+  // Conclusão detectada ao vivo → registra (persistido).
+  useEffect(() => {
+    if (mission && evaluation?.complete) {
+      markMissionComplete(mission.id)
+    }
+  }, [mission, evaluation?.complete, markMissionComplete])
+
+  return (
+    <>
+      <div className="hud-section-kicker spaced">
+        missões · {completedMissions.length}/{MISSIONS.length}
+      </div>
+      <nav className="scenario-list">
+        {MISSIONS.map((entry) => (
+          <button
+            key={entry.id}
+            type="button"
+            className={activeMissionId === entry.id ? "side-tab active" : "side-tab"}
+            onClick={() => {
+              setShowHint(false)
+              setActiveMission(activeMissionId === entry.id ? null : entry.id)
+            }}
+          >
+            {completedMissions.includes(entry.id) ? "🏅 " : "🎯 "}
+            {entry.title}
+          </button>
+        ))}
+      </nav>
+
+      {mission && (
+        <div className="mission-card">
+          <p className="mission-briefing">{mission.briefing}</p>
+
+          {evaluation && (
+            <ul className="mission-checks">
+              {evaluation.checks.map((check) => (
+                <li key={check.label} className={check.done ? "done" : ""}>
+                  {check.done ? "✓" : "○"} {check.label}
+                </li>
+              ))}
+            </ul>
+          )}
+          {!onMissionScenario && (
+            <p className="param-warning">Esta missão acontece em outro cenário — reabra a missão.</p>
+          )}
+
+          {completedMissions.includes(mission.id) && (
+            <p className="mission-complete">🏅 Missão cumprida — verificada pelo motor.</p>
+          )}
+
+          <button type="button" className="mode-pill" onClick={() => setShowHint(!showHint)}>
+            {showHint ? "esconder dica" : "dica"}
+          </button>
+          {showHint && <p className="mission-hint">{mission.hint}</p>}
+          <p className="mission-context">{mission.context}</p>
+        </div>
+      )}
+    </>
+  )
+}
+
 export function ControlPanel({ compact }: { compact: boolean }) {
   const activeScenarioId = useSimulationStore((state) => state.activeScenarioId)
   const setActiveScenarioId = useSimulationStore((state) => state.setActiveScenarioId)
@@ -325,6 +409,8 @@ export function ControlPanel({ compact }: { compact: boolean }) {
       )}
 
       {activeScenarioId === "custom-metric" && <MetricEditor />}
+
+      <MissionSection />
     </aside>
   )
 }

@@ -2054,3 +2054,65 @@
   font-size: 11px;
   line-height: 1.45;
 }
+
+/* ===== v0.8: missões (modo descoberta) ===== */
+
+.mission-card {
+  margin-top: 10px;
+  padding: 13px 14px;
+  border: 1px solid rgba(250, 204, 21, 0.25);
+  border-radius: 16px;
+  background:
+    radial-gradient(circle at 15% 0%, rgba(250, 204, 21, 0.08), transparent 55%),
+    rgba(8, 15, 29, 0.6);
+}
+
+.mission-briefing {
+  margin: 0 0 10px;
+  color: rgba(226, 232, 240, 0.88);
+  font-size: 12.5px;
+  line-height: 1.5;
+}
+
+.mission-checks {
+  list-style: none;
+  margin: 0 0 10px;
+  padding: 0;
+}
+
+.mission-checks li {
+  padding: 3px 0;
+  color: rgba(148, 163, 184, 0.8);
+  font-size: 11.5px;
+  line-height: 1.4;
+}
+
+.mission-checks li.done {
+  color: #86efac;
+}
+
+.mission-complete {
+  margin: 8px 0;
+  padding: 8px 10px;
+  border: 1px solid rgba(74, 222, 128, 0.4);
+  border-radius: 10px;
+  color: #86efac;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.mission-hint {
+  margin: 8px 0 0;
+  color: #fcd34d;
+  font-size: 11.5px;
+  line-height: 1.5;
+}
+
+.mission-context {
+  margin: 10px 0 0;
+  padding-top: 8px;
+  border-top: 1px solid rgba(148, 163, 184, 0.12);
+  color: rgba(148, 163, 184, 0.7);
+  font-size: 10.5px;
+  line-height: 1.5;
+}
