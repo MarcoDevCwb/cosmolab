@@ -20,6 +20,8 @@ import { isWithinBounds } from "../physics/relativity/metric"
 import type { Vector4 } from "../physics/relativity/tensor"
 import type { ValidationReport } from "../physics/relativity/validation"
 import { buildValidationReport } from "../physics/relativity/validation"
+import type { CurvatureInvariants } from "../physics/relativity/curvature"
+import { curvatureInvariants } from "../physics/relativity/curvature"
 import {
   createDormandPrince54Controller,
   type DormandPrince54Controller,
@@ -91,6 +93,8 @@ export type RelativitySnapshot = {
   /** Séries temporais para os gráficos (janela deslizante). */
   history: HistoryPoint[]
   integrator: IntegratorStats
+  /** Invariantes de curvatura na posição atual (R, K) — independentes de carta. */
+  invariants: CurvatureInvariants
 }
 
 function relativeDrift(current: number, initial: number): number {
@@ -241,6 +245,12 @@ export class GeodesicSimulationRunner {
         this.initialValidation.angularMomentum,
       ),
 
+      invariants: curvatureInvariants(scenario.metric, position, [
+        Math.max(Math.abs(position[1]), 1),
+        Math.max(Math.abs(position[1]), 1),
+        1,
+        1,
+      ]),
       halted: this.halted,
       haltReason: this.haltReason,
       samples: [...this.samples],

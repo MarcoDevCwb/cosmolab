@@ -1531,3 +1531,10 @@
 .equation-block code {
   white-space: pre-wrap;
 }
+
+.export-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 7px;
+  margin-top: 10px;
+}

@@ -4,6 +4,13 @@ import { createScenario } from "../../simulation/scenarios"
 import type { SimulationScenario } from "../../simulation/scenarios"
 import type { RelativitySnapshot } from "../../simulation/simulationRunner"
 import { getCustomMetricDefinition } from "../../simulation/scenarios/customGeodesic"
+import {
+  buildExperimentCsv,
+  buildExperimentJson,
+  computeExperimentId,
+  downloadTextFile,
+} from "./exportExperiment"
+import { COSMOLAB_VERSION } from "../../version"
 import { useSimulationStore } from "../../store/useSimulationStore"
 import { formatMeters, formatObservable, formatSeconds, formatSolarMasses } from "./formatters"
 
@@ -128,7 +135,16 @@ function ResultsTabContent({
   )
 }
 
-function ValidationTabContent({ snapshot }: { snapshot: RelativitySnapshot | null }) {
+function ValidationTabContent({
+  scenario,
+  snapshot,
+}: {
+  scenario: SimulationScenario
+  snapshot: RelativitySnapshot | null
+}) {
+  const experimentParams = useSimulationStore((state) => state.experimentParams)
+  const experimentId = computeExperimentId(scenario.id, experimentParams)
+
   return (
     <>
       <div className="telemetry-grid">
@@ -168,6 +184,20 @@ function ValidationTabContent({ snapshot }: { snapshot: RelativitySnapshot | nul
         <div className="telemetry-card" title="Parâmetro afim integrado (λ = c·τ para massivas)">
           <span>Parâmetro afim λ</span>
           <strong>{snapshot ? formatMeters(snapshot.lambdaM) : "—"}</strong>
+        </div>
+        <div
+          className="telemetry-card"
+          title="Escalar de Ricci R [1/m²] na posição atual (numérico). Zero em soluções de vácuo/eletrovácuo — desvios medem erro numérico ou matéria na métrica personalizada."
+        >
+          <span>Escalar de Ricci R</span>
+          <strong>{snapshot ? `${snapshot.invariants.ricciScalar.toExponential(2)} m⁻²` : "—"}</strong>
+        </div>
+        <div
+          className="telemetry-card"
+          title="Kretschmann K = R_abcd·R^abcd [1/m⁴] na posição atual (numérico). Independe da carta: K finito num horizonte = singularidade de coordenada; K → ∞ = singularidade física real."
+        >
+          <span>Kretschmann K</span>
+          <strong>{snapshot ? `${snapshot.invariants.kretschmann.toExponential(2)} m⁻⁴` : "—"}</strong>
         </div>
         <div className="telemetry-card">
           <span>Integrador</span>
@@ -209,8 +239,51 @@ function ValidationTabContent({ snapshot }: { snapshot: RelativitySnapshot | nul
 
       <p className="hud-note">
         E e L são constantes de Killing; a deriva relativa e o erro de norma medem a qualidade da
-        integração RK4 de passo fixo.
+        integração. R e K são invariantes de curvatura: K finito num horizonte indica
+        singularidade apenas de coordenada.
       </p>
+
+      <div className="telemetry-card" title="Hash da configuração (cenário + parâmetros + métrica + versão): a mesma configuração gera sempre o mesmo ID">
+        <span>ID do experimento</span>
+        <strong>
+          {experimentId} · v{COSMOLAB_VERSION}
+        </strong>
+      </div>
+
+      <div className="export-row">
+        <button
+          type="button"
+          className="toolbar-btn"
+          disabled={!snapshot}
+          onClick={() =>
+            snapshot &&
+            downloadTextFile(
+              `cosmolab-${scenario.id}-${experimentId}.json`,
+              buildExperimentJson(scenario, experimentParams, snapshot),
+              "application/json",
+            )
+          }
+        >
+          <span aria-hidden>⭳</span>
+          exportar JSON
+        </button>
+        <button
+          type="button"
+          className="toolbar-btn"
+          disabled={!snapshot}
+          onClick={() =>
+            snapshot &&
+            downloadTextFile(
+              `cosmolab-${scenario.id}-${experimentId}.csv`,
+              buildExperimentCsv(snapshot),
+              "text/csv",
+            )
+          }
+        >
+          <span aria-hidden>⭳</span>
+          exportar CSV
+        </button>
+      </div>
     </>
   )
 }
@@ -293,7 +366,7 @@ export function ResultsPanel({ compact }: { compact: boolean }) {
 
       <div className="results-body">
         {tab === "resultados" && <ResultsTabContent scenario={scenario} snapshot={snapshot} />}
-        {tab === "validacao" && <ValidationTabContent snapshot={snapshot} />}
+        {tab === "validacao" && <ValidationTabContent scenario={scenario} snapshot={snapshot} />}
         {tab === "equacoes" && <EquationsTabContent scenario={scenario} />}
       </div>
       {compact && null}

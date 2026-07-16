@@ -14,6 +14,7 @@ function App() {
   const compact = useCompactMode()
   const activeScenarioId = useSimulationStore((state) => state.activeScenarioId)
   const experimentParams = useSimulationStore((state) => state.experimentParams)
+  const relativityResetNonce = useSimulationStore((state) => state.relativityResetNonce)
   const hydrateExperiment = useSimulationStore((state) => state.hydrateExperiment)
 
   // URL compartilhável: hidrata o experimento na carga...
@@ -23,10 +24,11 @@ function App() {
     }
   }, [hydrateExperiment])
 
-  // ...e mantém a query string sincronizada com o experimento atual.
+  // ...e mantém a query string sincronizada com o experimento atual
+  // (o nonce cobre reaplicações da métrica personalizada).
   useEffect(() => {
     writeExperimentToUrl(activeScenarioId, experimentParams)
-  }, [activeScenarioId, experimentParams])
+  }, [activeScenarioId, experimentParams, relativityResetNonce])
 
   return (
     <main className={compact ? "cosmos-app compact" : "cosmos-app"}>
