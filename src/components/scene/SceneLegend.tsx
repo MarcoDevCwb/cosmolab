@@ -19,7 +19,9 @@ export function SceneLegend() {
     scenario.surface !== "flat" && rsM > 0 && rsM / scenario.renderScaleM > 0.02
   const isPhoton = scenario.kind === "null"
 
-  if (!flammVisible && !isKerr && !hasCtc && !scenario.comparisonPath) {
+  const hasGalaxies = scenario.comovingMarkers !== undefined
+
+  if (!flammVisible && !isKerr && !hasCtc && !hasGalaxies && !scenario.comparisonPath) {
     return null
   }
 
@@ -74,6 +76,18 @@ export function SceneLegend() {
         <span style={{ color: "#94a3b8" }}>
           <i className="legend-dash" />
           {t(scenario.comparisonPath.label)}
+        </span>
+      )}
+      {hasGalaxies && (
+        <span>
+          <i className="legend-dot" style={{ background: "#7dd3fc" }} />
+          {t("nós (Via Láctea)")}
+        </span>
+      )}
+      {hasGalaxies && (
+        <span>
+          <i className="legend-dot" style={{ background: "#fde68a" }} />
+          {t("galáxias comóveis (recuando em distância própria)")}
         </span>
       )}
       <span>

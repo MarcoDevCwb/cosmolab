@@ -332,6 +332,22 @@ const EN: Record<string, string> = {
   "timelike (partícula massiva)": "timelike (massive particle)",
   "nula (fóton)_geo": "null (photon)",
 
+  /* ---- FLRW ---- */
+  "Expansão cósmica": "Cosmic expansion",
+  "Expansão cósmica — FLRW": "Cosmic expansion — FLRW",
+  "Um fóton emitido rumo a nós quando o universo tinha metade do tamanho: em distância PRÓPRIA ele primeiro RECUA (expansão superluminal) antes de chegar, avermelhando como 1/a. Sem Killing temporal, E não se conserva — o conservado é a²·u^x.":
+    "A photon emitted toward us when the universe was half its size: in PROPER distance it first RECEDES (superluminal expansion) before arriving, redshifting as 1/a. With no timelike Killing vector, E is not conserved — the conserved quantity is a²·u^x.",
+  "1+z = a(hoje)/a(emissão) = 2 para a emissão em a = 0,5; a chegada depende de Ω_m e da distância.":
+    "1+z = a(today)/a(emission) = 2 for emission at a = 0.5; arrival depends on Ω_m and the distance.",
+  "Ω_matéria (Ω_Λ = 1 − Ω_m)": "Ω_matter (Ω_Λ = 1 − Ω_m)",
+  "Distância comóvel da fonte [c/H₀]": "Comoving distance of the source [c/H₀]",
+  "Redshift cosmológico z": "Cosmological redshift z",
+  "Fator de escala a(t)": "Scale factor a(t)",
+  "Deriva de a²·u^x (conservado)": "Drift of a²·u^x (conserved)",
+  "analítico 1+z = a(obs)/a(emissão)": "analytic 1+z = a(obs)/a(emission)",
+  "nós (Via Láctea)": "us (Milky Way)",
+  "galáxias comóveis (recuando em distância própria)": "comoving galaxies (receding in proper distance)",
+
   /* ---- diversos ---- */
   "algo quebrou": "something broke",
   "recarregar o laboratório": "reload the laboratory",

@@ -10,6 +10,7 @@
 
 import { createCustomGeodesicScenario } from "./customGeodesic"
 import { createFlatSpacePhotonScenario } from "./flatSpacePhoton"
+import { createFlrwExpansionScenario } from "./flrwExpansion"
 import { createGodelUniverseScenario } from "./godelUniverse"
 import { createKerrFrameDraggingScenario } from "./kerrFrameDragging"
 import { createPainleveInfallScenario } from "./painleveInfall"
@@ -77,6 +78,15 @@ export const DEFAULT_EXPERIMENT_PARAMS: Record<ScenarioId, ExperimentParams> = {
     angularVelocityFraction: 0,
     spinFraction: 0.9,
   },
+  // FLRW: angularVelocityFraction → Ω_m; startRadiusRs → distância [c/H₀].
+  "flrw-expansion": {
+    massSolar: 0,
+    impactParameterRs: 0,
+    // 0,78 c/H₀: para Ω_m = 0,3, a luz emitida em a = 0,5 chega HOJE (z ≈ 1).
+    startRadiusRs: 0.78,
+    angularVelocityFraction: 0.3,
+    spinFraction: 0,
+  },
   // Gödel: r₀ em unidades de r_CTC; velocidade em frações de ω_Gödel.
   "godel-universe": {
     massSolar: 0,
@@ -108,6 +118,7 @@ const SCENARIO_FACTORIES: Record<
   "kerr-frame-dragging": createKerrFrameDraggingScenario,
   "custom-metric": createCustomGeodesicScenario,
   "godel-universe": createGodelUniverseScenario,
+  "flrw-expansion": createFlrwExpansionScenario,
 }
 
 export const SCENARIO_IDS = Object.keys(SCENARIO_FACTORIES) as ScenarioId[]
@@ -126,5 +137,6 @@ export const SCENARIO_SUMMARIES: { id: ScenarioId; label: string }[] = [
   { id: "painleve-infall", label: "Através do horizonte" },
   { id: "kerr-frame-dragging", label: "Kerr — arrasto" },
   { id: "godel-universe", label: "Gödel — CTCs" },
+  { id: "flrw-expansion", label: "Expansão cósmica" },
   { id: "custom-metric", label: "Métrica personalizada" },
 ]

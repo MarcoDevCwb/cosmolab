@@ -74,7 +74,7 @@ export function TopBar({ compact }: { compact: boolean }) {
           <span className="topbar-kicker">{snapshot ? t(snapshot.integrator.method) : "RK4"}</span>
           <strong>
             Δλ {snapshot ? formatMeters(snapshot.integrator.stepLambdaM) : "—"} ·{" "}
-            {snapshot ? snapshot.integrator.stepsTaken.toLocaleString("pt-BR") : "0"} ${language === "en" ? "steps" : "passos"} ·{" "}
+            {snapshot ? snapshot.integrator.stepsTaken.toLocaleString("pt-BR") : "0"} {language === "en" ? "steps" : "passos"} ·{" "}
             {renderFps} fps
           </strong>
         </div>

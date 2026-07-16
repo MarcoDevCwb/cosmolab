@@ -32,6 +32,7 @@ export type ScenarioId =
   | "kerr-frame-dragging"
   | "custom-metric"
   | "godel-universe"
+  | "flrw-expansion"
 
 /**
  * Parâmetros ajustáveis do experimento (a "bancada" do laboratório).
@@ -107,6 +108,15 @@ export type SimulationScenario = {
   ergosphereEquatorRadiusM?: number
   /** Raio da fronteira de CTCs [m] (g_φφ = 0; apenas Gödel/afins). */
   ctcRadiusM?: number
+  /**
+   * Transformação de exibição aplicada ANTES do mapeamento de cena (ex.:
+   * FLRW converte coordenadas comóveis em distâncias PRÓPRIAS a(t)·x).
+   * Definida pela fábrica do cenário com a física da métrica — a
+   * renderização apenas aplica.
+   */
+  toRenderFrame?: (position: GeodesicState | [number, number, number, number]) => [number, number, number, number]
+  /** Marcadores comóveis (ex.: galáxias) desenhados via toRenderFrame. */
+  comovingMarkers?: { xM: number; yM: number; label?: string }[]
 
   /** Condição de parada física (ex.: aproximação do horizonte). */
   stopCondition?: (state: GeodesicState) => boolean

@@ -8,6 +8,7 @@ import { GeodesicSimulationRunner } from "../../simulation/simulationRunner"
 import { createScenario } from "../../simulation/scenarios"
 import { useSimulationStore } from "../../store/useSimulationStore"
 import { CausalMarkers } from "./CausalMarkers"
+import { GalaxyMarkers } from "./GalaxyMarkers"
 import { FlammSurface } from "./FlammSurface"
 import { FrameDraggingField } from "./FrameDraggingField"
 import { SceneLegend } from "./SceneLegend"
@@ -70,16 +71,18 @@ function RelativityRig({ compact }: RelativitySceneProps) {
   const snapshot =
     relativitySnapshot?.scenarioId === scenario.id ? relativitySnapshot : null
 
-  const mapToSurface = useMemo(
-    () =>
-      createEmbeddedSurfaceMapper(
-        scenario.metric.chart,
-        scenario.renderScaleM,
-        flammRsM,
-        SURFACE_RIM_UNITS * scenario.renderScaleM,
-      ),
-    [scenario, flammRsM],
-  )
+  const mapToSurface = useMemo(() => {
+    const base = createEmbeddedSurfaceMapper(
+      scenario.metric.chart,
+      scenario.renderScaleM,
+      flammRsM,
+      SURFACE_RIM_UNITS * scenario.renderScaleM,
+    )
+    // Transformação de exibição do cenário (ex.: comóvel → distância própria
+    // no FLRW) — definida na fábrica com a física da métrica.
+    const transform = scenario.toRenderFrame
+    return transform ? (position: Parameters<typeof base>[0]) => base(transform(position)) : base
+  }, [scenario, flammRsM])
 
   return (
     <>
@@ -96,6 +99,9 @@ function RelativityRig({ compact }: RelativitySceneProps) {
         mapToSurface={mapToSurface}
         compact={compact}
       />
+      {scenario.comovingMarkers && (
+        <GalaxyMarkers scenario={scenario} snapshot={snapshot} mapToSurface={mapToSurface} />
+      )}
 
       <Stars
         radius={compact ? 140 : 170}

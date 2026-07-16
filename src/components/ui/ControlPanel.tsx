@@ -107,6 +107,24 @@ const SLIDERS_BY_SCENARIO: Record<ScenarioId, SliderSpec[]> = {
       format: (v) => `${(v * 100).toFixed(0)}%`,
     },
   ],
+  "flrw-expansion": [
+    {
+      key: "angularVelocityFraction",
+      label: "Ω_matéria (Ω_Λ = 1 − Ω_m)",
+      min: 0.05,
+      max: 0.95,
+      step: 0.01,
+      format: (v) => v.toFixed(2),
+    },
+    {
+      key: "startRadiusRs",
+      label: "Distância comóvel da fonte [c/H₀]",
+      min: 0.1,
+      max: 1.8,
+      step: 0.05,
+      format: (v) => `${v.toFixed(2)} c/H₀`,
+    },
+  ],
   "custom-metric": [
     MASS_SLIDER,
     { key: "startRadiusRs", label: "Raio inicial r₀ [M = GM/c²]", min: 3, max: 60, step: 0.5, format: (v) => `${v.toFixed(1)} M` },

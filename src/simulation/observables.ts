@@ -255,6 +255,65 @@ export function createInfallTracker(schwarzschildRadiusM: number): ObservableTra
 }
 
 /**
+ * Redshift cosmológico — o observável mais famoso da astronomia, medido
+ * numa geodésica nula REAL: a energia do fóton vista por observadores
+ * comóveis é E ∝ u⁰ (g₀₀ = −1), então 1+z = u⁰_emissão/u⁰_agora — medição
+ * NUMÉRICA independente. A referência analítica é 1+z = a(agora)/a(emissão)
+ * (Weinberg, Cosmology 2008, §1.3): a concordância entre as duas é
+ * validação dupla ao vivo. Também monitora o momento comóvel conservado
+ * p = a²·u^x (o substituto de E, que aqui NÃO se conserva — não há Killing
+ * temporal num universo em expansão: a "deriva de E" é física, é o redshift).
+ */
+export function createRedshiftTracker(
+  scaleFactorAt: (ct: number) => number,
+  initialState: GeodesicState,
+): ObservableTracker {
+  const uTimeEmit = initialState[4]
+  const aEmit = scaleFactorAt(initialState[0])
+  const comovingMomentumInitial = aEmit * aEmit * initialState[5]
+
+  return {
+    update() {},
+    read(state) {
+      const aNow = scaleFactorAt(state[0])
+      const zNumeric = uTimeEmit / state[4] - 1
+      const zAnalytic = aNow / aEmit - 1
+      const comovingMomentumNow = aNow * aNow * state[5]
+      const momentumDrift =
+        Math.abs(comovingMomentumNow - comovingMomentumInitial) /
+        Math.max(Math.abs(comovingMomentumInitial), 1e-30)
+
+      return [
+        {
+          id: "redshift",
+          label: "Redshift cosmológico z",
+          value: zNumeric,
+          unit: "count",
+          provenance: "numeric",
+          reference: zAnalytic,
+          referenceLabel: "analítico 1+z = a(obs)/a(emissão)",
+          hero: true,
+        },
+        {
+          id: "scale-factor",
+          label: "Fator de escala a(t)",
+          value: aNow,
+          unit: "count",
+          provenance: "analytic",
+        },
+        {
+          id: "comoving-momentum-drift",
+          label: "Deriva de a²·u^x (conservado)",
+          value: momentumDrift,
+          unit: "count",
+          provenance: "numeric",
+        },
+      ]
+    },
+  }
+}
+
+/**
  * Atraso de Shapiro (4º teste clássico da RG; Shapiro, PRL 13, 789 (1964)):
  * o tempo COORDENADO de um fóton que passa perto da massa excede o tempo
  * plano do trajeto em Δt ≈ (2GM/c³)·ln(4x₁x₂/b²). Medimos ao vivo

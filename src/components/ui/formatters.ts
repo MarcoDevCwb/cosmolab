@@ -5,6 +5,7 @@
  * Nenhuma física é calculada aqui.
  */
 
+import { getLanguage } from "../../i18n"
 import type { ObservableUnit } from "../../simulation/observables"
 
 export function formatSeconds(seconds: number): string {
@@ -21,11 +22,37 @@ export function formatSeconds(seconds: number): string {
   if (absolute < 120) {
     return `${seconds.toFixed(3)} s`
   }
+  // Tempos cósmicos: anos → milhões → bilhões (FLRW).
+  const YEAR_S = 3.156e7
+  if (absolute >= 1000 * YEAR_S) {
+    const en = getLanguage() === "en"
+    const years = seconds / YEAR_S
+    if (Math.abs(years) >= 1e9) {
+      return `${(years / 1e9).toFixed(2)} ${en ? "billion years" : "bilhões de anos"}`
+    }
+    if (Math.abs(years) >= 1e6) {
+      return `${(years / 1e6).toFixed(2)} ${en ? "million years" : "milhões de anos"}`
+    }
+    return `${years.toFixed(0)} ${en ? "years" : "anos"}`
+  }
   return `${(seconds / 60).toFixed(2)} min`
 }
 
 export function formatMeters(meters: number): string {
   const absolute = Math.abs(meters)
+  // Escala astronômica: anos-luz (FLRW e afins).
+  const LIGHT_YEAR_M = 9.4607e15
+  if (absolute >= 100 * LIGHT_YEAR_M) {
+    const en = getLanguage() === "en"
+    const lightYears = meters / LIGHT_YEAR_M
+    if (Math.abs(lightYears) >= 1e9) {
+      return `${(lightYears / 1e9).toFixed(2)} ${en ? "billion light-years" : "bilhões de anos-luz"}`
+    }
+    if (Math.abs(lightYears) >= 1e6) {
+      return `${(lightYears / 1e6).toFixed(2)} ${en ? "million light-years" : "milhões de anos-luz"}`
+    }
+    return `${lightYears.toFixed(0)} ${en ? "light-years" : "anos-luz"}`
+  }
   if (absolute >= 1e9) {
     return `${(meters / 1e9).toFixed(3)} × 10⁶ km`
   }
