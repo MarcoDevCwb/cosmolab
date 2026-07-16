@@ -80,8 +80,10 @@ export function createKerrFrameDraggingScenario(params: ExperimentParams): Simul
       "timelike",
     ),
 
-    // Passo pequeno: perto de r₊ (Δ → 0) o sistema é rígido para RK4 de
-    // passo fixo, e os Christoffels aqui são numéricos (plugin).
+    // Adaptativo: perto de r₊ (Δ → 0) o sistema é rígido, e os Christoffels
+    // numéricos tornam cada passo caro — o DP5(4) usa passos grandes na
+    // região suave e encolhe só onde precisa.
+    integrator: { method: "dp54", relTol: 1e-10 },
     stepLambdaM: lambdaTotalM / 9000,
     lambdaRateMPerSecond: lambdaTotalM / FALL_WALL_TIME_S,
     sampleIntervalLambdaM: lambdaTotalM / 400,

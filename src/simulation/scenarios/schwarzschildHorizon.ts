@@ -59,8 +59,9 @@ export function createSchwarzschildHorizonScenario(params: ExperimentParams): Si
     // Repouso: u^i = 0 ⇒ u⁰ = 1/√f(r₀) resolvido pela normalização.
     initialState: buildInitialState(metric, [0, r0, Math.PI / 2, 0], [0, 0, 0], "timelike"),
 
-    // Passo pequeno: perto do horizonte f → 0 torna o sistema rígido e o
-    // RK4 de passo fixo perde precisão (passo adaptativo é evolução prevista).
+    // Adaptativo: perto do horizonte f → 0 torna o sistema rígido; o
+    // DP5(4) encolhe o passo automaticamente onde o RK4 fixo perdia precisão.
+    integrator: { method: "dp54", relTol: 1e-10 },
     stepLambdaM: lambdaTotalM / 7000,
     lambdaRateMPerSecond: lambdaTotalM / FALL_WALL_TIME_S,
     sampleIntervalLambdaM: lambdaTotalM / 300,

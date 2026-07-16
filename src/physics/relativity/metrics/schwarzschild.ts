@@ -77,6 +77,7 @@ export function createSchwarzschildMetric(massKg: number): SchwarzschildMetric {
     name: "Schwarzschild (1916)",
     coordinates: ["ct", "r", "θ", "φ"],
     chart: "spherical",
+    symmetries: { stationary: true, axisymmetric: true },
     massKg,
     schwarzschildRadiusM: rs,
 

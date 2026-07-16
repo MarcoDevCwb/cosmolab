@@ -20,6 +20,10 @@ import { isWithinBounds } from "../physics/relativity/metric"
 import type { Vector4 } from "../physics/relativity/tensor"
 import type { ValidationReport } from "../physics/relativity/validation"
 import { buildValidationReport } from "../physics/relativity/validation"
+import {
+  createDormandPrince54Controller,
+  type DormandPrince54Controller,
+} from "./integrators/dormandPrince54"
 import { rungeKutta4Step } from "./integrators/rungeKutta4"
 import type { ObservableTracker, ScenarioObservable } from "./observables"
 import type { ScenarioId, SimulationScenario } from "./scenarios"
@@ -45,10 +49,19 @@ export type HistoryPoint = {
 /** Telemetria do integrador exposta na UI (método, passo, custo). */
 export type IntegratorStats = {
   method: string
+  /** Passo atual em λ [m] (fixo no RK4; h corrente no adaptativo). */
   stepLambdaM: number
   stepsTaken: number
+  /** Passos rejeitados pelo controlador adaptativo (0 no RK4). */
+  stepsRejected: number
   cpuMs: number
+  /** Tolerâncias do controlador adaptativo, quando aplicável. */
+  relTol?: number
+  absTol?: number
 }
+
+/** Por que a integração parou. */
+export type HaltReason = "stop-condition" | "out-of-bounds" | null
 
 export type RelativitySnapshot = {
   scenarioId: ScenarioId
@@ -71,6 +84,7 @@ export type RelativitySnapshot = {
   angularMomentumDriftRelative: number
 
   halted: boolean
+  haltReason: HaltReason
   samples: TrajectorySamplePoint[]
   /** Observáveis físicos do cenário (números-herói). */
   observables: ScenarioObservable[]
@@ -94,6 +108,8 @@ export class GeodesicSimulationRunner {
   private history: HistoryPoint[] = []
   private stepsTaken = 0
   private cpuMs = 0
+  private haltReason: HaltReason = null
+  private adaptive: DormandPrince54Controller | null = null
   private derivatives: (state: readonly number[]) => GeodesicState
   private initialValidation: ValidationReport
   private observables: ObservableTracker | null
@@ -105,7 +121,25 @@ export class GeodesicSimulationRunner {
     this.derivatives = createGeodesicDerivatives(scenario.metric)
     this.initialValidation = buildValidationReport(scenario.metric, this.state, scenario.kind)
     this.observables = scenario.createObservables?.() ?? null
+    this.adaptive = this.createAdaptiveController()
     this.recordSample()
+  }
+
+  private createAdaptiveController(): DormandPrince54Controller | null {
+    const config = this.scenario.integrator
+    if (config?.method !== "dp54") {
+      return null
+    }
+
+    return createDormandPrince54Controller(this.derivatives, {
+      initialStep: this.scenario.stepLambdaM,
+      minStep: this.scenario.stepLambdaM / 1e4,
+      // Teto no meio do intervalo de amostragem: mantém amostras densas e
+      // garante que condições de parada sejam checadas com resolução.
+      maxStep: this.scenario.sampleIntervalLambdaM / 2,
+      absTol: config.absTol ?? 1e-10,
+      relTol: config.relTol ?? 1e-9,
+    })
   }
 
   /** Avança o tempo real de reprodução em segundos (chamado pelo frame loop). */
@@ -124,18 +158,28 @@ export class GeodesicSimulationRunner {
     let remaining = deltaLambdaM
 
     while (remaining > 0 && !this.halted) {
-      const h = Math.min(step, remaining)
-      const next = rungeKutta4Step(this.derivatives, this.state, h)
+      let next: GeodesicState
+      let consumed: number
+
+      if (this.adaptive) {
+        const result = this.adaptive.step(this.state, remaining)
+        next = result.next
+        consumed = result.consumed
+      } else {
+        consumed = Math.min(step, remaining)
+        next = rungeKutta4Step(this.derivatives, this.state, consumed)
+        this.stepsTaken += 1
+      }
 
       if (!isWithinBounds(this.scenario.metric, positionOf(next))) {
         this.halted = true
+        this.haltReason = "out-of-bounds"
         break
       }
 
       this.state = next
-      this.lambdaM += h
-      remaining -= h
-      this.stepsTaken += 1
+      this.lambdaM += consumed
+      remaining -= consumed
       this.observables?.update(this.state)
 
       if (this.lambdaM - this.lastSampleLambdaM >= this.scenario.sampleIntervalLambdaM) {
@@ -144,6 +188,7 @@ export class GeodesicSimulationRunner {
 
       if (this.scenario.stopCondition?.(this.state)) {
         this.halted = true
+        this.haltReason = "stop-condition"
       }
     }
 
@@ -159,7 +204,9 @@ export class GeodesicSimulationRunner {
     this.stepsTaken = 0
     this.cpuMs = 0
     this.halted = false
+    this.haltReason = null
     this.observables = this.scenario.createObservables?.() ?? null
+    this.adaptive = this.createAdaptiveController()
     this.recordSample()
   }
 
@@ -195,15 +242,27 @@ export class GeodesicSimulationRunner {
       ),
 
       halted: this.halted,
+      haltReason: this.haltReason,
       samples: [...this.samples],
       observables: this.observables?.read(this.state) ?? [],
       history: [...this.history],
-      integrator: {
-        method: "RK4 (passo fixo)",
-        stepLambdaM: scenario.stepLambdaM,
-        stepsTaken: this.stepsTaken,
-        cpuMs: this.cpuMs,
-      },
+      integrator: this.adaptive
+        ? {
+            method: "Dormand–Prince 5(4) adaptativo",
+            stepLambdaM: this.adaptive.stats.currentStep,
+            stepsTaken: this.adaptive.stats.accepted,
+            stepsRejected: this.adaptive.stats.rejected,
+            cpuMs: this.cpuMs,
+            relTol: scenario.integrator?.relTol ?? 1e-9,
+            absTol: scenario.integrator?.absTol ?? 1e-10,
+          }
+        : {
+            method: "RK4 (passo fixo)",
+            stepLambdaM: scenario.stepLambdaM,
+            stepsTaken: this.stepsTaken,
+            stepsRejected: 0,
+            cpuMs: this.cpuMs,
+          },
     }
   }
 

@@ -42,6 +42,21 @@ export function metricPartialDerivatives(
   const derivatives: Matrix4[] = []
 
   for (let sigma = 0; sigma < SPACETIME_DIMENSION; sigma += 1) {
+    // Simetrias declaradas: ∂₀g = 0 (estacionária) e ∂₃g = 0 (axissimétrica)
+    // são EXATAS — pular a diferença finita é mais rápido E mais preciso.
+    if (
+      (sigma === 0 && metric.symmetries?.stationary) ||
+      (sigma === 3 && metric.symmetries?.axisymmetric)
+    ) {
+      derivatives.push([
+        [0, 0, 0, 0],
+        [0, 0, 0, 0],
+        [0, 0, 0, 0],
+        [0, 0, 0, 0],
+      ])
+      continue
+    }
+
     const step = CBRT_EPSILON * Math.max(Math.abs(position[sigma]), scaleFloor[sigma])
     const forward: Vector4 = [...position]
     const backward: Vector4 = [...position]

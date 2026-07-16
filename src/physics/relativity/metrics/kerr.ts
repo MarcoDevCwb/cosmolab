@@ -95,6 +95,7 @@ export function createKerrMetric(massKg: number, spinFraction: number): KerrMetr
     name: "Kerr (1963)",
     coordinates: ["ct", "r", "θ", "φ"],
     chart: "spherical",
+    symmetries: { stationary: true, axisymmetric: true },
     massKg,
     spinM: spin,
     spinFraction,

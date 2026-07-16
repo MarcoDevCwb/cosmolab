@@ -35,6 +35,15 @@ export type SpacetimeMetric = {
   /** Carta espacial das coordenadas x¹..x³ (uso exclusivo da renderização). */
   readonly chart: SpatialChart
 
+  /**
+   * Simetrias declaradas da métrica nestas coordenadas:
+   * - `stationary`: ∂g/∂x⁰ = 0 (vetor de Killing temporal)
+   * - `axisymmetric`: ∂g/∂x³ = 0 (vetor de Killing axial)
+   * O cálculo numérico de Christoffels usa isso para pular derivadas que
+   * são exatamente nulas (metade do custo em métricas tipo Kerr).
+   */
+  readonly symmetries?: { stationary?: boolean; axisymmetric?: boolean }
+
   /** Tensor métrico covariante g_{μν}(x). */
   metric(position: Vector4): Matrix4
 

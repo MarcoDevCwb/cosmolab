@@ -72,7 +72,14 @@ export type SimulationScenario = {
   /** Estado inicial [x^μ, u^μ] já satisfazendo a norma exigida. */
   initialState: GeodesicState
 
-  /** Passo do RK4 em λ [m]. */
+  /**
+   * Integrador do cenário. "rk4" = passo fixo (padrão); "dp54" =
+   * Dormand–Prince 5(4) adaptativo — recomendado para regiões rígidas
+   * (horizonte) e métricas com Christoffels numéricos (custo por passo alto).
+   */
+  integrator?: { method: "rk4" | "dp54"; relTol?: number; absTol?: number }
+
+  /** Passo em λ [m]: fixo para RK4, inicial para o adaptativo. */
   stepLambdaM: number
   /** Velocidade de reprodução: quanto de λ [m] avança por segundo real. */
   lambdaRateMPerSecond: number

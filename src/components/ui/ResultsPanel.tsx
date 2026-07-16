@@ -170,6 +170,26 @@ function ValidationTabContent({ snapshot }: { snapshot: RelativitySnapshot | nul
           <span>Integrador</span>
           <strong>{snapshot?.integrator.method ?? "—"}</strong>
         </div>
+        <div
+          className="telemetry-card"
+          title="Passos aceitos e rejeitados pelo controlador de erro (rejeições só existem no adaptativo)"
+        >
+          <span>Passos (aceitos / rejeitados)</span>
+          <strong>
+            {snapshot
+              ? `${snapshot.integrator.stepsTaken.toLocaleString("pt-BR")} / ${snapshot.integrator.stepsRejected.toLocaleString("pt-BR")}`
+              : "—"}
+          </strong>
+        </div>
+        {snapshot?.integrator.relTol !== undefined && (
+          <div className="telemetry-card" title="Tolerâncias do controlador adaptativo por passo">
+            <span>Tolerâncias (rel / abs)</span>
+            <strong>
+              {snapshot.integrator.relTol.toExponential(0)} /{" "}
+              {snapshot.integrator.absTol?.toExponential(0)}
+            </strong>
+          </div>
+        )}
         <div className="telemetry-card" title="Tempo de CPU acumulado na integração">
           <span>Custo de CPU</span>
           <strong>{snapshot ? `${snapshot.integrator.cpuMs.toFixed(1)} ms` : "—"}</strong>
@@ -178,8 +198,9 @@ function ValidationTabContent({ snapshot }: { snapshot: RelativitySnapshot | nul
 
       {snapshot?.halted && (
         <p className="hud-note">
-          Integração interrompida: limite físico ou de coordenadas do cenário atingido (a carta
-          de Schwarzschild/Boyer–Lindquist degenera no horizonte).
+          {snapshot.haltReason === "out-of-bounds"
+            ? "Integração interrompida: a trajetória saiu do domínio de validade da carta de coordenadas."
+            : "Integração interrompida: condição de parada física do cenário atingida (ex.: aproximação do horizonte, onde a carta degenera)."}
         </p>
       )}
 

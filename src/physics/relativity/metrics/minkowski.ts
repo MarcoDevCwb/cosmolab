@@ -30,6 +30,7 @@ export const minkowskiMetric: SpacetimeMetric = {
   name: "Minkowski (1908)",
   coordinates: ["ct", "x", "y", "z"],
   chart: "cartesian",
+  symmetries: { stationary: true, axisymmetric: true },
 
   metric(): Matrix4 {
     return MINKOWSKI_COMPONENTS.map((row) => [...row])
