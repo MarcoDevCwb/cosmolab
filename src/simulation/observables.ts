@@ -255,6 +255,52 @@ export function createInfallTracker(schwarzschildRadiusM: number): ObservableTra
 }
 
 /**
+ * Atraso de Shapiro (4º teste clássico da RG; Shapiro, PRL 13, 789 (1964)):
+ * o tempo COORDENADO de um fóton que passa perto da massa excede o tempo
+ * plano do trajeto em Δt ≈ (2GM/c³)·ln(4x₁x₂/b²). Medimos ao vivo
+ * Δt(λ) = t − d_corda/c, com d_corda a distância euclidiana ao ponto de
+ * partida (a correção de comprimento pela deflexão é O(α²), desprezível).
+ * NOTA DE CONVENÇÃO: a repartição do atraso entre "geométrico" e
+ * "gravitacional" depende da baseline (corda, arco, √(r²−r₀²)...); a
+ * referência exibida usa a forma exata desta baseline. Apenas o eco de
+ * radar completo é invariante de convenção.
+ */
+export function createShapiroTracker(
+  initialState: GeodesicState,
+  weakFieldDelayS: number,
+): ObservableTracker {
+  const start = equatorialCartesianPositionOf(initialState)
+
+  return {
+    update() {},
+    read(state) {
+      const current = equatorialCartesianPositionOf(state)
+      const chordM = Math.hypot(current[0] - start[0], current[1] - start[1])
+      const delayS = state[0] / SPEED_OF_LIGHT - chordM / SPEED_OF_LIGHT
+
+      return [
+        {
+          id: "shapiro-delay",
+          label: "Atraso de Shapiro acumulado",
+          value: delayS,
+          unit: "s",
+          provenance: "numeric",
+          reference: weakFieldDelayS,
+          referenceLabel: "campo fraco (2GM/c³)[ln(4x₁x₂/b²) − 1], baseline de corda coordenada",
+          hero: true,
+        },
+      ]
+    },
+  }
+}
+
+function equatorialCartesianPositionOf(state: GeodesicState): [number, number] {
+  const r = state[1]
+  const phi = state[3]
+  return [r * Math.cos(phi), r * Math.sin(phi)]
+}
+
+/**
  * Cruzamento do horizonte em coordenadas regulares (Painlevé–Gullstrand):
  * acompanha r/r_s e registra o tempo próprio τ (via λ = c·τ) no instante
  * INTERPOLADO em que r cruza r_s. Em PG nada diverge ali — o observável

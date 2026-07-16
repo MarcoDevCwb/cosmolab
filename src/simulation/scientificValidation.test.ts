@@ -252,3 +252,58 @@ describe("cenário 4 — horizonte de Schwarzschild", () => {
     expect(state[4]).toBeCloseTo(energyCheck / f, 6)
   })
 })
+
+describe("cenário 9 — atraso de Shapiro (4º teste clássico)", () => {
+  it("o atraso medido converge para (2GM/c³)·ln(4x₁x₂/b²) dentro de 3%", () => {
+    const runner = new GeodesicSimulationRunner(createScenario("shapiro-delay"))
+    for (let i = 0; i < 400 && !runner.snapshot().halted; i += 1) {
+      runner.advanceLambda(3e9)
+    }
+    const snapshot = runner.snapshot()
+    expect(snapshot.halted).toBe(true)
+
+    const shapiro = snapshot.observables.find((o) => o.id === "shapiro-delay")
+    expect(shapiro).toBeDefined()
+    expect(shapiro!.value).toBeGreaterThan(0)
+    expect(shapiro!.reference).toBeDefined()
+    // ~85 µs para o preset solar (b = R☉, x₁ = x₂ = 60·b), baseline de corda.
+    expect(shapiro!.value / shapiro!.reference!).toBeGreaterThan(0.99)
+    expect(shapiro!.value / shapiro!.reference!).toBeLessThan(1.01)
+  })
+
+  it("dependência em b é 2·ln(b₂/b₁) — independente da convenção de baseline", () => {
+    // Mede o coeficiente (t − corda/c)/(r_s/c) para dois parâmetros de
+    // impacto com o MESMO alcance X: a diferença deve ser 2·ln(b₂/b₁),
+    // pois as constantes de baseline cancelam.
+    const metric = createSchwarzschildMetric(SOLAR_MASS_KG)
+    const rs = metric.schwarzschildRadiusM
+    const derivatives = createGeodesicDerivatives(metric)
+    const b1 = SOLAR_RADIUS_M
+    const b2 = 2 * SOLAR_RADIUS_M
+    const X = 60 * b2
+
+    const coefficient = (b: number) => {
+      let state = equatorialStateFromCartesian(metric, -X, b, 1, 0, "null")
+      const start: [number, number] = [
+        state[1] * Math.cos(state[3]),
+        state[1] * Math.sin(state[3]),
+      ]
+      const h = b1 / 100
+      for (let i = 0; i < 200000; i += 1) {
+        state = rungeKutta4Step(derivatives, state, h)
+        if (state[1] > X * 1.02 && state[5] > 0) {
+          break
+        }
+      }
+      const end: [number, number] = [
+        state[1] * Math.cos(state[3]),
+        state[1] * Math.sin(state[3]),
+      ]
+      const chord = Math.hypot(end[0] - start[0], end[1] - start[1])
+      return (state[0] - chord) / rs
+    }
+
+    const difference = coefficient(b1) - coefficient(b2)
+    expect(Math.abs(difference - 2 * Math.log(b2 / b1)) / (2 * Math.log(2))).toBeLessThan(0.01)
+  })
+})

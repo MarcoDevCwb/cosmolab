@@ -25,6 +25,7 @@ export type ScientificStatus =
 export type ScenarioId =
   | "flat-space-photon"
   | "solar-light-deflection"
+  | "shapiro-delay"
   | "relativistic-orbit"
   | "schwarzschild-horizon"
   | "painleve-infall"

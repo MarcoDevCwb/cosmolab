@@ -15,6 +15,7 @@ import { createKerrFrameDraggingScenario } from "./kerrFrameDragging"
 import { createPainleveInfallScenario } from "./painleveInfall"
 import { createRelativisticOrbitScenario } from "./relativisticOrbit"
 import { createSchwarzschildHorizonScenario } from "./schwarzschildHorizon"
+import { createShapiroDelayScenario } from "./shapiroDelay"
 import {
   SOLAR_IMPACT_PARAMETER_RS,
   createLightDeflectionScenario,
@@ -35,6 +36,13 @@ export const DEFAULT_EXPERIMENT_PARAMS: Record<ScenarioId, ExperimentParams> = {
   },
   // Eddington 1919: Sol (1 M☉) com fóton tangenciando o limbo (b = R☉).
   "solar-light-deflection": {
+    massSolar: 1,
+    impactParameterRs: SOLAR_IMPACT_PARAMETER_RS,
+    startRadiusRs: 0,
+    angularVelocityFraction: 0,
+    spinFraction: 0,
+  },
+  "shapiro-delay": {
     massSolar: 1,
     impactParameterRs: SOLAR_IMPACT_PARAMETER_RS,
     startRadiusRs: 0,
@@ -93,6 +101,7 @@ const SCENARIO_FACTORIES: Record<
 > = {
   "flat-space-photon": () => createFlatSpacePhotonScenario(),
   "solar-light-deflection": createLightDeflectionScenario,
+  "shapiro-delay": createShapiroDelayScenario,
   "relativistic-orbit": createRelativisticOrbitScenario,
   "schwarzschild-horizon": createSchwarzschildHorizonScenario,
   "painleve-infall": createPainleveInfallScenario,
@@ -111,6 +120,7 @@ export function createScenario(id: ScenarioId, params?: ExperimentParams): Simul
 export const SCENARIO_SUMMARIES: { id: ScenarioId; label: string }[] = [
   { id: "flat-space-photon", label: "Espaço plano" },
   { id: "solar-light-deflection", label: "Deflexão da luz" },
+  { id: "shapiro-delay", label: "Atraso de Shapiro" },
   { id: "relativistic-orbit", label: "Órbita relativística" },
   { id: "schwarzschild-horizon", label: "Horizonte" },
   { id: "painleve-infall", label: "Através do horizonte" },
