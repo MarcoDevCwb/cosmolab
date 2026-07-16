@@ -181,7 +181,7 @@ ${missionRows ? `<h2>5. ${t("Missões verificadas pelo motor")}</h2><ul>${missio
 <ul>${referenceRows}</ul>
 
 <footer>
-  Gerado por CosmoLab v${COSMOLAB_VERSION} · motor validado contra einsteinpy (2 ppm; docs/VALIDATION.md) e ${""}59+ testes analíticos.<br>
+  ${t("Gerado por CosmoLab")} v${COSMOLAB_VERSION} · ${t("motor validado contra einsteinpy (2 ppm) e por suíte de testes analíticos — docs/VALIDATION.md")}.<br>
   <strong>${t("Reprodutível:")}</strong> ${escapeHtml(reproducibleUrl)}
 </footer>
 </body>

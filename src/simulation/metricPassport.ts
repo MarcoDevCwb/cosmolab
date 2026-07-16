@@ -45,11 +45,12 @@ export type MetricPassport = {
   samples: number
 }
 
-/** Posição equatorial padrão no raio dado (θ = π/2 serve às cartas esférica
- * e cartesiana; para a cilíndrica, x2 = z = 0 — usamos 0 nos dois casos
- * mediante o truque θ→π/2 apenas quando a carta é esférica). */
-function equatorialPosition(metric: SpacetimeMetric, radiusM: number): Vector4 {
-  return [0, radiusM, metric.chart === "spherical" ? Math.PI / 2 : 0, 0]
+/** Posição equatorial no raio dado, NA ÉPOCA do scan (x⁰ = epochCt).
+ * Crucial para métricas não-estacionárias: escanear FLRW em x⁰ = 0
+ * avaliaria o Big Bang (a = 0, métrica degenerada) — bug real encontrado
+ * em auditoria. θ = π/2 nas cartas esféricas; 0 nas demais. */
+function equatorialPosition(metric: SpacetimeMetric, radiusM: number, epochCt: number): Vector4 {
+  return [epochCt, radiusM, metric.chart === "spherical" ? Math.PI / 2 : 0, 0]
 }
 
 /** Bissecção do zero de f entre a e b (f(a)·f(b) < 0). */
@@ -75,6 +76,8 @@ export function generateMetricPassport(
   rMinM: number,
   rMaxM: number,
   samples = 96,
+  /** Época x⁰ = c·t do scan (essencial em métricas não-estacionárias). */
+  epochCt = 0,
 ): MetricPassport {
   const findings: PassportFinding[] = []
 
@@ -86,9 +89,9 @@ export function generateMetricPassport(
     radii.push(Math.exp(logMin + ((logMax - logMin) * i) / samples))
   }
 
-  const gttAt = (r: number) => metric.metric(equatorialPosition(metric, r))[0][0]
-  const grrInvAt = (r: number) => metric.inverseMetric(equatorialPosition(metric, r))[1][1]
-  const gphiphiAt = (r: number) => metric.metric(equatorialPosition(metric, r))[3][3]
+  const gttAt = (r: number) => metric.metric(equatorialPosition(metric, r, epochCt))[0][0]
+  const grrInvAt = (r: number) => metric.inverseMetric(equatorialPosition(metric, r, epochCt))[1][1]
+  const gphiphiAt = (r: number) => metric.metric(equatorialPosition(metric, r, epochCt))[3][3]
 
   const gtt = radii.map(gttAt)
   const grrInv = radii.map(grrInvAt)
@@ -145,7 +148,7 @@ export function generateMetricPassport(
   let exoticStart: number | null = null
   let lastExotic = rMinM
   for (const r of coarse) {
-    const matter = matterDiagnostic(metric, equatorialPosition(metric, r), [r, r, 1, 1])
+    const matter = matterDiagnostic(metric, equatorialPosition(metric, r, epochCt), [r, r, 1, 1])
     const exotic = matter !== null && !matter.nullEnergyConditionOk
     if (exotic && exoticStart === null) {
       exoticStart = r
@@ -175,8 +178,8 @@ export function generateMetricPassport(
   // Singularidade de curvatura: K crescendo na borda interna.
   const rA = radii[0]
   const rB = radii[Math.floor(samples / 4)]
-  const kA = curvatureInvariants(metric, equatorialPosition(metric, rA), [rA, rA, 1, 1]).kretschmann
-  const kB = curvatureInvariants(metric, equatorialPosition(metric, rB), [rB, rB, 1, 1]).kretschmann
+  const kA = curvatureInvariants(metric, equatorialPosition(metric, rA, epochCt), [rA, rA, 1, 1]).kretschmann
+  const kB = curvatureInvariants(metric, equatorialPosition(metric, rB, epochCt), [rB, rB, 1, 1]).kretschmann
   if (Number.isFinite(kA) && Math.abs(kA) > 100 * Math.max(Math.abs(kB), 1e-40)) {
     const exponent = Math.log(Math.abs(kA) / Math.max(Math.abs(kB), 1e-300)) / Math.log(rB / rA)
     findings.push({
@@ -189,7 +192,7 @@ export function generateMetricPassport(
 
   // Planicidade assintótica na borda externa.
   const gttFar = gtt[gtt.length - 1]
-  const grrFar = metric.metric(equatorialPosition(metric, rMaxM))[1][1]
+  const grrFar = metric.metric(equatorialPosition(metric, rMaxM, epochCt))[1][1]
   if (Math.abs(gttFar + 1) < 0.05 && Math.abs(grrFar - 1) < 0.05) {
     findings.push({
       kind: "asymptotically-flat",

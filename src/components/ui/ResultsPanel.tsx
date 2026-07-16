@@ -420,7 +420,9 @@ function PassportTabContent({ scenario }: { scenario: SimulationScenario }) {
   }, [scenario])
 
   const scan = () => {
-    setPassport(generateMetricPassport(scenario.metric, range.rMin, range.rMax))
+    setPassport(
+      generateMetricPassport(scenario.metric, range.rMin, range.rMax, 96, scenario.initialState[0]),
+    )
   }
 
   const formatRadius = (radiusM: number) => {

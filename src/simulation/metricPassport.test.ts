@@ -59,6 +59,30 @@ describe("passaporte de métricas", () => {
     expect(byKind(passport, "horizon")).toHaveLength(0)
   })
 
+  it("FLRW: o scan usa a ÉPOCA dada — em x⁰ = hoje a métrica é regular (bug de auditoria)", async () => {
+    const { createFlrwMetric } = await import("../physics/relativity/metrics/flrw")
+    const metric = createFlrwMetric(2.268e-18, 0.3)
+    const D = metric.hubbleLengthM
+
+    // Época correta (hoje): a = 1, métrica regular. NÃO pode acusar
+    // horizonte, CTC nem matéria exótica; nem "plana" (g_rr = a² mas o
+    // universo não é assintoticamente Minkowski — aqui a(t₀) = 1 engana o
+    // critério g_rr→1 apenas se g_tt→−1 também, o que ocorre: FLRW plano
+    // HOJE coincide com Minkowski instantaneamente — achado aceitável).
+    const passport = generateMetricPassport(metric, 0.01 * D, 2 * D, 96, metric.nowCtM)
+    expect(byKind(passport, "horizon")).toHaveLength(0)
+    expect(byKind(passport, "ctc-region")).toHaveLength(0)
+    expect(byKind(passport, "exotic-matter")).toHaveLength(0)
+    expect(byKind(passport, "curvature-singularity")).toHaveLength(0)
+    for (const f of passport.findings) {
+      expect(Number.isFinite(f.radiusM ?? 0)).toBe(true)
+    }
+
+    // Regressão do bug: em x⁰ = 0 (Big Bang) a métrica é degenerada
+    // (a = 0) — o scan antigo avaliava SEMPRE aí e retornava lixo/vazio.
+    expect(metric.scaleFactorAt(0)).toBe(0)
+  })
+
   it("wormhole de Morris–Thorne: matéria exótica na garganta, sem horizonte, plano longe", () => {
     const b0 = 1e7
     const wormhole = createCustomMetric(
