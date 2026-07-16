@@ -1,0 +1,30 @@
+cff-version: 1.2.0
+message: >-
+  Se você usar o CosmoLab em ensino ou pesquisa, por favor cite-o
+  usando os metadados abaixo. / If you use CosmoLab in teaching or
+  research, please cite it using the metadata below.
+title: "CosmoLab: um laboratório de relatividade geral no navegador"
+type: software
+version: 0.8.0
+date-released: "2026-07-16"
+authors:
+  - name: "MarcoDevCwba"
+abstract: >-
+  CosmoLab é um laboratório interativo de relatividade geral no
+  navegador: geodésicas integradas exatamente (Dormand-Prince 5(4)
+  adaptativo) em Minkowski, Schwarzschild, Painlevé-Gullstrand, Kerr,
+  Gödel e métricas definidas pelo usuário, com validação numérica
+  contínua exibida na interface (norma, constantes de Killing,
+  invariantes de curvatura, condições de energia), Atlas de
+  Coordenadas, os quatro testes clássicos verificáveis, missões
+  pedagógicas corrigidas pelo motor e exportação reprodutível. Motor
+  validado contra o einsteinpy com concordância de 2 ppm na precessão
+  do periastro em campo forte.
+keywords:
+  - general relativity
+  - physics education
+  - geodesics
+  - black holes
+  - numerical relativity
+  - interactive simulation
+license: NOASSERTION
