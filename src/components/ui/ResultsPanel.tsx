@@ -3,6 +3,7 @@ import { SOLAR_MASS_KG } from "../../physics/constants"
 import { createScenario } from "../../simulation/scenarios"
 import type { SimulationScenario } from "../../simulation/scenarios"
 import type { RelativitySnapshot } from "../../simulation/simulationRunner"
+import { getCustomMetricDefinition } from "../../simulation/scenarios/customGeodesic"
 import { useSimulationStore } from "../../store/useSimulationStore"
 import { formatMeters, formatObservable, formatSeconds, formatSolarMasses } from "./formatters"
 
@@ -218,12 +219,25 @@ function EquationsTabContent({ scenario }: { scenario: SimulationScenario }) {
   const metricKey = Object.keys(LINE_ELEMENTS).find((key) =>
     scenario.metric.name.startsWith(key),
   )
+  const custom = scenario.id === "custom-metric" ? getCustomMetricDefinition() : null
 
   return (
     <>
       <div className="equation-block">
-        <span className="hud-stat-label">Elemento de linha</span>
-        <code>{metricKey ? LINE_ELEMENTS[metricKey] : "—"}</code>
+        <span className="hud-stat-label">
+          {custom ? "Componentes definidas pelo usuário" : "Elemento de linha"}
+        </span>
+        {custom ? (
+          <code>
+            g_tt = {custom.gtt}
+            {"\n"}g_tφ = {custom.gtphi}
+            {"\n"}g_rr = {custom.grr}
+            {"\n"}g_θθ = {custom.gthth}
+            {"\n"}g_φφ = {custom.gphph}
+          </code>
+        ) : (
+          <code>{metricKey ? LINE_ELEMENTS[metricKey] : "—"}</code>
+        )}
       </div>
       <div className="equation-block">
         <span className="hud-stat-label">Equação da geodésica</span>
@@ -250,6 +264,8 @@ export function ResultsPanel({ compact }: { compact: boolean }) {
   const experimentParams = useSimulationStore((state) => state.experimentParams)
   const snapshotRaw = useSimulationStore((state) => state.relativitySnapshot)
   const paused = useSimulationStore((state) => state.paused)
+  // Re-renderiza quando a métrica personalizada é reaplicada (nonce).
+  useSimulationStore((state) => state.relativityResetNonce)
 
   const scenario = createScenario(activeScenarioId, experimentParams)
   const snapshot = snapshotRaw?.scenarioId === scenario.id ? snapshotRaw : null

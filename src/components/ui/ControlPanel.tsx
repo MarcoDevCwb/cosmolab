@@ -1,8 +1,13 @@
+import { useState } from "react"
 import {
   ISCO_RADIUS_RS,
   PHOTON_CRITICAL_IMPACT_RS,
 } from "../../physics/relativity/metrics/schwarzschild"
 import { SCENARIO_SUMMARIES, createScenario } from "../../simulation/scenarios"
+import {
+  getCustomMetricDefinition,
+  setCustomMetricDefinition,
+} from "../../simulation/scenarios/customGeodesic"
 import type { ExperimentParams, ScenarioId } from "../../simulation/scenarios"
 import type { ScientificStatus } from "../../simulation/scenarios/types"
 import { useSimulationStore } from "../../store/useSimulationStore"
@@ -77,6 +82,18 @@ const SLIDERS_BY_SCENARIO: Record<ScenarioId, SliderSpec[]> = {
     MASS_SLIDER,
     { key: "startRadiusRs", label: "Raio de partida r₀", min: 1.2, max: 30, step: 0.1, format: formatRs },
   ],
+  "custom-metric": [
+    MASS_SLIDER,
+    { key: "startRadiusRs", label: "Raio inicial r₀ [M = GM/c²]", min: 3, max: 60, step: 0.5, format: (v) => `${v.toFixed(1)} M` },
+    {
+      key: "angularVelocityFraction",
+      label: "Velocidade angular (× circular)",
+      min: 0,
+      max: 1.25,
+      step: 0.01,
+      format: (v) => `${Math.round(v * 100)}%`,
+    },
+  ],
   "kerr-frame-dragging": [
     MASS_SLIDER,
     { key: "startRadiusRs", label: "Raio de partida r₀", min: 1.5, max: 30, step: 0.1, format: formatRs },
@@ -99,11 +116,88 @@ function physicalWarning(scenarioId: ScenarioId, params: ExperimentParams): stri
   return null
 }
 
+/** Campos do editor de g_μν (cenário de métrica personalizada). */
+const METRIC_FIELDS = [
+  { key: "gtt", label: "g_tt" },
+  { key: "gtphi", label: "g_tφ" },
+  { key: "grr", label: "g_rr" },
+  { key: "gthth", label: "g_θθ" },
+  { key: "gphph", label: "g_φφ" },
+] as const
+
+function MetricEditor() {
+  const requestRelativityReset = useSimulationStore((state) => state.requestRelativityReset)
+  const [draft, setDraft] = useState(getCustomMetricDefinition())
+  const [error, setError] = useState<string | null>(null)
+  const [applied, setApplied] = useState(false)
+
+  const apply = () => {
+    const result = setCustomMetricDefinition(draft)
+    if (result.ok) {
+      setError(null)
+      setApplied(true)
+      requestRelativityReset()
+    } else {
+      setError(result.error)
+      setApplied(false)
+    }
+  }
+
+  return (
+    <div className="metric-editor">
+      <div className="hud-section-kicker spaced">editor de métrica g_μν</div>
+      <p className="editor-hint">
+        variáveis: <code>r</code>, <code>theta</code>, <code>phi</code>, <code>ct</code> [m/rad] e{" "}
+        <code>M</code> = GM/c² [m] · funções: sqrt, sin, cos, tan, pow, abs, exp, log, PI
+      </p>
+
+      <label className="editor-row">
+        <span>nome</span>
+        <input
+          type="text"
+          value={draft.name}
+          onChange={(e) => {
+            setDraft({ ...draft, name: e.target.value })
+            setApplied(false)
+          }}
+        />
+      </label>
+
+      {METRIC_FIELDS.map((field) => (
+        <label className="editor-row" key={field.key}>
+          <span>{field.label}</span>
+          <input
+            type="text"
+            spellCheck={false}
+            value={draft[field.key]}
+            onChange={(e) => {
+              setDraft({ ...draft, [field.key]: e.target.value })
+              setApplied(false)
+            }}
+          />
+        </label>
+      ))}
+
+      <button type="button" className="toolbar-btn editor-apply" onClick={apply}>
+        <span aria-hidden>⚙</span>
+        {applied ? "aplicada ✓" : "aplicar métrica"}
+      </button>
+      {error && <p className="param-warning">{error}</p>}
+      <p className="editor-hint">
+        Ex.: Reissner–Nordström → troque <code>2*M/r</code> por <code>2*M/r − 0.36*M*M/(r*r)</code>{" "}
+        em g_tt e g_rr (Q = 0,6 M).
+      </p>
+    </div>
+  )
+}
+
 export function ControlPanel({ compact }: { compact: boolean }) {
   const activeScenarioId = useSimulationStore((state) => state.activeScenarioId)
   const setActiveScenarioId = useSimulationStore((state) => state.setActiveScenarioId)
   const experimentParams = useSimulationStore((state) => state.experimentParams)
   const setExperimentParams = useSimulationStore((state) => state.setExperimentParams)
+  // Re-renderiza quando a métrica personalizada é reaplicada (nonce).
+  useSimulationStore((state) => state.relativityResetNonce)
 
   const scenario = createScenario(activeScenarioId, experimentParams)
   const sliders = SLIDERS_BY_SCENARIO[activeScenarioId]
@@ -132,8 +226,12 @@ export function ControlPanel({ compact }: { compact: boolean }) {
         <span className="context-strong">{scenario.metric.name.replace(/\s*\(\d+\)/, "")}</span>
         <i className="context-sep" />
         <span
-          className="focus-chip status-validated"
-          title="Status científico: reproduzido numericamente contra resultados analíticos nos testes do projeto"
+          className={`focus-chip status-${scenario.scientificStatus}`}
+          title={
+            scenario.scientificStatus === "speculative"
+              ? "Status científico: geometria definida pelo usuário, SEM validação analítica — confie apenas no que o painel de validação numérica confirmar"
+              : "Status científico: reproduzido numericamente contra resultados analíticos nos testes do projeto"
+          }
         >
           {SCIENTIFIC_STATUS_LABELS[scenario.scientificStatus]}
         </span>
@@ -171,6 +269,8 @@ export function ControlPanel({ compact }: { compact: boolean }) {
           {warning && <p className="param-warning">{warning}</p>}
         </div>
       )}
+
+      {activeScenarioId === "custom-metric" && <MetricEditor />}
     </aside>
   )
 }

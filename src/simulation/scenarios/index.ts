@@ -8,6 +8,7 @@
  * registrá-la aqui — nenhuma outra parte do sistema muda.
  */
 
+import { createCustomGeodesicScenario } from "./customGeodesic"
 import { createFlatSpacePhotonScenario } from "./flatSpacePhoton"
 import { createKerrFrameDraggingScenario } from "./kerrFrameDragging"
 import { createPainleveInfallScenario } from "./painleveInfall"
@@ -67,6 +68,14 @@ export const DEFAULT_EXPERIMENT_PARAMS: Record<ScenarioId, ExperimentParams> = {
     angularVelocityFraction: 0,
     spinFraction: 0.9,
   },
+  // Métrica do usuário: r₀ em unidades de M = GM/c² (não de r_s).
+  "custom-metric": {
+    massSolar: 10,
+    impactParameterRs: 0,
+    startRadiusRs: 12,
+    angularVelocityFraction: 0.95,
+    spinFraction: 0,
+  },
 }
 
 const SCENARIO_FACTORIES: Record<
@@ -79,6 +88,7 @@ const SCENARIO_FACTORIES: Record<
   "schwarzschild-horizon": createSchwarzschildHorizonScenario,
   "painleve-infall": createPainleveInfallScenario,
   "kerr-frame-dragging": createKerrFrameDraggingScenario,
+  "custom-metric": createCustomGeodesicScenario,
 }
 
 export const SCENARIO_IDS = Object.keys(SCENARIO_FACTORIES) as ScenarioId[]
@@ -95,4 +105,5 @@ export const SCENARIO_SUMMARIES: { id: ScenarioId; label: string }[] = [
   { id: "schwarzschild-horizon", label: "Horizonte" },
   { id: "painleve-infall", label: "Através do horizonte" },
   { id: "kerr-frame-dragging", label: "Kerr — arrasto" },
+  { id: "custom-metric", label: "Métrica personalizada" },
 ]

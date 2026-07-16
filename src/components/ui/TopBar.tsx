@@ -17,6 +17,8 @@ export function TopBar({ compact }: { compact: boolean }) {
   const experimentParams = useSimulationStore((state) => state.experimentParams)
   const snapshot = useSimulationStore((state) => state.relativitySnapshot)
   const renderFps = useSimulationStore((state) => state.renderFps)
+  // Re-renderiza quando a métrica personalizada é reaplicada (nonce).
+  useSimulationStore((state) => state.relativityResetNonce)
 
   const scenario = createScenario(activeScenarioId, experimentParams)
 

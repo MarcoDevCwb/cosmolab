@@ -29,6 +29,7 @@ export type ScenarioId =
   | "schwarzschild-horizon"
   | "painleve-infall"
   | "kerr-frame-dragging"
+  | "custom-metric"
 
 /**
  * Parâmetros ajustáveis do experimento (a "bancada" do laboratório).
