@@ -94,6 +94,20 @@ function ResultsTabContent({
         </div>
       </div>
 
+      {snapshot?.futureTravelS !== null && snapshot?.futureTravelS !== undefined && (
+        <div
+          className="future-card"
+          title="Δ = t − τ: dilatação temporal acumulada. É viagem ao futuro em sentido literal — o mesmo efeito medido com relógios atômicos em aviões (Hafele–Keating, 1972)."
+        >
+          <span className="hud-stat-label">Salto ao futuro Δ = t − τ</span>
+          <strong>{formatSeconds(snapshot.futureTravelS)}</strong>
+          <small>
+            quanto o observador distante envelheceu a mais que a partícula — viagem ao futuro
+            literal (paradoxo dos gêmeos)
+          </small>
+        </div>
+      )}
+
       <div className="telemetry-grid telemetry-grid-advanced">
         <div className="telemetry-card">
           <span>Massa central</span>

@@ -73,6 +73,13 @@ export type RelativitySnapshot = {
   lambdaM: number
   coordinateTimeS: number
   properTimeS: number | null
+  /**
+   * Salto ao futuro Δ = t − τ [s]: quanto o observador distante envelheceu
+   * A MAIS que a partícula — dilatação temporal acumulada, que é viagem ao
+   * futuro em sentido literal (paradoxo dos gêmeos; Hafele–Keating 1972).
+   * null para fótons (não há relógio próprio).
+   */
+  futureTravelS: number | null
 
   position: Vector4
   velocity: Vector4
@@ -231,6 +238,10 @@ export class GeodesicSimulationRunner {
       lambdaM: this.lambdaM,
       coordinateTimeS: position[0] / SPEED_OF_LIGHT,
       properTimeS: scenario.kind === "timelike" ? this.lambdaM / SPEED_OF_LIGHT : null,
+      futureTravelS:
+        scenario.kind === "timelike"
+          ? position[0] / SPEED_OF_LIGHT - this.lambdaM / SPEED_OF_LIGHT
+          : null,
 
       position,
       velocity: velocityOf(this.state),

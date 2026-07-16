@@ -1731,3 +1731,75 @@
   gap: 7px;
   margin-top: 10px;
 }
+
+/* ===== v0.7.1: fim do scroll lateral nos painéis ===== */
+
+.lab-left,
+.lab-right {
+  overflow-x: hidden;
+}
+
+.focus-heading {
+  flex-wrap: wrap;
+  row-gap: 6px;
+}
+
+.results-tabs {
+  flex-wrap: wrap;
+  row-gap: 4px;
+}
+
+.results-tab {
+  padding: 6px 9px;
+}
+
+.telemetry-card span,
+.telemetry-card strong,
+.clock-card strong,
+.hero-value {
+  min-width: 0;
+  overflow-wrap: break-word;
+}
+
+.hero-head {
+  flex-wrap: wrap;
+  row-gap: 4px;
+}
+
+.equation-block code {
+  overflow-wrap: anywhere;
+}
+
+@media (max-width: 860px) {
+  .cosmos-shell.compact .hud-layer {
+    overflow-x: hidden;
+  }
+}
+
+.future-card {
+  margin: 10px 0 14px;
+  padding: 13px 14px 11px;
+  border: 1px solid rgba(240, 171, 252, 0.3);
+  border-radius: 16px;
+  background:
+    radial-gradient(circle at 85% 0%, rgba(240, 171, 252, 0.12), transparent 55%),
+    rgba(8, 15, 29, 0.65);
+  cursor: help;
+}
+
+.future-card strong {
+  display: block;
+  margin-top: 5px;
+  color: #fce7ff;
+  font-size: 19px;
+  letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums;
+}
+
+.future-card small {
+  display: block;
+  margin-top: 5px;
+  color: rgba(148, 163, 184, 0.75);
+  font-size: 10.5px;
+  line-height: 1.45;
+}
