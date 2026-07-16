@@ -24,6 +24,9 @@ temporário + o Chromium já em cache:
   (atenção: `chrome-linux64`, não `chrome-linux`).
 - `page.goto` com `waitUntil: "load"` — `networkidle` NUNCA dispara
   (WebSocket de HMR/render loop) e estoura timeout.
+- Lançar o Chromium com `--disable-background-timer-throttling
+  --disable-backgrounding-occluded-windows --disable-renderer-backgrounding`,
+  senão o rAF cai a ~1 Hz (página ocluída) e a simulação parece parada.
 - Esperar `.param-cluster` aparecer antes de interagir.
 - Sliders `input[type=range]`: `locator.fill()` falha com "Malformed
   value"; use setter nativo via `evaluate` + dispatch de evento `input`.

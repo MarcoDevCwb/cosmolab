@@ -56,10 +56,22 @@ export function CausalMarkers({ scenario }: { scenario: SimulationScenario }) {
     <>
       {/* Horizonte de eventos (r_s em Schwarzschild, r₊ em Kerr). */}
       {horizonRadiusUnits !== null && (
-        <mesh position={[0, funnelDepthUnits, 0]}>
-          <sphereGeometry args={[Math.max(horizonRadiusUnits, 0.04), 48, 48]} />
-          <meshBasicMaterial color="#000000" />
-        </mesh>
+        <>
+          <mesh position={[0, funnelDepthUnits, 0]}>
+            <sphereGeometry args={[Math.max(horizonRadiusUnits, 0.04), 48, 48]} />
+            <meshBasicMaterial
+              color="#000000"
+              transparent={(scenario.horizonOpacity ?? 1) < 1}
+              opacity={scenario.horizonOpacity ?? 1}
+            />
+          </mesh>
+          {(scenario.horizonOpacity ?? 1) < 1 && (
+            <mesh position={[0, funnelDepthUnits, 0]}>
+              <sphereGeometry args={[Math.max(horizonRadiusUnits, 0.04) * 1.001, 32, 32]} />
+              <meshBasicMaterial color="#7c3aed" transparent opacity={0.3} wireframe />
+            </mesh>
+          )}
+        </>
       )}
 
       {/* Ergosfera de Kerr (equador): entre r₊ e r_E ninguém fica parado. */}

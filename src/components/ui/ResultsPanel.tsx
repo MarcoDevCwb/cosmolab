@@ -20,6 +20,8 @@ const LINE_ELEMENTS: Record<string, string> = {
   Minkowski: "ds² = −(c dt)² + dx² + dy² + dz²",
   Schwarzschild:
     "ds² = −f·(c dt)² + f⁻¹·dr² + r²·dθ² + r²sin²θ·dφ²,  f = 1 − r_s/r",
+  "Painlevé–Gullstrand":
+    "ds² = −f·(c dT)² + 2√(r_s/r)·(c dT)·dr + dr² + r²·dΩ²,  f = 1 − r_s/r",
   Kerr: "ds² = −(1 − 2Mr/Σ)(c dt)² − (4Mar sin²θ/Σ)·c dt·dφ + (Σ/Δ)dr² + Σdθ² + (r² + a² + 2Ma²r sin²θ/Σ)sin²θ·dφ²",
 }
 

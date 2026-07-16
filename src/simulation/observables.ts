@@ -8,6 +8,7 @@
  * a UI apenas formata o resultado.
  */
 
+import { SPEED_OF_LIGHT } from "../physics/constants"
 import {
   angleBetween2D,
   equatorialCartesianDirection,
@@ -16,7 +17,15 @@ import type { GeodesicState } from "../physics/relativity/geodesic"
 import type { SpacetimeMetric } from "../physics/relativity/metric"
 import { specificAngularMomentum } from "../physics/relativity/validation"
 
-export type ObservableUnit = "arcsec" | "deg" | "deg-per-orbit" | "ratio" | "count" | "rs" | "m"
+export type ObservableUnit =
+  | "arcsec"
+  | "deg"
+  | "deg-per-orbit"
+  | "ratio"
+  | "count"
+  | "rs"
+  | "m"
+  | "s"
 
 /**
  * Origem epistemológica do valor exibido — a UI NUNCA deve apresentar uma
@@ -41,8 +50,8 @@ export type ScenarioObservable = {
 }
 
 export type ObservableTracker = {
-  /** Chamado após cada passo do integrador. */
-  update(state: GeodesicState): void
+  /** Chamado após cada passo do integrador (λ em metros). */
+  update(state: GeodesicState, lambdaM: number): void
   /** Lê os observáveis no estado atual. */
   read(state: GeodesicState): ScenarioObservable[]
 }
@@ -241,6 +250,66 @@ export function createInfallTracker(schwarzschildRadiusM: number): ObservableTra
           provenance: "numeric",
         },
       ]
+    },
+  }
+}
+
+/**
+ * Cruzamento do horizonte em coordenadas regulares (Painlevé–Gullstrand):
+ * acompanha r/r_s e registra o tempo próprio τ (via λ = c·τ) no instante
+ * INTERPOLADO em que r cruza r_s. Em PG nada diverge ali — o observável
+ * demonstra que o horizonte é um lugar como outro qualquer para quem cai.
+ */
+export function createHorizonCrossingTracker(schwarzschildRadiusM: number): ObservableTracker {
+  let previous: { radiusM: number; lambdaM: number } | null = null
+  let crossingProperTimeS: number | null = null
+
+  return {
+    update(state, lambdaM) {
+      const radiusM = state[1]
+      if (
+        crossingProperTimeS === null &&
+        previous !== null &&
+        previous.radiusM > schwarzschildRadiusM &&
+        radiusM <= schwarzschildRadiusM
+      ) {
+        const fraction =
+          (previous.radiusM - schwarzschildRadiusM) / (previous.radiusM - radiusM)
+        const crossingLambdaM = previous.lambdaM + fraction * (lambdaM - previous.lambdaM)
+        crossingProperTimeS = crossingLambdaM / SPEED_OF_LIGHT
+      }
+      previous = { radiusM, lambdaM }
+    },
+    read(state) {
+      const observables: ScenarioObservable[] = [
+        {
+          id: "radius-over-rs",
+          label: "Raio atual r / r_s",
+          value: state[1] / schwarzschildRadiusM,
+          unit: "rs",
+          provenance: "numeric",
+          hero: true,
+        },
+        {
+          id: "rain-time-rate",
+          label: "dT/dτ (tempo-chuva)",
+          value: state[4],
+          unit: "ratio",
+          provenance: "numeric",
+        },
+      ]
+
+      if (crossingProperTimeS !== null) {
+        observables.splice(1, 0, {
+          id: "crossing-tau",
+          label: "τ ao cruzar o horizonte",
+          value: crossingProperTimeS,
+          unit: "s",
+          provenance: "numeric",
+        })
+      }
+
+      return observables
     },
   }
 }

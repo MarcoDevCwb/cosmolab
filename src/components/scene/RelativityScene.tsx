@@ -51,10 +51,11 @@ function RelativityRig({ compact }: RelativitySceneProps) {
 
   useFrame((_, delta) => {
     if (!paused) {
-      // Teto no passo de tempo: se o quadro atrasar, a reprodução desacelera
-      // em vez de aumentar o trabalho por quadro (evita espiral de queda de FPS
-      // em métricas com Christoffels numéricos).
-      runner.advanceBySeconds(Math.min(delta, 0.05))
+      // Teto no passo de tempo: se o quadro atrasar muito, a reprodução
+      // desacelera em vez de aumentar o trabalho por quadro sem limite
+      // (evita espiral de queda de FPS). 0,25 s não afeta browsers reais
+      // (≥ 4 fps) e limita o custo por quadro em abas limitadas pelo SO.
+      runner.advanceBySeconds(Math.min(delta, 0.25))
     }
 
     fpsRef.current = fpsRef.current * 0.9 + (1 / Math.max(delta, 1e-4)) * 0.1

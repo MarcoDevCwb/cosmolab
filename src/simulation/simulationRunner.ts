@@ -180,7 +180,7 @@ export class GeodesicSimulationRunner {
       this.state = next
       this.lambdaM += consumed
       remaining -= consumed
-      this.observables?.update(this.state)
+      this.observables?.update(this.state, this.lambdaM)
 
       if (this.lambdaM - this.lastSampleLambdaM >= this.scenario.sampleIntervalLambdaM) {
         this.recordSample()

@@ -10,6 +10,7 @@
 
 import { createFlatSpacePhotonScenario } from "./flatSpacePhoton"
 import { createKerrFrameDraggingScenario } from "./kerrFrameDragging"
+import { createPainleveInfallScenario } from "./painleveInfall"
 import { createRelativisticOrbitScenario } from "./relativisticOrbit"
 import { createSchwarzschildHorizonScenario } from "./schwarzschildHorizon"
 import {
@@ -52,6 +53,13 @@ export const DEFAULT_EXPERIMENT_PARAMS: Record<ScenarioId, ExperimentParams> = {
     angularVelocityFraction: 0,
     spinFraction: 0,
   },
+  "painleve-infall": {
+    massSolar: 10,
+    impactParameterRs: 0,
+    startRadiusRs: 6,
+    angularVelocityFraction: 0,
+    spinFraction: 0,
+  },
   "kerr-frame-dragging": {
     massSolar: 10,
     impactParameterRs: 0,
@@ -69,6 +77,7 @@ const SCENARIO_FACTORIES: Record<
   "solar-light-deflection": createLightDeflectionScenario,
   "relativistic-orbit": createRelativisticOrbitScenario,
   "schwarzschild-horizon": createSchwarzschildHorizonScenario,
+  "painleve-infall": createPainleveInfallScenario,
   "kerr-frame-dragging": createKerrFrameDraggingScenario,
 }
 
@@ -84,5 +93,6 @@ export const SCENARIO_SUMMARIES: { id: ScenarioId; label: string }[] = [
   { id: "solar-light-deflection", label: "Deflexão da luz" },
   { id: "relativistic-orbit", label: "Órbita relativística" },
   { id: "schwarzschild-horizon", label: "Horizonte" },
+  { id: "painleve-infall", label: "Através do horizonte" },
   { id: "kerr-frame-dragging", label: "Kerr — arrasto" },
 ]

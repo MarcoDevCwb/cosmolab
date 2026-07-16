@@ -27,6 +27,7 @@ export type ScenarioId =
   | "solar-light-deflection"
   | "relativistic-orbit"
   | "schwarzschild-horizon"
+  | "painleve-infall"
   | "kerr-frame-dragging"
 
 /**
@@ -96,6 +97,9 @@ export type SimulationScenario = {
   surface?: "flamm" | "flat"
   /** Raio do horizonte [m] quando difere de r_s (ex.: r₊ de Kerr). */
   horizonRadiusM?: number
+  /** Opacidade do horizonte na cena (1 = sólido; <1 quando a trajetória
+   * continua visível do lado de dentro, ex.: Painlevé–Gullstrand). */
+  horizonOpacity?: number
   /** Raio equatorial da ergosfera [m] (apenas Kerr). */
   ergosphereEquatorRadiusM?: number
 

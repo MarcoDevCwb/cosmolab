@@ -73,6 +73,10 @@ const SLIDERS_BY_SCENARIO: Record<ScenarioId, SliderSpec[]> = {
     MASS_SLIDER,
     { key: "startRadiusRs", label: "Raio de partida r₀", min: 1.2, max: 30, step: 0.1, format: formatRs },
   ],
+  "painleve-infall": [
+    MASS_SLIDER,
+    { key: "startRadiusRs", label: "Raio de partida r₀", min: 1.2, max: 30, step: 0.1, format: formatRs },
+  ],
   "kerr-frame-dragging": [
     MASS_SLIDER,
     { key: "startRadiusRs", label: "Raio de partida r₀", min: 1.5, max: 30, step: 0.1, format: formatRs },

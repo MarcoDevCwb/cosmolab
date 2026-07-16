@@ -88,5 +88,7 @@ export function formatObservable(value: number, unit: ObservableUnit): string {
       return `${value.toFixed(3)} r_s`
     case "m":
       return formatMeters(value)
+    case "s":
+      return formatSeconds(value)
   }
 }
