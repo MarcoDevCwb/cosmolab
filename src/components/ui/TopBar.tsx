@@ -21,7 +21,12 @@ export function TopBar({ compact }: { compact: boolean }) {
   // Re-renderiza quando a métrica personalizada é reaplicada (nonce).
   useSimulationStore((state) => state.relativityResetNonce)
 
-  const scenario = createScenario(activeScenarioId, experimentParams)
+  // Em modo Atlas o contexto é o par de cartas — nunca o cenário de origem
+  // (cujos parâmetros sanitizados poderiam ser inválidos para ele).
+  const scenario = createScenario(
+    atlasMode ? "schwarzschild-horizon" : activeScenarioId,
+    experimentParams,
+  )
 
   return (
     <header className="lab-topbar glass-panel">

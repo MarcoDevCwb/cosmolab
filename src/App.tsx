@@ -2,6 +2,7 @@ import { useEffect } from "react"
 import "./App.css"
 import { CoordinateAtlas } from "./components/atlas/CoordinateAtlas"
 import { RelativityScene } from "./components/scene/RelativityScene"
+import { CrashGuard } from "./components/ui/CrashGuard"
 import { RelativityHud } from "./components/ui/RelativityHud"
 import { useCompactMode } from "./hooks/useCompactMode"
 import { readExperimentFromUrl, writeExperimentToUrl } from "./store/urlState"
@@ -43,8 +44,10 @@ function App() {
         <div className="cosmos-aura aura-two" />
         <div className="cosmos-grain" />
 
-        {atlasMode ? <CoordinateAtlas /> : <RelativityScene compact={compact} />}
-        <RelativityHud compact={compact} />
+        <CrashGuard>
+          {atlasMode ? <CoordinateAtlas /> : <RelativityScene compact={compact} />}
+          <RelativityHud compact={compact} />
+        </CrashGuard>
       </div>
     </main>
   )

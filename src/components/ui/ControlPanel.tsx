@@ -212,7 +212,12 @@ export function ControlPanel({ compact }: { compact: boolean }) {
   // Re-renderiza quando a métrica personalizada é reaplicada (nonce).
   useSimulationStore((state) => state.relativityResetNonce)
 
-  const scenario = createScenario(activeScenarioId, experimentParams)
+  // Em modo Atlas o contexto é o par de cartas (parâmetros de origem podem
+  // ser inválidos para o cenário anterior — ex.: b = 0 na deflexão).
+  const scenario = createScenario(
+    atlasMode ? "schwarzschild-horizon" : activeScenarioId,
+    experimentParams,
+  )
   const sliders = atlasMode
     ? SLIDERS_BY_SCENARIO["painleve-infall"]
     : SLIDERS_BY_SCENARIO[activeScenarioId]

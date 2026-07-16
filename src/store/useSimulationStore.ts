@@ -71,7 +71,28 @@ export const useSimulationStore = create<SimulationState>((set) => ({
     })),
   setRelativitySnapshot: (relativitySnapshot) => set({ relativitySnapshot }),
   setAtlasMode: (atlasMode) =>
-    set((state) => ({ atlasMode, relativityResetNonce: state.relativityResetNonce + 1 })),
+    set((state) => {
+      // O Atlas compara a queda de Schwarzschild×PG: ao entrar, herda massa
+      // e r₀ APENAS se fizerem sentido físico para esse par (vindo de Gödel,
+      // massSolar = 0 derrubava a criação da métrica — tela preta).
+      const current = state.experimentParams
+      const experimentParams = atlasMode
+        ? {
+            ...DEFAULT_EXPERIMENT_PARAMS["schwarzschild-horizon"],
+            massSolar:
+              current.massSolar >= 0.1 && current.massSolar <= 1e9 ? current.massSolar : 10,
+            startRadiusRs:
+              current.startRadiusRs >= 1.2 && current.startRadiusRs <= 30
+                ? current.startRadiusRs
+                : 6,
+          }
+        : current
+      return {
+        atlasMode,
+        experimentParams,
+        relativityResetNonce: state.relativityResetNonce + 1,
+      }
+    }),
   setRenderFps: (renderFps) => set({ renderFps }),
   requestRelativityReset: () =>
     set((state) => ({ relativityResetNonce: state.relativityResetNonce + 1 })),
