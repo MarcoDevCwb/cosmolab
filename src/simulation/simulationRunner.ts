@@ -22,8 +22,8 @@ import type { ValidationReport } from "../physics/relativity/validation"
 import { buildValidationReport } from "../physics/relativity/validation"
 import type { CausalityDiagnostic } from "../physics/relativity/causality"
 import { causalityDiagnostic } from "../physics/relativity/causality"
-import type { CurvatureInvariants } from "../physics/relativity/curvature"
-import { curvatureInvariants } from "../physics/relativity/curvature"
+import type { CurvatureInvariants, MatterDiagnostic } from "../physics/relativity/curvature"
+import { curvatureInvariants, matterDiagnostic } from "../physics/relativity/curvature"
 import {
   createDormandPrince54Controller,
   type DormandPrince54Controller,
@@ -106,6 +106,8 @@ export type RelativitySnapshot = {
   invariants: CurvatureInvariants
   /** Diagnóstico de CTC no ponto: sinal de g_φφ do círculo axial fechado. */
   causality: CausalityDiagnostic
+  /** Matéria exigida pelas equações de campo no ponto (ρ, p_r, NEC). */
+  matter: MatterDiagnostic | null
 }
 
 function relativeDrift(current: number, initial: number): number {
@@ -267,6 +269,12 @@ export class GeodesicSimulationRunner {
         1,
       ]),
       causality: causalityDiagnostic(scenario.metric, position),
+      matter: matterDiagnostic(scenario.metric, position, [
+        Math.max(Math.abs(position[1]), 1),
+        Math.max(Math.abs(position[1]), 1),
+        1,
+        1,
+      ]),
       halted: this.halted,
       haltReason: this.haltReason,
       samples: [...this.samples],
