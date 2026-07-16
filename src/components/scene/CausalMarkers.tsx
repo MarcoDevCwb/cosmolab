@@ -52,6 +52,23 @@ export function CausalMarkers({ scenario }: { scenario: SimulationScenario }) {
     [ergosphereRadiusUnits, scale],
   )
 
+  // Fronteira e região de CTCs (g_φφ < 0) — Gödel e afins.
+  const ctcRadiusUnits = scenario.ctcRadiusM ? scenario.ctcRadiusM / scale : null
+  const ctcBoundaryPoints = useMemo(
+    () =>
+      ctcRadiusUnits !== null ? buildSurfaceRingPoints(0, scale, ctcRadiusUnits * scale) : null,
+    [ctcRadiusUnits, scale],
+  )
+  const ctcDemoLoopPoints = useMemo(
+    () =>
+      ctcRadiusUnits !== null
+        ? buildSurfaceRingPoints(0, scale, ctcRadiusUnits * 1.35 * scale).map(
+            ([x, , z]) => [x, 0.02, z] as [number, number, number],
+          )
+        : null,
+    [ctcRadiusUnits, scale],
+  )
+
   return (
     <>
       {/* Horizonte de eventos (r_s em Schwarzschild, r₊ em Kerr). */}
@@ -91,6 +108,40 @@ export function CausalMarkers({ scenario }: { scenario: SimulationScenario }) {
               dashed
               dashSize={0.2}
               gapSize={0.12}
+            />
+          )}
+        </>
+      )}
+
+      {/* Região de CTCs (g_φφ < 0): além da fronteira, círculos de φ são
+          curvas temporais FECHADAS. A física vem da métrica (causality.ts);
+          aqui só desenho. */}
+      {ctcRadiusUnits !== null && ctcBoundaryPoints && (
+        <>
+          <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.004, 0]}>
+            <ringGeometry args={[ctcRadiusUnits, SURFACE_RIM_UNITS, 96]} />
+            <meshBasicMaterial color="#f43f5e" transparent opacity={0.09} side={2} />
+          </mesh>
+          <Line
+            points={ctcBoundaryPoints.map(([x, , z]) => [x, 0.006, z] as const)}
+            color="#f43f5e"
+            lineWidth={1.8}
+            transparent
+            opacity={0.8}
+            dashed
+            dashSize={0.24}
+            gapSize={0.14}
+          />
+          {/* CTC demonstrativa: curva temporal FECHADA (não-geodésica —
+              percorrê-la exige propulsão; Malament 1985). */}
+          {ctcDemoLoopPoints && (
+            <Line
+              points={ctcDemoLoopPoints}
+              color="#fb7185"
+              lineWidth={2.4}
+              transparent
+              opacity={0.9}
+              toneMapped={false}
             />
           )}
         </>

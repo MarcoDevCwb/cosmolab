@@ -48,6 +48,19 @@ export function mapCoordinatesToRenderSpace(
     }
   }
 
+  // Carta cilíndrica (r, z, φ): plano horizontal r–φ, eixo z para cima.
+  if (chart === "cylindrical") {
+    const r = position[1]
+    const z = position[2]
+    const phi = position[3]
+
+    return {
+      x: (r * Math.cos(phi)) / renderScaleM,
+      y: z / renderScaleM,
+      z: (r * Math.sin(phi)) / renderScaleM,
+    }
+  }
+
   return {
     x: position[1] / renderScaleM,
     y: position[3] / renderScaleM,
@@ -74,9 +87,9 @@ export function createEmbeddedSurfaceMapper(
   return function mapToEmbeddedSurface(position: Vector4): RenderPosition {
     const flat = mapCoordinatesToRenderSpace(position, chart, renderScaleM)
     const radiusM =
-      chart === "spherical"
-        ? position[1]
-        : Math.hypot(position[1], position[2], position[3])
+      chart === "cartesian"
+        ? Math.hypot(position[1], position[2], position[3])
+        : position[1]
 
     return {
       x: flat.x,

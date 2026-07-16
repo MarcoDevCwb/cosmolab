@@ -82,6 +82,17 @@ const SLIDERS_BY_SCENARIO: Record<ScenarioId, SliderSpec[]> = {
     MASS_SLIDER,
     { key: "startRadiusRs", label: "Raio de partida r₀", min: 1.2, max: 30, step: 0.1, format: formatRs },
   ],
+  "godel-universe": [
+    { key: "startRadiusRs", label: "Raio inicial r₀ [r_CTC]", min: 0.1, max: 2.4, step: 0.05, format: (v) => `${v.toFixed(2)} r_CTC` },
+    {
+      key: "angularVelocityFraction",
+      label: "Velocidade angular inicial (× ω_Gödel)",
+      min: -1.2,
+      max: 1.2,
+      step: 0.05,
+      format: (v) => `${(v * 100).toFixed(0)}%`,
+    },
+  ],
   "custom-metric": [
     MASS_SLIDER,
     { key: "startRadiusRs", label: "Raio inicial r₀ [M = GM/c²]", min: 3, max: 60, step: 0.5, format: (v) => `${v.toFixed(1)} M` },

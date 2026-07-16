@@ -315,6 +315,52 @@ export function createHorizonCrossingTracker(schwarzschildRadiusM: number): Obse
 }
 
 /**
+ * Causalidade no universo de Gödel: posição relativa à fronteira de CTCs
+ * (r_CTC onde g_φφ = 0) e a norma do círculo axial no ponto — o detector
+ * direto de curvas temporais fechadas.
+ */
+export function createCausalityTracker(
+  metric: SpacetimeMetric,
+  ctcRadiusM: number,
+): ObservableTracker {
+  return {
+    update() {},
+    read(state) {
+      const gPhiPhi = metric.metric([state[0], state[1], state[2], state[3]])[3][3]
+      const inside = gPhiPhi < 0
+
+      return [
+        {
+          id: "ctc-proximity",
+          label: "Posição vs fronteira de CTCs",
+          value: state[1] / ctcRadiusM,
+          unit: "ratio",
+          provenance: "numeric",
+          regimeWarning: inside
+            ? "região ACAUSAL: os círculos de φ por aqui são curvas temporais FECHADAS (g_φφ < 0) — percorrê-las exige propulsão, não são geodésicas"
+            : undefined,
+          hero: true,
+        },
+        {
+          id: "azimuthal-norm",
+          label: "g_φφ do círculo fechado",
+          value: gPhiPhi,
+          unit: "m",
+          provenance: "numeric",
+        },
+        {
+          id: "orbits",
+          label: "Voltas completadas",
+          value: state[3] / (2 * Math.PI),
+          unit: "count",
+          provenance: "numeric",
+        },
+      ]
+    },
+  }
+}
+
+/**
  * Arrasto de referenciais (Lense–Thirring) em Kerr: a partícula parte do
  * repouso com momento angular NULO e mesmo assim gira — φ acumulado mede o
  * arrasto do próprio espaço-tempo. L = g_φμu^μ permanece zero (Killing ∂_φ),

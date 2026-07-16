@@ -20,6 +20,8 @@ import { isWithinBounds } from "../physics/relativity/metric"
 import type { Vector4 } from "../physics/relativity/tensor"
 import type { ValidationReport } from "../physics/relativity/validation"
 import { buildValidationReport } from "../physics/relativity/validation"
+import type { CausalityDiagnostic } from "../physics/relativity/causality"
+import { causalityDiagnostic } from "../physics/relativity/causality"
 import type { CurvatureInvariants } from "../physics/relativity/curvature"
 import { curvatureInvariants } from "../physics/relativity/curvature"
 import {
@@ -102,6 +104,8 @@ export type RelativitySnapshot = {
   integrator: IntegratorStats
   /** Invariantes de curvatura na posição atual (R, K) — independentes de carta. */
   invariants: CurvatureInvariants
+  /** Diagnóstico de CTC no ponto: sinal de g_φφ do círculo axial fechado. */
+  causality: CausalityDiagnostic
 }
 
 function relativeDrift(current: number, initial: number): number {
@@ -262,6 +266,7 @@ export class GeodesicSimulationRunner {
         1,
         1,
       ]),
+      causality: causalityDiagnostic(scenario.metric, position),
       halted: this.halted,
       haltReason: this.haltReason,
       samples: [...this.samples],
@@ -296,9 +301,9 @@ export class GeodesicSimulationRunner {
     this.history.push({
       lambdaM: this.lambdaM,
       radiusM:
-        this.scenario.metric.chart === "spherical"
-          ? position[1]
-          : Math.hypot(position[1], position[2], position[3]),
+        this.scenario.metric.chart === "cartesian"
+          ? Math.hypot(position[1], position[2], position[3])
+          : position[1],
       normError: validation.normError,
       energyDriftRelative: relativeDrift(validation.energy, this.initialValidation.energy),
       coordinateTimeS: position[0] / SPEED_OF_LIGHT,

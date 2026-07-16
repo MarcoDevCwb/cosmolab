@@ -18,7 +18,7 @@ import type { Matrix4, Rank3, Vector4 } from "./tensor"
 
 /** Carta espacial usada pelas coordenadas x¹..x³, necessária apenas para o
  * mapeamento de renderização (a física nunca depende disto). */
-export type SpatialChart = "cartesian" | "spherical"
+export type SpatialChart = "cartesian" | "spherical" | "cylindrical"
 
 /** Intervalo fechado-aberto de validade de uma coordenada. Use ±Infinity
  * para coordenadas ilimitadas. */

@@ -30,6 +30,7 @@ export type ScenarioId =
   | "painleve-infall"
   | "kerr-frame-dragging"
   | "custom-metric"
+  | "godel-universe"
 
 /**
  * Parâmetros ajustáveis do experimento (a "bancada" do laboratório).
@@ -103,6 +104,8 @@ export type SimulationScenario = {
   horizonOpacity?: number
   /** Raio equatorial da ergosfera [m] (apenas Kerr). */
   ergosphereEquatorRadiusM?: number
+  /** Raio da fronteira de CTCs [m] (g_φφ = 0; apenas Gödel/afins). */
+  ctcRadiusM?: number
 
   /** Condição de parada física (ex.: aproximação do horizonte). */
   stopCondition?: (state: GeodesicState) => boolean

@@ -1803,3 +1803,9 @@
   font-size: 10.5px;
   line-height: 1.45;
 }
+
+.focus-chip.status-theoretical {
+  border-color: rgba(129, 140, 248, 0.5);
+  color: #a5b4fc;
+  cursor: help;
+}

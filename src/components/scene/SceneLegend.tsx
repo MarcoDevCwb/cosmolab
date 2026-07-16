@@ -12,16 +12,29 @@ export function SceneLegend() {
 
   const rsM = scenario.schwarzschildRadiusM ?? 0
   const isKerr = scenario.ergosphereEquatorRadiusM !== undefined
+  const hasCtc = scenario.ctcRadiusM !== undefined
   const flammVisible =
     scenario.surface !== "flat" && rsM > 0 && rsM / scenario.renderScaleM > 0.02
   const isPhoton = scenario.kind === "null"
 
-  if (!flammVisible && !isKerr && !scenario.comparisonPath) {
+  if (!flammVisible && !isKerr && !hasCtc && !scenario.comparisonPath) {
     return null
   }
 
   return (
     <div className="scene-legend" aria-hidden>
+      {hasCtc && (
+        <span style={{ color: "#fb7185" }}>
+          <i className="legend-dash" />
+          fronteira de CTCs (g_φφ = 0)
+        </span>
+      )}
+      {hasCtc && (
+        <span style={{ color: "#fb7185" }}>
+          <i className="legend-dot" style={{ background: "#fb7185" }} />
+          CTC demonstrativa — NÃO-geodésica (exige propulsão)
+        </span>
+      )}
       {(flammVisible || isKerr) && (
         <span>
           <i
