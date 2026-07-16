@@ -3,6 +3,7 @@ import {
   ISCO_RADIUS_RS,
   PHOTON_CRITICAL_IMPACT_RS,
 } from "../../physics/relativity/metrics/schwarzschild"
+import { t } from "../../i18n"
 import { MISSIONS, MISSION_BY_ID } from "../../simulation/missions"
 import { SCENARIO_SUMMARIES, createScenario } from "../../simulation/scenarios"
 import {
@@ -169,14 +170,14 @@ function MetricEditor() {
 
   return (
     <div className="metric-editor">
-      <div className="hud-section-kicker spaced">editor de métrica g_μν</div>
+      <div className="hud-section-kicker spaced">{t("editor de métrica g_μν")}</div>
       <p className="editor-hint">
         variáveis: <code>r</code>, <code>theta</code>, <code>phi</code>, <code>ct</code> [m/rad] e{" "}
         <code>M</code> = GM/c² [m] · funções: sqrt, sin, cos, tan, pow, abs, exp, log, PI
       </p>
 
       <label className="editor-row">
-        <span>nome</span>
+        <span>{t("nome")}</span>
         <input
           type="text"
           value={draft.name}
@@ -204,7 +205,7 @@ function MetricEditor() {
 
       <button type="button" className="toolbar-btn editor-apply" onClick={apply}>
         <span aria-hidden>⚙</span>
-        {applied ? "aplicada ✓" : "aplicar métrica"}
+        {applied ? t("aplicada ✓") : t("aplicar métrica")}
       </button>
       {error && <p className="param-warning">{error}</p>}
       <p className="editor-hint">
@@ -229,6 +230,7 @@ function MissionSection() {
   const experimentParams = useSimulationStore((state) => state.experimentParams)
   const activeScenarioId = useSimulationStore((state) => state.activeScenarioId)
   const [showHint, setShowHint] = useState(false)
+  useSimulationStore((state) => state.language)
 
   const mission = activeMissionId ? MISSION_BY_ID.get(activeMissionId) : null
   const onMissionScenario = mission ? activeScenarioId === mission.scenarioId : false
@@ -247,7 +249,7 @@ function MissionSection() {
   return (
     <>
       <div className="hud-section-kicker spaced">
-        missões · {completedMissions.length}/{MISSIONS.length}
+        {t("missões")} · {completedMissions.length}/{MISSIONS.length}
       </div>
       <nav className="scenario-list">
         {MISSIONS.map((entry) => (
@@ -261,37 +263,37 @@ function MissionSection() {
             }}
           >
             {completedMissions.includes(entry.id) ? "🏅 " : "🎯 "}
-            {entry.title}
+            {t(entry.title)}
           </button>
         ))}
       </nav>
 
       {mission && (
         <div className="mission-card">
-          <p className="mission-briefing">{mission.briefing}</p>
+          <p className="mission-briefing">{t(mission.briefing)}</p>
 
           {evaluation && (
             <ul className="mission-checks">
               {evaluation.checks.map((check) => (
                 <li key={check.label} className={check.done ? "done" : ""}>
-                  {check.done ? "✓" : "○"} {check.label}
+                  {check.done ? "✓" : "○"} {t(check.label)}
                 </li>
               ))}
             </ul>
           )}
           {!onMissionScenario && (
-            <p className="param-warning">Esta missão acontece em outro cenário — reabra a missão.</p>
+            <p className="param-warning">{t("Esta missão acontece em outro cenário — reabra a missão.")}</p>
           )}
 
           {completedMissions.includes(mission.id) && (
-            <p className="mission-complete">🏅 Missão cumprida — verificada pelo motor.</p>
+            <p className="mission-complete">{t("🏅 Missão cumprida — verificada pelo motor.")}</p>
           )}
 
           <button type="button" className="mode-pill" onClick={() => setShowHint(!showHint)}>
-            {showHint ? "esconder dica" : "dica"}
+            {showHint ? t("esconder dica") : t("dica")}
           </button>
-          {showHint && <p className="mission-hint">{mission.hint}</p>}
-          <p className="mission-context">{mission.context}</p>
+          {showHint && <p className="mission-hint">{t(mission.hint)}</p>}
+          <p className="mission-context">{t(mission.context)}</p>
         </div>
       )}
     </>
@@ -303,6 +305,7 @@ export function ControlPanel({ compact }: { compact: boolean }) {
   const setActiveScenarioId = useSimulationStore((state) => state.setActiveScenarioId)
   const atlasMode = useSimulationStore((state) => state.atlasMode)
   const setAtlasMode = useSimulationStore((state) => state.setAtlasMode)
+  useSimulationStore((state) => state.language)
   const experimentParams = useSimulationStore((state) => state.experimentParams)
   const setExperimentParams = useSimulationStore((state) => state.setExperimentParams)
   // Re-renderiza quando a métrica personalizada é reaplicada (nonce).
@@ -321,7 +324,7 @@ export function ControlPanel({ compact }: { compact: boolean }) {
 
   return (
     <aside className={`lab-left glass-panel scenario-${activeScenarioId}`}>
-      <div className="hud-section-kicker">cenários</div>
+      <div className="hud-section-kicker">{t("cenários")}</div>
       <nav className="scenario-list" role="tablist" aria-label="Cenários">
         {SCENARIO_SUMMARIES.map((summary) => (
           <button
@@ -337,7 +340,7 @@ export function ControlPanel({ compact }: { compact: boolean }) {
               setActiveScenarioId(summary.id)
             }}
           >
-            {summary.label}
+            {t(summary.label)}
           </button>
         ))}
         <button
@@ -347,11 +350,11 @@ export function ControlPanel({ compact }: { compact: boolean }) {
           className={atlasMode ? "side-tab active atlas-tab" : "side-tab atlas-tab"}
           onClick={() => setAtlasMode(true)}
         >
-          🗺 Atlas de Coordenadas
+          🗺 {t("Atlas de Coordenadas")}
         </button>
       </nav>
 
-      <div className="hud-section-kicker spaced">{atlasMode ? "comparação de cartas" : "métrica"}</div>
+      <div className="hud-section-kicker spaced">{atlasMode ? t("comparação de cartas") : t("métrica")}</div>
       <div className="context-line">
         <span className="context-strong">
           {atlasMode
@@ -367,19 +370,19 @@ export function ControlPanel({ compact }: { compact: boolean }) {
               : "Status científico: reproduzido numericamente contra resultados analíticos nos testes do projeto"
           }
         >
-          {SCIENTIFIC_STATUS_LABELS[scenario.scientificStatus]}
+          {t(SCIENTIFIC_STATUS_LABELS[scenario.scientificStatus])}
         </span>
       </div>
 
       <p className={compact ? "body-summary compact" : "body-summary"}>
         {atlasMode
-          ? "A MESMA queda radial integrada em duas cartas, sincronizada pelo tempo próprio: invariantes coincidem; o congelamento no horizonte se revela artefato de coordenadas."
-          : scenario.description}
+          ? t("A MESMA queda radial integrada em duas cartas, sincronizada pelo tempo próprio: invariantes coincidem; o congelamento no horizonte se revela artefato de coordenadas.")
+          : t(scenario.description)}
       </p>
 
       {sliders.length > 0 && (
         <div className="param-cluster">
-          <div className="hud-section-kicker">parâmetros físicos</div>
+          <div className="hud-section-kicker">{t("parâmetros físicos")}</div>
           {sliders.map((spec) => {
             const rawValue = experimentParams[spec.key]
             const sliderValue = spec.log ? Math.log10(Math.max(rawValue, 1e-12)) : rawValue
@@ -387,7 +390,7 @@ export function ControlPanel({ compact }: { compact: boolean }) {
             return (
               <label className="param-row" key={spec.key}>
                 <span className="param-label">
-                  {spec.label}
+                  {t(spec.label)}
                   <strong>{spec.format(rawValue)}</strong>
                 </span>
                 <input
@@ -404,7 +407,7 @@ export function ControlPanel({ compact }: { compact: boolean }) {
               </label>
             )
           })}
-          {warning && <p className="param-warning">{warning}</p>}
+          {warning && <p className="param-warning">{t(warning)}</p>}
         </div>
       )}
 

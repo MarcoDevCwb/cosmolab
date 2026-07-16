@@ -1,4 +1,5 @@
 import { Component, type ReactNode } from "react"
+import { t } from "../../i18n"
 
 /**
  * Barreira de erro: uma exceção em qualquer cena/painel vira uma mensagem
@@ -19,7 +20,7 @@ export class CrashGuard extends Component<
     if (this.state.error) {
       return (
         <div className="crash-guard glass-panel">
-          <div className="hud-section-kicker">algo quebrou</div>
+          <div className="hud-section-kicker">{t("algo quebrou")}</div>
           <p>{this.state.error.message}</p>
           <button
             type="button"
@@ -27,7 +28,7 @@ export class CrashGuard extends Component<
             onClick={() => window.location.reload()}
           >
             <span aria-hidden>↺</span>
-            recarregar o laboratório
+            {t("recarregar o laboratório")}
           </button>
         </div>
       )

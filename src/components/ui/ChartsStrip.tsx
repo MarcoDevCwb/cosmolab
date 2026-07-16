@@ -1,5 +1,6 @@
 import { useMemo } from "react"
 import type { HistoryPoint } from "../../simulation/simulationRunner"
+import { t } from "../../i18n"
 import { createScenario } from "../../simulation/scenarios"
 import { useSimulationStore } from "../../store/useSimulationStore"
 
@@ -52,6 +53,7 @@ export function ChartsStrip() {
   const activeScenarioId = useSimulationStore((state) => state.activeScenarioId)
   const experimentParams = useSimulationStore((state) => state.experimentParams)
   const snapshotRaw = useSimulationStore((state) => state.relativitySnapshot)
+  useSimulationStore((state) => state.language)
 
   const scenario = createScenario(activeScenarioId, experimentParams)
   const rsM = scenario.schwarzschildRadiusM ?? 0
@@ -106,21 +108,21 @@ export function ChartsStrip() {
   return (
     <div className="lab-charts" aria-label="Gráficos científicos">
       <ChartCard
-        title={rsM > 0 ? "raio r(λ) [r_s]" : "raio r(λ)"}
+        title={rsM > 0 ? t("raio r(λ) [r_s]") : t("raio r(λ)")}
         currentLabel={charts.radius.current.toFixed(rsM > 0 ? 2 : 1)}
       >
         <path d={charts.radius.path} fill="none" stroke="#7dd3fc" strokeWidth="2" />
       </ChartCard>
 
       <ChartCard
-        title="erro de norma log₁₀|g·u·u − ε|"
+        title={t("erro de norma log₁₀|g·u·u − ε|")}
         currentLabel={charts.error.current.toExponential(1)}
       >
         <path d={charts.error.path} fill="none" stroke="#4ade80" strokeWidth="2" />
       </ChartCard>
 
       <ChartCard
-        title={charts.clocks.hasTau ? "relógios t e τ [s]" : "tempo coordenado t [s]"}
+        title={charts.clocks.hasTau ? t("relógios t e τ [s]") : t("tempo coordenado t [s]")}
         currentLabel={
           charts.clocks.hasTau
             ? `t/τ = ${(charts.clocks.t / Math.max(charts.clocks.tau, 1e-12)).toFixed(3)}`

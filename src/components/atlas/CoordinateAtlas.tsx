@@ -1,6 +1,7 @@
 import { Canvas } from "@react-three/fiber"
 import { OrbitControls } from "@react-three/drei"
 import { useEffect, useMemo, useRef, useState } from "react"
+import { t } from "../../i18n"
 import { createEmbeddedSurfaceMapper } from "../../rendering/scene/coordinateMapping"
 import { SURFACE_RIM_UNITS } from "../../rendering/scene/flammGeometry"
 import { GeodesicSimulationRunner } from "../../simulation/simulationRunner"
@@ -62,16 +63,16 @@ function AtlasPane({
     <div className="atlas-pane glass-panel">
       <div className="pane-head">
         <div>
-          <strong>{title}</strong>
-          <small>{subtitle}</small>
+          <strong>{t(title)}</strong>
+          <small>{t(subtitle)}</small>
         </div>
         <div className="pane-clock">
-          <span className="topbar-kicker">tempo coordenado</span>
+          <span className="topbar-kicker">{t("tempo coordenado")}</span>
           <strong>{snapshot ? formatSeconds(snapshot.coordinateTimeS) : "—"}</strong>
         </div>
       </div>
 
-      {snapshot?.halted && <div className="pane-halt">{haltNote}</div>}
+      {snapshot?.halted && <div className="pane-halt">{t(haltNote)}</div>}
 
       <Canvas
         dpr={[1, 1.5]}
@@ -110,7 +111,7 @@ function CompareRow({
 }) {
   return (
     <div className="compare-row">
-      <span className="compare-label">{label}</span>
+      <span className="compare-label">{t(label)}</span>
       <strong>{left}</strong>
       <strong>{right}</strong>
       <span
@@ -127,7 +128,7 @@ function CompareRow({
             : "Grandeza de coordenada: depende da carta escolhida — divergir aqui não é física, é o mapa"
         }
       >
-        {invariant ? (matches ? "invariante ✓" : "invariante") : "depende da carta"}
+        {invariant ? (matches ? t("invariante ✓") : t("invariante")) : t("depende da carta")}
       </span>
     </div>
   )
@@ -137,6 +138,7 @@ export function CoordinateAtlas() {
   const paused = useSimulationStore((state) => state.paused)
   const experimentParams = useSimulationStore((state) => state.experimentParams)
   const relativityResetNonce = useSimulationStore((state) => state.relativityResetNonce)
+  useSimulationStore((state) => state.language)
 
   const pausedRef = useRef(paused)
   pausedRef.current = paused
@@ -225,10 +227,9 @@ export function CoordinateAtlas() {
 
       <div className="atlas-compare glass-panel">
         <div className="compare-head">
-          <span className="hud-section-kicker">mesma física, dois mapas</span>
+          <span className="hud-section-kicker">{t("mesma física, dois mapas")}</span>
           <small>
-            os runners avançam pelo mesmo Δτ; invariantes devem coincidir até a carta esquerda
-            degenerar
+            {t("os runners avançam pelo mesmo Δτ; invariantes devem coincidir até a carta esquerda degenerar")}
           </small>
         </div>
 
@@ -270,9 +271,9 @@ export function CoordinateAtlas() {
         />
         <CompareRow
           label="destino da integração"
-          left={left?.halted ? `parou em ${formatMeters(left.position[1])} (carta)` : "integrando"}
+          left={left?.halted ? `${t("parou em")} ${formatMeters(left.position[1])} (${t("carta")})` : t("integrando")}
           right={
-            right?.halted ? `parou em ${formatMeters(right.position[1])} (r → 0)` : "integrando"
+            right?.halted ? `${t("parou em")} ${formatMeters(right.position[1])} (r → 0)` : t("integrando")
           }
           invariant={false}
         />

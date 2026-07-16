@@ -17,6 +17,7 @@ import type { ExperimentParams, ScenarioId } from "../simulation/scenarios"
 const SCENARIO_KEY = "cenario"
 const METRIC_KEY = "md"
 const ATLAS_KEY = "atlas"
+const LANGUAGE_KEY = "lang"
 
 /** Base64url (UTF-8) para embutir a definição de métrica na URL. */
 function encodeDefinition(definition: CustomMetricDefinition): string {
@@ -93,6 +94,7 @@ export function writeExperimentToUrl(
   scenarioId: ScenarioId,
   params: ExperimentParams,
   atlasMode = false,
+  language: "pt" | "en" = "pt",
 ): void {
   const query = new URLSearchParams()
   query.set(SCENARIO_KEY, scenarioId)
@@ -110,6 +112,9 @@ export function writeExperimentToUrl(
   }
   if (atlasMode) {
     query.set(ATLAS_KEY, "1")
+  }
+  if (language !== "pt") {
+    query.set(LANGUAGE_KEY, language)
   }
 
   const next = `${window.location.pathname}?${query.toString()}`

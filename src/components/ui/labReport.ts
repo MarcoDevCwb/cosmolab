@@ -16,6 +16,7 @@ import { MISSIONS } from "../../simulation/missions"
 import type { MissionId } from "../../simulation/missions"
 import type { RelativitySnapshot } from "../../simulation/simulationRunner"
 import { COSMOLAB_VERSION } from "../../version"
+import { getLanguage, t } from "../../i18n"
 import { lineElementFor } from "./equations"
 import { computeExperimentId } from "./exportExperiment"
 import { formatObservable, formatSeconds, formatSolarMasses } from "./formatters"
@@ -49,19 +50,19 @@ export function buildLabReportHtml(
   reproducibleUrl: string,
 ): string {
   const experimentId = computeExperimentId(scenario.id, params)
-  const generatedAt = new Date().toLocaleString("pt-BR")
+  const generatedAt = new Date().toLocaleString(getLanguage() === "en" ? "en-US" : "pt-BR")
   const lineElement = lineElementFor(scenario.metric.name)
   const custom = scenario.id === "custom-metric" ? getCustomMetricDefinition() : null
 
   const observableRows = snapshot.observables
     .map(
       (o) => `<tr>
-        <td>${escapeHtml(o.label)}</td>
+        <td>${escapeHtml(t(o.label))}</td>
         <td class="num">${escapeHtml(formatObservable(o.value, o.unit))}</td>
-        <td>${o.provenance === "numeric" ? "numérico" : o.provenance === "analytic" ? "analítico" : "campo fraco"}</td>
+        <td>${o.provenance === "numeric" ? t("numérico") : o.provenance === "analytic" ? t("analítico") : t("campo fraco")}</td>
         <td>${
           o.reference !== undefined && Number.isFinite(o.reference)
-            ? `${escapeHtml(formatObservable(o.reference, o.unit))} — ${escapeHtml(o.referenceLabel ?? "")}`
+            ? `${escapeHtml(formatObservable(o.reference, o.unit))} — ${escapeHtml(t(o.referenceLabel ?? ""))}`
             : "—"
         }</td>
       </tr>`,
@@ -71,7 +72,7 @@ export function buildLabReportHtml(
   const missionRows = MISSIONS.filter(
     (m) => completedMissions.includes(m.id) && m.scenarioId === scenario.id,
   )
-    .map((m) => `<li><strong>🏅 ${escapeHtml(m.title)}</strong> — ${escapeHtml(m.briefing)}</li>`)
+    .map((m) => `<li><strong>🏅 ${escapeHtml(t(m.title))}</strong> — ${escapeHtml(t(m.briefing))}</li>`)
     .join("")
 
   const referenceRows = scenario.references
@@ -84,10 +85,10 @@ export function buildLabReportHtml(
   const clockSeries = history.map((p) => p.coordinateTimeS)
 
   return `<!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="${getLanguage() === "en" ? "en" : "pt-BR"}">
 <head>
 <meta charset="utf-8">
-<title>Relatório CosmoLab — ${escapeHtml(scenario.label)} · ${experimentId}</title>
+<title>${t("Relatório de laboratório")} CosmoLab — ${escapeHtml(t(scenario.label))} · ${experimentId}</title>
 <style>
   * { box-sizing: border-box; margin: 0; }
   body { font: 13px/1.55 "Segoe UI", system-ui, sans-serif; color: #111827; padding: 34px 42px; max-width: 860px; margin: 0 auto; }
@@ -115,73 +116,73 @@ export function buildLabReportHtml(
 </style>
 </head>
 <body>
-<button class="print-button" onclick="window.print()">Imprimir / salvar PDF</button>
+<button class="print-button" onclick="window.print()">${t("Imprimir / salvar PDF")}</button>
 
 <header>
   <div>
-    <h1>Relatório de laboratório — ${escapeHtml(scenario.label)}</h1>
-    <div>CosmoLab · laboratório de relatividade geral</div>
+    <h1>${t("Relatório de laboratório")} — ${escapeHtml(t(scenario.label))}</h1>
+    <div>CosmoLab · ${t("laboratório de relatividade geral")}</div>
   </div>
   <div class="meta">
-    ID do experimento: <strong>${experimentId}</strong><br>
+    ${t("ID do experimento")}: <strong>${experimentId}</strong><br>
     v${COSMOLAB_VERSION} · ${generatedAt}
   </div>
 </header>
 
-<h2>1. Configuração</h2>
+<h2>1. ${t("Configuração")}</h2>
 <table>
-  <tr><th>Métrica</th><td>${escapeHtml(scenario.metric.name)} <em>(status: ${escapeHtml(scenario.scientificStatus)})</em></td></tr>
-  ${lineElement ? `<tr><th>Elemento de linha</th><td><code>${escapeHtml(lineElement)}</code></td></tr>` : ""}
+  <tr><th>${t("Métrica")}</th><td>${escapeHtml(scenario.metric.name)} <em>(status: ${escapeHtml(scenario.scientificStatus)})</em></td></tr>
+  ${lineElement ? `<tr><th>${t("Elemento de linha")}</th><td><code>${escapeHtml(lineElement)}</code></td></tr>` : ""}
   ${
     custom
-      ? `<tr><th>Componentes (usuário)</th><td><code>g_tt = ${escapeHtml(custom.gtt)}<br>g_tφ = ${escapeHtml(custom.gtphi)}<br>g_rr = ${escapeHtml(custom.grr)}<br>g_θθ = ${escapeHtml(custom.gthth)}<br>g_φφ = ${escapeHtml(custom.gphph)}</code></td></tr>`
+      ? `<tr><th>${t("Componentes definidas pelo usuário")}</th><td><code>g_tt = ${escapeHtml(custom.gtt)}<br>g_tφ = ${escapeHtml(custom.gtphi)}<br>g_rr = ${escapeHtml(custom.grr)}<br>g_θθ = ${escapeHtml(custom.gthth)}<br>g_φφ = ${escapeHtml(custom.gphph)}</code></td></tr>`
       : ""
   }
-  <tr><th>Geodésica</th><td>${scenario.kind === "null" ? "nula (fóton)" : "timelike (partícula massiva)"}</td></tr>
-  <tr><th>Massa central</th><td class="num">${scenario.centralMassKg ? formatSolarMasses(params.massSolar) : "—"}</td></tr>
-  <tr><th>Parâmetros</th><td class="num">b = ${params.impactParameterRs.toPrecision(4)} r_s · r₀ = ${params.startRadiusRs.toPrecision(4)} · ω/ω_circ = ${params.angularVelocityFraction.toPrecision(3)} · a/M = ${params.spinFraction.toPrecision(3)}</td></tr>
-  <tr><th>Integrador</th><td>${escapeHtml(snapshot.integrator.method)} · ${snapshot.integrator.stepsTaken.toLocaleString("pt-BR")} passos aceitos, ${snapshot.integrator.stepsRejected.toLocaleString("pt-BR")} rejeitados${snapshot.integrator.relTol ? ` · tol ${snapshot.integrator.relTol.toExponential(0)}/${snapshot.integrator.absTol?.toExponential(0)}` : ""}</td></tr>
+  <tr><th>${t("Geodésica")}</th><td>${scenario.kind === "null" ? t("nula (fóton)") : t("timelike (partícula massiva)")}</td></tr>
+  <tr><th>${t("Massa central")}</th><td class="num">${scenario.centralMassKg ? formatSolarMasses(params.massSolar) : "—"}</td></tr>
+  <tr><th>${t("Parâmetros")}</th><td class="num">b = ${params.impactParameterRs.toPrecision(4)} r_s · r₀ = ${params.startRadiusRs.toPrecision(4)} · ω/ω_circ = ${params.angularVelocityFraction.toPrecision(3)} · a/M = ${params.spinFraction.toPrecision(3)}</td></tr>
+  <tr><th>${t("Integrador")}</th><td>${escapeHtml(t(snapshot.integrator.method))} · ${snapshot.integrator.stepsTaken.toLocaleString("pt-BR")} passos aceitos, ${snapshot.integrator.stepsRejected.toLocaleString("pt-BR")} rejeitados${snapshot.integrator.relTol ? ` · tol ${snapshot.integrator.relTol.toExponential(0)}/${snapshot.integrator.absTol?.toExponential(0)}` : ""}</td></tr>
 </table>
 
-<h2>2. Resultados</h2>
+<h2>2. ${t("Resultados")}</h2>
 <table>
-  <tr><th>Observável</th><th>Valor</th><th>Origem</th><th>Referência analítica</th></tr>
+  <tr><th>${t("Observável")}</th><th>${t("Valor")}</th><th>${t("Origem")}</th><th>${t("Referência analítica")}</th></tr>
   ${observableRows}
-  <tr><td>Tempo coordenado t</td><td class="num">${formatSeconds(snapshot.coordinateTimeS)}</td><td>numérico</td><td>—</td></tr>
-  <tr><td>${scenario.kind === "null" ? "Intervalo próprio (geodésica nula)" : "Tempo próprio τ"}</td><td class="num">${snapshot.properTimeS === null ? "0 (exato)" : formatSeconds(snapshot.properTimeS)}</td><td>numérico</td><td>—</td></tr>
-  ${snapshot.futureTravelS !== null ? `<tr><td>Salto ao futuro Δ = t − τ</td><td class="num">${formatSeconds(snapshot.futureTravelS)}</td><td>numérico</td><td>Hafele–Keating (1972)</td></tr>` : ""}
+  <tr><td>${t("Tempo coordenado")} t</td><td class="num">${formatSeconds(snapshot.coordinateTimeS)}</td><td>numérico</td><td>—</td></tr>
+  <tr><td>${scenario.kind === "null" ? `${t("Intervalo próprio")} (${t("geodésica nula")})` : `${t("Tempo próprio")} τ`}</td><td class="num">${snapshot.properTimeS === null ? t("0 (exato)") : formatSeconds(snapshot.properTimeS)}</td><td>${t("numérico")}</td><td>—</td></tr>
+  ${snapshot.futureTravelS !== null ? `<tr><td>${t("Salto ao futuro Δ = t − τ")}</td><td class="num">${formatSeconds(snapshot.futureTravelS)}</td><td>${t("numérico")}</td><td>Hafele–Keating (1972)</td></tr>` : ""}
 </table>
 
-<h2>3. Validação numérica</h2>
+<h2>3. ${t("Validação numérica")}</h2>
 <table>
-  <tr><th>Grandeza</th><th>Valor</th><th>Interpretação</th></tr>
-  <tr><td>Erro de norma |g·u·u − ε|</td><td class="num">${snapshot.validation.normError.toExponential(2)}</td><td>qualidade da integração</td></tr>
-  <tr><td>Deriva de E / L</td><td class="num">${snapshot.energyDriftRelative.toExponential(2)} / ${snapshot.angularMomentumDriftRelative.toExponential(2)}</td><td>constantes de Killing conservadas</td></tr>
-  <tr><td>Escalar de Ricci R</td><td class="num">${snapshot.invariants.ricciScalar.toExponential(2)} m⁻²</td><td>≈ 0 em vácuo</td></tr>
-  <tr><td>Kretschmann K</td><td class="num">${snapshot.invariants.kretschmann.toExponential(2)} m⁻⁴</td><td>invariante de curvatura (independe da carta)</td></tr>
-  <tr><td>Causalidade (g_φφ)</td><td class="num">${snapshot.causality.closedTimelikeCircle ? "CTC!" : "normal"}</td><td>g_φφ &lt; 0 ⇒ curva temporal fechada</td></tr>
+  <tr><th>${t("Grandeza")}</th><th>${t("Valor")}</th><th>${t("Interpretação")}</th></tr>
+  <tr><td>${t("Erro de norma")} |g·u·u − ε|</td><td class="num">${snapshot.validation.normError.toExponential(2)}</td><td>${t("qualidade da integração")}</td></tr>
+  <tr><td>${t("Deriva de E")} / L</td><td class="num">${snapshot.energyDriftRelative.toExponential(2)} / ${snapshot.angularMomentumDriftRelative.toExponential(2)}</td><td>${t("constantes de Killing conservadas")}</td></tr>
+  <tr><td>${t("Escalar de Ricci R")}</td><td class="num">${snapshot.invariants.ricciScalar.toExponential(2)} m⁻²</td><td>${t("≈ 0 em vácuo")}</td></tr>
+  <tr><td>${t("Kretschmann K")}</td><td class="num">${snapshot.invariants.kretschmann.toExponential(2)} m⁻⁴</td><td>${t("invariante de curvatura (independe da carta)")}</td></tr>
+  <tr><td>${t("Causalidade (g_φφ)")}</td><td class="num">${snapshot.causality.closedTimelikeCircle ? "CTC!" : "normal"}</td><td>g_φφ &lt; 0 ⇒ curva temporal fechada</td></tr>
   ${
     snapshot.matter
-      ? `<tr><td>Matéria exigida (ρ, NEC)</td><td class="num">${snapshot.matter.vacuum ? "≈ 0 (vácuo)" : `${snapshot.matter.energyDensityJm3.toExponential(2)} J/m³`}</td><td><span class="verdict ${snapshot.matter.nullEnergyConditionOk ? "ok" : "exotic"}">${snapshot.matter.nullEnergyConditionOk ? "NEC satisfeita" : "NEC violada — matéria exótica"}</span></td></tr>`
+      ? `<tr><td>${t("Matéria exigida (ρ, NEC)")}</td><td class="num">${snapshot.matter.vacuum ? t("≈ 0 (vácuo)") : `${snapshot.matter.energyDensityJm3.toExponential(2)} J/m³`}</td><td><span class="verdict ${snapshot.matter.nullEnergyConditionOk ? "ok" : "exotic"}">${snapshot.matter.nullEnergyConditionOk ? t("NEC satisfeita") : t("NEC violada — matéria exótica")}</span></td></tr>`
       : ""
   }
 </table>
 
-<h2>4. Séries do experimento</h2>
+<h2>4. ${t("Séries do experimento")}</h2>
 <div class="charts">
-  <div class="chart"><small>raio r(λ)</small>${sparkline(radiusSeries)}</div>
-  <div class="chart"><small>erro de norma (log₁₀)</small>${sparkline(errorSeries)}</div>
-  <div class="chart"><small>tempo coordenado t(λ)</small>${sparkline(clockSeries)}</div>
+  <div class="chart"><small>${t("raio r(λ)")}</small>${sparkline(radiusSeries)}</div>
+  <div class="chart"><small>${t("Erro de norma")} (log₁₀)</small>${sparkline(errorSeries)}</div>
+  <div class="chart"><small>${t("tempo coordenado")} t(λ)</small>${sparkline(clockSeries)}</div>
 </div>
 
-${missionRows ? `<h2>5. Missões verificadas pelo motor</h2><ul>${missionRows}</ul>` : ""}
+${missionRows ? `<h2>5. ${t("Missões verificadas pelo motor")}</h2><ul>${missionRows}</ul>` : ""}
 
-<h2>${missionRows ? "6" : "5"}. Referências</h2>
+<h2>${missionRows ? "6" : "5"}. ${t("Referências")}</h2>
 <ul>${referenceRows}</ul>
 
 <footer>
   Gerado por CosmoLab v${COSMOLAB_VERSION} · motor validado contra einsteinpy (2 ppm; docs/VALIDATION.md) e ${""}59+ testes analíticos.<br>
-  <strong>Reprodutível:</strong> ${escapeHtml(reproducibleUrl)}
+  <strong>${t("Reprodutível:")}</strong> ${escapeHtml(reproducibleUrl)}
 </footer>
 </body>
 </html>`

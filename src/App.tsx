@@ -19,6 +19,7 @@ function App() {
   const relativityResetNonce = useSimulationStore((state) => state.relativityResetNonce)
   const atlasMode = useSimulationStore((state) => state.atlasMode)
   const setAtlasMode = useSimulationStore((state) => state.setAtlasMode)
+  const language = useSimulationStore((state) => state.language)
   const hydrateExperiment = useSimulationStore((state) => state.hydrateExperiment)
 
   // URL compartilhável: hidrata o experimento na carga...
@@ -34,8 +35,8 @@ function App() {
   // ...e mantém a query string sincronizada com o experimento atual
   // (o nonce cobre reaplicações da métrica personalizada).
   useEffect(() => {
-    writeExperimentToUrl(activeScenarioId, experimentParams, atlasMode)
-  }, [activeScenarioId, experimentParams, relativityResetNonce, atlasMode])
+    writeExperimentToUrl(activeScenarioId, experimentParams, atlasMode, language)
+  }, [activeScenarioId, experimentParams, relativityResetNonce, atlasMode, language])
 
   return (
     <main className={compact ? "cosmos-app compact" : "cosmos-app"}>

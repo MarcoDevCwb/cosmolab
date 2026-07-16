@@ -1,4 +1,5 @@
 import { create } from "zustand"
+import { setLanguage, type Language } from "../i18n"
 import { MISSION_BY_ID, type MissionId } from "../simulation/missions"
 import type { RelativitySnapshot } from "../simulation/simulationRunner"
 import { DEFAULT_EXPERIMENT_PARAMS } from "../simulation/scenarios"
@@ -20,6 +21,8 @@ type SimulationState = {
   activeMissionId: MissionId | null
   /** Missões concluídas (persistidas em localStorage). */
   completedMissions: MissionId[]
+  /** Idioma da interface (PT nativo; EN via dicionário). */
+  language: Language
   /** FPS medido pelo loop de renderização (telemetria de UI). */
   renderFps: number
   /** Incrementado a cada pedido de reinício do experimento. */
@@ -37,6 +40,7 @@ type SimulationState = {
   setAtlasMode: (atlasMode: boolean) => void
   setActiveMission: (missionId: MissionId | null) => void
   markMissionComplete: (missionId: MissionId) => void
+  setUiLanguage: (language: Language) => void
   setRenderFps: (renderFps: number) => void
   requestRelativityReset: () => void
 }
@@ -44,6 +48,23 @@ type SimulationState = {
 const INITIAL_SCENARIO: ScenarioId = "solar-light-deflection"
 
 const MISSIONS_STORAGE_KEY = "cosmolab-missions-v1"
+const LANGUAGE_STORAGE_KEY = "cosmolab-language"
+
+function loadLanguage(): Language {
+  try {
+    const fromUrl = new URLSearchParams(window.location.search).get("lang")
+    if (fromUrl === "en" || fromUrl === "pt") {
+      return fromUrl
+    }
+    const stored = localStorage.getItem(LANGUAGE_STORAGE_KEY)
+    return stored === "en" ? "en" : "pt"
+  } catch {
+    return "pt"
+  }
+}
+
+const initialLanguage = loadLanguage()
+setLanguage(initialLanguage)
 
 function loadCompletedMissions(): MissionId[] {
   try {
@@ -63,6 +84,7 @@ export const useSimulationStore = create<SimulationState>((set) => ({
   atlasMode: false,
   activeMissionId: null,
   completedMissions: loadCompletedMissions(),
+  language: initialLanguage,
   renderFps: 0,
   relativityResetNonce: 0,
   setPaused: (paused) => set({ paused }),
@@ -143,6 +165,15 @@ export const useSimulationStore = create<SimulationState>((set) => ({
       }
       return { completedMissions }
     }),
+  setUiLanguage: (language) => {
+    setLanguage(language)
+    try {
+      localStorage.setItem(LANGUAGE_STORAGE_KEY, language)
+    } catch {
+      /* sem armazenamento: vale só na sessão */
+    }
+    set({ language })
+  },
   setRenderFps: (renderFps) => set({ renderFps }),
   requestRelativityReset: () =>
     set((state) => ({ relativityResetNonce: state.relativityResetNonce + 1 })),
