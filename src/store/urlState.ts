@@ -16,6 +16,7 @@ import type { ExperimentParams, ScenarioId } from "../simulation/scenarios"
 
 const SCENARIO_KEY = "cenario"
 const METRIC_KEY = "md"
+const ATLAS_KEY = "atlas"
 
 /** Base64url (UTF-8) para embutir a definição de métrica na URL. */
 function encodeDefinition(definition: CustomMetricDefinition): string {
@@ -56,6 +57,7 @@ const PARAM_KEYS: Record<keyof ExperimentParams, string> = {
 export function readExperimentFromUrl(): {
   scenarioId: ScenarioId
   params: ExperimentParams
+  atlasMode: boolean
 } | null {
   const query = new URLSearchParams(window.location.search)
   const scenarioId = query.get(SCENARIO_KEY) as ScenarioId | null
@@ -84,10 +86,14 @@ export function readExperimentFromUrl(): {
     }
   }
 
-  return { scenarioId, params }
+  return { scenarioId, params, atlasMode: query.get(ATLAS_KEY) === "1" }
 }
 
-export function writeExperimentToUrl(scenarioId: ScenarioId, params: ExperimentParams): void {
+export function writeExperimentToUrl(
+  scenarioId: ScenarioId,
+  params: ExperimentParams,
+  atlasMode = false,
+): void {
   const query = new URLSearchParams()
   query.set(SCENARIO_KEY, scenarioId)
 
@@ -101,6 +107,9 @@ export function writeExperimentToUrl(scenarioId: ScenarioId, params: ExperimentP
 
   if (scenarioId === "custom-metric") {
     query.set(METRIC_KEY, encodeDefinition(getCustomMetricDefinition()))
+  }
+  if (atlasMode) {
+    query.set(ATLAS_KEY, "1")
   }
 
   const next = `${window.location.pathname}?${query.toString()}`

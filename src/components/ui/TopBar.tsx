@@ -17,6 +17,7 @@ export function TopBar({ compact }: { compact: boolean }) {
   const experimentParams = useSimulationStore((state) => state.experimentParams)
   const snapshot = useSimulationStore((state) => state.relativitySnapshot)
   const renderFps = useSimulationStore((state) => state.renderFps)
+  const atlasMode = useSimulationStore((state) => state.atlasMode)
   // Re-renderiza quando a métrica personalizada é reaplicada (nonce).
   useSimulationStore((state) => state.relativityResetNonce)
 
@@ -28,15 +29,18 @@ export function TopBar({ compact }: { compact: boolean }) {
         <span className="eyebrow-dot" />
         <div>
           <strong>CosmoLab</strong>
-          <small>relativity lab · v0.6</small>
+          <small>relativity lab · v0.8</small>
         </div>
       </div>
 
       <div className="topbar-scenario">
-        <strong>{scenario.label}</strong>
+        <strong>{atlasMode ? "Atlas de Coordenadas" : scenario.label}</strong>
         <small>
-          {scenario.metric.name.replace(/\s*\(\d+\)/, "")} ·{" "}
-          {scenario.kind === "null" ? "geodésica nula" : "geodésica timelike"}
+          {atlasMode
+            ? "a mesma queda em duas cartas — sincronizada por τ"
+            : `${scenario.metric.name.replace(/\s*\(\d+\)/, "")} · ${
+                scenario.kind === "null" ? "geodésica nula" : "geodésica timelike"
+              }`}
         </small>
       </div>
 
@@ -47,12 +51,14 @@ export function TopBar({ compact }: { compact: boolean }) {
         </div>
       )}
 
-      <div className="topbar-cluster">
-        <span className="topbar-kicker">tempo coordenado</span>
-        <strong>{snapshot ? formatSeconds(snapshot.coordinateTimeS) : "—"}</strong>
-      </div>
+      {!atlasMode && (
+        <div className="topbar-cluster">
+          <span className="topbar-kicker">tempo coordenado</span>
+          <strong>{snapshot ? formatSeconds(snapshot.coordinateTimeS) : "—"}</strong>
+        </div>
+      )}
 
-      {!compact && (
+      {!compact && !atlasMode && (
         <div
           className="topbar-cluster"
           title="Método de integração, passo em λ, passos executados, custo de CPU acumulado e quadros por segundo da renderização"

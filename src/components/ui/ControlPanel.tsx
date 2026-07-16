@@ -205,14 +205,18 @@ function MetricEditor() {
 export function ControlPanel({ compact }: { compact: boolean }) {
   const activeScenarioId = useSimulationStore((state) => state.activeScenarioId)
   const setActiveScenarioId = useSimulationStore((state) => state.setActiveScenarioId)
+  const atlasMode = useSimulationStore((state) => state.atlasMode)
+  const setAtlasMode = useSimulationStore((state) => state.setAtlasMode)
   const experimentParams = useSimulationStore((state) => state.experimentParams)
   const setExperimentParams = useSimulationStore((state) => state.setExperimentParams)
   // Re-renderiza quando a métrica personalizada é reaplicada (nonce).
   useSimulationStore((state) => state.relativityResetNonce)
 
   const scenario = createScenario(activeScenarioId, experimentParams)
-  const sliders = SLIDERS_BY_SCENARIO[activeScenarioId]
-  const warning = physicalWarning(activeScenarioId, experimentParams)
+  const sliders = atlasMode
+    ? SLIDERS_BY_SCENARIO["painleve-infall"]
+    : SLIDERS_BY_SCENARIO[activeScenarioId]
+  const warning = atlasMode ? null : physicalWarning(activeScenarioId, experimentParams)
 
   return (
     <aside className={`lab-left glass-panel scenario-${activeScenarioId}`}>
@@ -224,17 +228,35 @@ export function ControlPanel({ compact }: { compact: boolean }) {
             type="button"
             role="tab"
             aria-selected={activeScenarioId === summary.id}
-            className={activeScenarioId === summary.id ? "side-tab active" : "side-tab"}
-            onClick={() => setActiveScenarioId(summary.id)}
+            className={
+              !atlasMode && activeScenarioId === summary.id ? "side-tab active" : "side-tab"
+            }
+            onClick={() => {
+              setAtlasMode(false)
+              setActiveScenarioId(summary.id)
+            }}
           >
             {summary.label}
           </button>
         ))}
+        <button
+          type="button"
+          role="tab"
+          aria-selected={atlasMode}
+          className={atlasMode ? "side-tab active atlas-tab" : "side-tab atlas-tab"}
+          onClick={() => setAtlasMode(true)}
+        >
+          🗺 Atlas de Coordenadas
+        </button>
       </nav>
 
-      <div className="hud-section-kicker spaced">métrica</div>
+      <div className="hud-section-kicker spaced">{atlasMode ? "comparação de cartas" : "métrica"}</div>
       <div className="context-line">
-        <span className="context-strong">{scenario.metric.name.replace(/\s*\(\d+\)/, "")}</span>
+        <span className="context-strong">
+          {atlasMode
+            ? "Schwarzschild × Painlevé–Gullstrand"
+            : scenario.metric.name.replace(/\s*\(\d+\)/, "")}
+        </span>
         <i className="context-sep" />
         <span
           className={`focus-chip status-${scenario.scientificStatus}`}
@@ -248,7 +270,11 @@ export function ControlPanel({ compact }: { compact: boolean }) {
         </span>
       </div>
 
-      <p className={compact ? "body-summary compact" : "body-summary"}>{scenario.description}</p>
+      <p className={compact ? "body-summary compact" : "body-summary"}>
+        {atlasMode
+          ? "A MESMA queda radial integrada em duas cartas, sincronizada pelo tempo próprio: invariantes coincidem; o congelamento no horizonte se revela artefato de coordenadas."
+          : scenario.description}
+      </p>
 
       {sliders.length > 0 && (
         <div className="param-cluster">

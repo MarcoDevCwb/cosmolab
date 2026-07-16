@@ -1,5 +1,6 @@
 import { useEffect } from "react"
 import "./App.css"
+import { CoordinateAtlas } from "./components/atlas/CoordinateAtlas"
 import { RelativityScene } from "./components/scene/RelativityScene"
 import { RelativityHud } from "./components/ui/RelativityHud"
 import { useCompactMode } from "./hooks/useCompactMode"
@@ -15,20 +16,25 @@ function App() {
   const activeScenarioId = useSimulationStore((state) => state.activeScenarioId)
   const experimentParams = useSimulationStore((state) => state.experimentParams)
   const relativityResetNonce = useSimulationStore((state) => state.relativityResetNonce)
+  const atlasMode = useSimulationStore((state) => state.atlasMode)
+  const setAtlasMode = useSimulationStore((state) => state.setAtlasMode)
   const hydrateExperiment = useSimulationStore((state) => state.hydrateExperiment)
 
   // URL compartilhável: hidrata o experimento na carga...
   useEffect(() => {
     if (sharedExperiment) {
       hydrateExperiment(sharedExperiment.scenarioId, sharedExperiment.params)
+      if (sharedExperiment.atlasMode) {
+        setAtlasMode(true)
+      }
     }
-  }, [hydrateExperiment])
+  }, [hydrateExperiment, setAtlasMode])
 
   // ...e mantém a query string sincronizada com o experimento atual
   // (o nonce cobre reaplicações da métrica personalizada).
   useEffect(() => {
-    writeExperimentToUrl(activeScenarioId, experimentParams)
-  }, [activeScenarioId, experimentParams, relativityResetNonce])
+    writeExperimentToUrl(activeScenarioId, experimentParams, atlasMode)
+  }, [activeScenarioId, experimentParams, relativityResetNonce, atlasMode])
 
   return (
     <main className={compact ? "cosmos-app compact" : "cosmos-app"}>
@@ -37,7 +43,7 @@ function App() {
         <div className="cosmos-aura aura-two" />
         <div className="cosmos-grain" />
 
-        <RelativityScene compact={compact} />
+        {atlasMode ? <CoordinateAtlas /> : <RelativityScene compact={compact} />}
         <RelativityHud compact={compact} />
       </div>
     </main>
