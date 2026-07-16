@@ -204,7 +204,7 @@ export function ControlPanel({ compact }: { compact: boolean }) {
   const warning = physicalWarning(activeScenarioId, experimentParams)
 
   return (
-    <aside className="lab-left glass-panel">
+    <aside className={`lab-left glass-panel scenario-${activeScenarioId}`}>
       <div className="hud-section-kicker">cenários</div>
       <nav className="scenario-list" role="tablist" aria-label="Cenários">
         {SCENARIO_SUMMARIES.map((summary) => (

@@ -345,7 +345,7 @@ export function ResultsPanel({ compact }: { compact: boolean }) {
   const status = snapshot?.halted ? "parado" : paused ? "pausado" : "integrando"
 
   return (
-    <aside className="lab-right glass-panel">
+    <aside className={`lab-right glass-panel tab-${tab}`}>
       <div className="focus-heading">
         <div className="results-tabs" role="tablist" aria-label="Painéis de resultados">
           {(["resultados", "validacao", "equacoes"] as const).map((id) => (
