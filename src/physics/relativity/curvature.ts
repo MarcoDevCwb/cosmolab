@@ -143,6 +143,8 @@ export type MatterDiagnostic = {
   necMinimumJm3: number
   /** NEC satisfeita (dentro da tolerância numérica)? false ⇒ matéria exótica. */
   nullEnergyConditionOk: boolean
+  /** |ρ| e |p_r| abaixo da tolerância numérica: vácuo efetivo (ex.: Schwarzschild). */
+  vacuum: boolean
   /** Observador usado: "static" (g_tt<0) ou "zamo" (ergorregião). */
   observer: "static" | "zamo"
 }
@@ -345,6 +347,8 @@ export function matterDiagnostic(
     radialPressureJm3,
     necMinimumJm3,
     nullEnergyConditionOk: necMinimumJm3 >= -tolerance,
+    vacuum:
+      Math.abs(energyDensityJm3) < tolerance && Math.abs(radialPressureJm3) < tolerance,
     observer,
   }
 }

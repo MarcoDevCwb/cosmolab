@@ -3,6 +3,8 @@ import { SOLAR_MASS_KG } from "../../physics/constants"
 import { createScenario } from "../../simulation/scenarios"
 import type { SimulationScenario } from "../../simulation/scenarios"
 import type { RelativitySnapshot } from "../../simulation/simulationRunner"
+import { LINE_ELEMENTS } from "./equations"
+import { openLabReport } from "./labReport"
 import { getCustomMetricDefinition } from "../../simulation/scenarios/customGeodesic"
 import { generateMetricPassport } from "../../simulation/metricPassport"
 import type { MetricPassport } from "../../simulation/metricPassport"
@@ -25,17 +27,6 @@ import { formatMeters, formatObservable, formatSeconds, formatSolarMasses } from
 
 type ResultsTab = "resultados" | "validacao" | "equacoes" | "passaporte"
 
-/** Elementos de linha exibidos na aba EQUAÇÕES (texto, por métrica). */
-const LINE_ELEMENTS: Record<string, string> = {
-  Minkowski: "ds² = −(c dt)² + dx² + dy² + dz²",
-  Schwarzschild:
-    "ds² = −f·(c dt)² + f⁻¹·dr² + r²·dθ² + r²sin²θ·dφ²,  f = 1 − r_s/r",
-  "Painlevé–Gullstrand":
-    "ds² = −f·(c dT)² + 2√(r_s/r)·(c dT)·dr + dr² + r²·dΩ²,  f = 1 − r_s/r",
-  Gödel:
-    "ds² = −(c dt)² + dr² + dz² + 4a·sinh²(χ)·(c dt)·dφ + 2a²·sinh²χ(1 − sinh²χ)·dφ²,  χ = r/(√2 a) — CTCs onde g_φφ < 0",
-  Kerr: "ds² = −(1 − 2Mr/Σ)(c dt)² − (4Mar sin²θ/Σ)·c dt·dφ + (Σ/Δ)dr² + Σdθ² + (r² + a² + 2Ma²r sin²θ/Σ)sin²θ·dφ²",
-}
 
 function ResultsTabContent({
   scenario,
@@ -161,6 +152,7 @@ function ValidationTabContent({
   snapshot: RelativitySnapshot | null
 }) {
   const experimentParams = useSimulationStore((state) => state.experimentParams)
+  const completedMissions = useSimulationStore((state) => state.completedMissions)
   const experimentId = computeExperimentId(scenario.id, experimentParams)
 
   return (
@@ -222,7 +214,11 @@ function ValidationTabContent({
         >
           <span>Densidade de energia ρ</span>
           <strong>
-            {snapshot?.matter ? `${snapshot.matter.energyDensityJm3.toExponential(2)} J/m³` : "—"}
+            {snapshot?.matter
+              ? snapshot.matter.vacuum
+                ? "≈ 0 (vácuo)"
+                : `${snapshot.matter.energyDensityJm3.toExponential(2)} J/m³`
+              : "—"}
           </strong>
         </div>
         <div
@@ -335,6 +331,18 @@ function ValidationTabContent({
         >
           <span aria-hidden>⭳</span>
           exportar CSV
+        </button>
+        <button
+          type="button"
+          className="toolbar-btn report-button"
+          disabled={!snapshot}
+          title="Abre o relatório de laboratório imprimível (salve como PDF pelo navegador): configuração, resultados com proveniência, validação, gráficos, missões verificadas e URL reproduzível"
+          onClick={() =>
+            snapshot && openLabReport(scenario, experimentParams, snapshot, completedMissions)
+          }
+        >
+          <span aria-hidden>🖨</span>
+          relatório de laboratório
         </button>
       </div>
     </>
