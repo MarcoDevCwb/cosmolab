@@ -34,6 +34,7 @@ export type ScenarioId =
   | "godel-universe"
   | "flrw-expansion"
   | "warp-bubble"
+  | "gw-ring"
 
 /**
  * Parâmetros ajustáveis do experimento (a "bancada" do laboratório).
@@ -130,6 +131,11 @@ export type SimulationScenario = {
   }[]
   /** Raio da bolha warp [m] — desenhada centrada na partícula (Alcubierre). */
   bubbleRadiusM?: number
+  /** Ensemble de geodésicas companheiras (ex.: anel de massas de teste no
+   * cenário de onda gravitacional). O runner as integra com o MESMO campo
+   * geodésico (RK4, passo do cenário) e expõe as posições no snapshot;
+   * a ordem é preservada (a cena pode ligá-las em anel). */
+  companions?: GeodesicState[]
   /** Escala de comprimento [m] por eixo para as diferenças finitas dos
    * diagnósticos de curvatura/matéria do runner. Sem ela o runner usa
    * max(|x¹|, 1) — inadequado quando a estrutura relevante (ex.: parede da

@@ -380,11 +380,53 @@ export function matterDiagnostic(
     necMinimumJm3 = Math.min(necMinimumJm3, T(k, k))
   }
 
-  // Tolerância numérica: fração da escala local de curvatura (√K ou ρ).
-  const scale =
-    EINSTEIN_FACTOR *
-    Math.sqrt(Math.abs(curvatureFromRiemann(riemann, g, gInv)))
-  const tolerance = Math.max(1e-4 * scale, 1e-12)
+  // Tolerância numérica: fração da escala local de MARÉ — a maior
+  // componente do Riemann projetado na tétrade ortonormal. Não usamos √K:
+  // em espaços-tempos VSI (ondas pp) TODOS os invariantes polinomiais se
+  // anulam por cancelamento, mas a maré (e o ruído numérico) não.
+  const tetradForScale = [u, ...spatial]
+  const lowerRiemann: number[][][][] = Array.from({ length: N }, () =>
+    Array.from({ length: N }, () => Array.from({ length: N }, () => new Array<number>(N).fill(0))),
+  )
+  for (let alpha = 0; alpha < N; alpha += 1) {
+    for (let betaI = 0; betaI < N; betaI += 1) {
+      for (let gammaI = 0; gammaI < N; gammaI += 1) {
+        for (let delta = 0; delta < N; delta += 1) {
+          let value = 0
+          for (let rho = 0; rho < N; rho += 1) {
+            value += g[alpha][rho] * riemann[rho][betaI][gammaI][delta]
+          }
+          lowerRiemann[alpha][betaI][gammaI][delta] = value
+        }
+      }
+    }
+  }
+  let tidalScale = 0
+  for (let a = 0; a < N; a += 1) {
+    for (let b = 0; b < N; b += 1) {
+      for (let c = 0; c < N; c += 1) {
+        for (let d = 0; d < N; d += 1) {
+          let projected = 0
+          for (let alpha = 0; alpha < N; alpha += 1) {
+            for (let betaI = 0; betaI < N; betaI += 1) {
+              for (let gammaI = 0; gammaI < N; gammaI += 1) {
+                for (let delta = 0; delta < N; delta += 1) {
+                  projected +=
+                    lowerRiemann[alpha][betaI][gammaI][delta] *
+                    tetradForScale[a][alpha] *
+                    tetradForScale[b][betaI] *
+                    tetradForScale[c][gammaI] *
+                    tetradForScale[d][delta]
+                }
+              }
+            }
+          }
+          tidalScale = Math.max(tidalScale, Math.abs(projected))
+        }
+      }
+    }
+  }
+  const tolerance = Math.max(1e-4 * EINSTEIN_FACTOR * tidalScale, 1e-12)
 
   // "Vácuo" exige todas as 16 componentes numéricas de T na tétrade abaixo
   // da tolerância (10 seriam independentes para um tensor perfeitamente
@@ -409,51 +451,4 @@ export function matterDiagnostic(
     vacuum: maximumStressMagnitude < tolerance,
     observer,
   }
-}
-
-/** Kretschmann a partir de um Riemann já calculado (evita recomputar). */
-function curvatureFromRiemann(
-  riemann: number[][][][],
-  g: number[][],
-  gInv: number[][],
-): number {
-  const lower: number[][][][] = Array.from({ length: N }, () =>
-    Array.from({ length: N }, () => Array.from({ length: N }, () => new Array<number>(N).fill(0))),
-  )
-  for (let alpha = 0; alpha < N; alpha += 1) {
-    for (let beta = 0; beta < N; beta += 1) {
-      for (let gammaI = 0; gammaI < N; gammaI += 1) {
-        for (let delta = 0; delta < N; delta += 1) {
-          let value = 0
-          for (let rho = 0; rho < N; rho += 1) {
-            value += g[alpha][rho] * riemann[rho][beta][gammaI][delta]
-          }
-          lower[alpha][beta][gammaI][delta] = value
-        }
-      }
-    }
-  }
-
-  let kretschmann = 0
-  for (let a = 0; a < N; a += 1) {
-    for (let b = 0; b < N; b += 1) {
-      for (let c = 0; c < N; c += 1) {
-        for (let d = 0; d < N; d += 1) {
-          let raised = 0
-          for (let a2 = 0; a2 < N; a2 += 1) {
-            for (let b2 = 0; b2 < N; b2 += 1) {
-              for (let c2 = 0; c2 < N; c2 += 1) {
-                for (let d2 = 0; d2 < N; d2 += 1) {
-                  raised +=
-                    gInv[a][a2] * gInv[b][b2] * gInv[c][c2] * gInv[d][d2] * lower[a2][b2][c2][d2]
-                }
-              }
-            }
-          }
-          kretschmann += lower[a][b][c][d] * raised
-        }
-      }
-    }
-  }
-  return kretschmann
 }

@@ -128,5 +128,9 @@ export function formatObservable(value: number, unit: ObservableUnit): string {
     }
     case "jm3":
       return `${value.toExponential(2)} J/m³`
+    case "hz":
+      return Math.abs(value) >= 1000 ? `${(value / 1000).toFixed(2)} kHz` : `${value.toFixed(1)} Hz`
+    case "wm2":
+      return `${value.toExponential(2)} W/m²`
   }
 }

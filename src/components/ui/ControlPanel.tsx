@@ -125,6 +125,32 @@ const SLIDERS_BY_SCENARIO: Record<ScenarioId, SliderSpec[]> = {
       format: (v) => `${v.toFixed(2)} c/H₀`,
     },
   ],
+  "gw-ring": [
+    {
+      key: "massSolar",
+      label: "Massa de chirp M_c",
+      min: 5,
+      max: 120,
+      step: 1,
+      format: (v) => `${v.toFixed(0)} M☉`,
+    },
+    {
+      key: "startRadiusRs",
+      label: "Amplitude h no pico (exagerada)",
+      min: 0.01,
+      max: 0.25,
+      step: 0.005,
+      format: (v) => v.toFixed(3),
+    },
+    {
+      key: "angularVelocityFraction",
+      label: "Polarização (+ ↔ ×)",
+      min: 0,
+      max: 1,
+      step: 0.05,
+      format: (v) => (v < 0.25 ? "+" : v > 0.75 ? "×" : `${(v * 100).toFixed(0)}%`),
+    },
+  ],
   "warp-bubble": [
     {
       key: "spinFraction",
@@ -172,6 +198,10 @@ function physicalWarning(scenarioId: ScenarioId, params: ExperimentParams): stri
 
   if (scenarioId === "relativistic-orbit" && params.startRadiusRs < ISCO_RADIUS_RS) {
     return `r₀ < ISCO = ${ISCO_RADIUS_RS} r_s: não há órbita circular estável — a partícula tende a mergulhar.`
+  }
+
+  if (scenarioId === "gw-ring") {
+    return "h ampliado ~10¹⁹× (real: ~10⁻²¹) e tempo ~75× mais lento; massas, frequências e a forma do chirp são reais."
   }
 
   if (scenarioId === "warp-bubble") {

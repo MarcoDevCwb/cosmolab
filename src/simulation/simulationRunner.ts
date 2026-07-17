@@ -94,6 +94,8 @@ export type RelativitySnapshot = {
   halted: boolean
   haltReason: HaltReason
   samples: TrajectorySamplePoint[]
+  /** Posições atuais das geodésicas companheiras (ensemble), se houver. */
+  companionPositions: Vector4[]
   /** Observáveis físicos do cenário (números-herói). */
   observables: ScenarioObservable[]
   /** Séries temporais para os gráficos (janela deslizante). */
@@ -128,6 +130,7 @@ export class GeodesicSimulationRunner {
   private initialValidation: ValidationReport
   private observables: ObservableTracker | null
   private halted = false
+  private companionStates: GeodesicState[] = []
 
   constructor(scenario: SimulationScenario) {
     this.scenario = scenario
@@ -136,6 +139,7 @@ export class GeodesicSimulationRunner {
     this.initialValidation = buildValidationReport(scenario.metric, this.state, scenario.kind)
     this.observables = scenario.createObservables?.() ?? null
     this.adaptive = this.createAdaptiveController()
+    this.companionStates = (scenario.companions ?? []).map((state) => [...state])
     this.recordSample()
   }
 
@@ -194,6 +198,7 @@ export class GeodesicSimulationRunner {
       this.state = next
       this.lambdaM += consumed
       remaining -= consumed
+      this.advanceCompanions(consumed)
       this.observables?.update(this.state, this.lambdaM)
 
       if (this.lambdaM - this.lastSampleLambdaM >= this.scenario.sampleIntervalLambdaM) {
@@ -209,6 +214,26 @@ export class GeodesicSimulationRunner {
     this.cpuMs += performance.now() - cpuStart
   }
 
+  /** Avança o ensemble (geodésicas REAIS, mesmo RK4) pelo mesmo Δλ do passo
+   * principal. Sincronização por λ comum: exata quando os membros têm o
+   * mesmo u⁰ inicial (ex.: anel em repouso), aproximada fora disso. */
+  private advanceCompanions(deltaLambdaM: number): void {
+    if (this.companionStates.length === 0) {
+      return
+    }
+    const substep = this.scenario.stepLambdaM
+    for (let i = 0; i < this.companionStates.length; i += 1) {
+      let remaining = deltaLambdaM
+      let state = this.companionStates[i]
+      while (remaining > 0) {
+        const h = Math.min(substep, remaining)
+        state = rungeKutta4Step(this.derivatives, state, h)
+        remaining -= h
+      }
+      this.companionStates[i] = state
+    }
+  }
+
   reset(): void {
     this.state = [...this.scenario.initialState]
     this.lambdaM = 0
@@ -221,6 +246,7 @@ export class GeodesicSimulationRunner {
     this.haltReason = null
     this.observables = this.scenario.createObservables?.() ?? null
     this.adaptive = this.createAdaptiveController()
+    this.companionStates = (this.scenario.companions ?? []).map((state) => [...state])
     this.recordSample()
   }
 
@@ -278,7 +304,8 @@ export class GeodesicSimulationRunner {
       halted: this.halted,
       haltReason: this.haltReason,
       samples: [...this.samples],
-      observables: this.observables?.read(this.state) ?? [],
+      companionPositions: this.companionStates.map((state) => positionOf(state)),
+      observables: this.observables?.read(this.state, this.companionStates) ?? [],
       history: [...this.history],
       integrator: this.adaptive
         ? {

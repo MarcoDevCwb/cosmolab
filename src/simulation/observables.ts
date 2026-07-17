@@ -28,6 +28,8 @@ export type ObservableUnit =
   | "s"
   | "kg"
   | "jm3"
+  | "hz"
+  | "wm2"
 
 /**
  * Origem epistemológica do valor exibido — a UI NUNCA deve apresentar uma
@@ -54,8 +56,10 @@ export type ScenarioObservable = {
 export type ObservableTracker = {
   /** Chamado após cada passo do integrador (λ em metros). */
   update(state: GeodesicState, lambdaM: number): void
-  /** Lê os observáveis no estado atual. */
-  read(state: GeodesicState): ScenarioObservable[]
+  /** Lê os observáveis no estado atual. `companions` traz o ensemble de
+   * geodésicas companheiras (ex.: anel de massas de teste), quando o
+   * cenário declara um. */
+  read(state: GeodesicState, companions?: GeodesicState[]): ScenarioObservable[]
 }
 
 const RAD_TO_ARCSEC = (180 / Math.PI) * 3600

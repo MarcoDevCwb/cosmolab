@@ -20,9 +20,18 @@ export function SceneLegend() {
   const isPhoton = scenario.kind === "null"
 
   const isWarp = scenario.bubbleRadiusM !== undefined
+  const hasRing = scenario.companions !== undefined
   const hasGalaxies = scenario.comovingMarkers !== undefined && !isWarp
 
-  if (!flammVisible && !isKerr && !hasCtc && !hasGalaxies && !isWarp && !scenario.comparisonPath) {
+  if (
+    !flammVisible &&
+    !isKerr &&
+    !hasCtc &&
+    !hasGalaxies &&
+    !isWarp &&
+    !hasRing &&
+    !scenario.comparisonPath
+  ) {
     return null
   }
 
@@ -77,6 +86,18 @@ export function SceneLegend() {
         <span style={{ color: "#94a3b8" }}>
           <i className="legend-dash" />
           {t(scenario.comparisonPath.label)}
+        </span>
+      )}
+      {hasRing && (
+        <span style={{ color: "#67e8f9" }}>
+          <i className="legend-dot" style={{ background: "#67e8f9" }} />
+          {t("anel de massas de teste (16 geodésicas reais)")}
+        </span>
+      )}
+      {hasRing && (
+        <span>
+          <i className="legend-dot" style={{ background: "#f0abfc" }} />
+          {t("massa central (referência do interferômetro)")}
         </span>
       )}
       {isWarp && (

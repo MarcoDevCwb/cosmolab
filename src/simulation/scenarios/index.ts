@@ -21,6 +21,7 @@ import {
   SOLAR_IMPACT_PARAMETER_RS,
   createLightDeflectionScenario,
 } from "./solarLightDeflection"
+import { createGravitationalWaveRingScenario } from "./gravitationalWaveRing"
 import { createWarpBubbleScenario } from "./warpBubble"
 import type { ExperimentParams, ScenarioId, SimulationScenario } from "./types"
 
@@ -96,6 +97,16 @@ export const DEFAULT_EXPERIMENT_PARAMS: Record<ScenarioId, ExperimentParams> = {
     angularVelocityFraction: 0.35,
     spinFraction: 0,
   },
+  // GW: massSolar → massa de chirp M_c; startRadiusRs → h de pico
+  // (exagerado p/ visualização); angularVelocityFraction → polarização +/×.
+  "gw-ring": {
+    // GW150914: M_c ≈ 30 M☉ (m₁ ≈ 36, m₂ ≈ 29).
+    massSolar: 30,
+    impactParameterRs: 0,
+    startRadiusRs: 0.09,
+    angularVelocityFraction: 0,
+    spinFraction: 0,
+  },
   // Warp: spinFraction → β = v/c; startRadiusRs → distância em minutos-luz.
   "warp-bubble": {
     massSolar: 0,
@@ -130,6 +141,7 @@ const SCENARIO_FACTORIES: Record<
   "godel-universe": createGodelUniverseScenario,
   "flrw-expansion": createFlrwExpansionScenario,
   "warp-bubble": createWarpBubbleScenario,
+  "gw-ring": createGravitationalWaveRingScenario,
 }
 
 export const SCENARIO_IDS = Object.keys(SCENARIO_FACTORIES) as ScenarioId[]
@@ -149,6 +161,7 @@ export const SCENARIO_SUMMARIES: { id: ScenarioId; label: string }[] = [
   { id: "kerr-frame-dragging", label: "Kerr — arrasto" },
   { id: "godel-universe", label: "Gödel — CTCs" },
   { id: "flrw-expansion", label: "Expansão cósmica" },
+  { id: "gw-ring", label: "Onda gravitacional" },
   { id: "warp-bubble", label: "Warp — Alcubierre" },
   { id: "custom-metric", label: "Métrica personalizada" },
 ]

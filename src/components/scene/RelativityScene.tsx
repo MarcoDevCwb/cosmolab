@@ -9,6 +9,7 @@ import { createScenario } from "../../simulation/scenarios"
 import { useSimulationStore } from "../../store/useSimulationStore"
 import { CausalMarkers } from "./CausalMarkers"
 import { GalaxyMarkers } from "./GalaxyMarkers"
+import { RingMarkers } from "./RingMarkers"
 import { FlammSurface } from "./FlammSurface"
 import { FrameDraggingField } from "./FrameDraggingField"
 import { SceneLegend } from "./SceneLegend"
@@ -102,6 +103,7 @@ function RelativityRig({ compact }: RelativitySceneProps) {
       {scenario.comovingMarkers && (
         <GalaxyMarkers scenario={scenario} snapshot={snapshot} mapToSurface={mapToSurface} />
       )}
+      {scenario.companions && <RingMarkers snapshot={snapshot} mapToSurface={mapToSurface} />}
 
       <Stars
         radius={compact ? 140 : 170}

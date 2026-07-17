@@ -354,6 +354,34 @@ const EN: Record<string, string> = {
   /* ---- FLRW ---- */
   "Expansão cósmica": "Cosmic expansion",
 
+  /* ---- onda gravitacional (pp-wave) ---- */
+  "Onda gravitacional": "Gravitational wave",
+  "Onda gravitacional — anel": "Gravitational wave — ring",
+  "Uma onda plana EXATA (Brinkmann) com perfil de chirp tipo GW150914 atravessa um anel de 16 geodésicas reais: o padrão +/× é desvio geodésico, não animação. O strain diferencial é lido do anel como num interferômetro. h ampliado ~10¹⁹× e tempo ~75× mais lento; frequências e massas são reais.":
+    "An EXACT plane wave (Brinkmann) with a GW150914-like chirp profile crosses a ring of 16 real geodesics: the +/× pattern is geodesic deviation, not animation. The differential strain is read off the ring like an interferometer. h amplified ~10¹⁹× and time ~75× slower; frequencies and masses are real.",
+  "Anel oscila em antifase (braços x e y); h medido segue o chirp: f cresce de ~30 Hz até o merger, depois ringdown. R = K = 0 exatos na onda (VSI).":
+    "Ring oscillates in antiphase (x and y arms); measured h follows the chirp: f grows from ~30 Hz to merger, then ringdown. R = K = 0 exactly in the wave (VSI).",
+  "Massa de chirp M_c": "Chirp mass M_c",
+  "Amplitude h no pico (exagerada)": "Peak strain h (exaggerated)",
+  "Polarização (+ ↔ ×)": "Polarization (+ ↔ ×)",
+  "h ampliado ~10¹⁹× (real: ~10⁻²¹) e tempo ~75× mais lento; massas, frequências e a forma do chirp são reais.":
+    "h amplified ~10¹⁹× (real: ~10⁻²¹) and time ~75× slower; masses, frequencies and the chirp shape are real.",
+  "Strain diferencial medido no anel": "Differential strain measured on the ring",
+  "h₊(u) do perfil (dicionário linearizado, envelope lento)":
+    "h₊(u) from the profile (linearized dictionary, slow envelope)",
+  "h grande: correções não-lineares ao dicionário h↔A tornam-se visíveis":
+    "large h: nonlinear corrections to the h↔A dictionary become visible",
+  "Frequência da onda": "Wave frequency",
+  "chirp newtoniano de quadrupolo (corte na ISCO + ringdown)":
+    "Newtonian quadrupole chirp (ISCO cutoff + ringdown)",
+  "Fluxo de energia (Isaacson)": "Energy flux (Isaacson)",
+  "GW150914 real (h ≈ 10⁻²¹): ≈ 3 mW/m² no pico — mais fluxo que a Lua cheia":
+    "real GW150914 (h ≈ 10⁻²¹): ≈ 3 mW/m² at peak — more flux than the full Moon",
+  "h ampliado para visualização ⇒ fluxo ampliado ~10³⁸×":
+    "h amplified for visualization ⇒ flux amplified ~10³⁸×",
+  "anel de massas de teste (16 geodésicas reais)": "ring of test masses (16 real geodesics)",
+  "massa central (referência do interferômetro)": "central mass (interferometer reference)",
+
   /* ---- warp (Alcubierre) ---- */
   "Warp — Alcubierre": "Warp — Alcubierre",
   "O piloto cruza a distância em queda livre DENTRO da bolha: dτ = dt (sem paradoxo dos gêmeos) e, com β > 1, chega antes do fóton de referência — em coordenadas. O preço, medido pelo motor: densidade de energia NEGATIVA na parede (NEC violada).":
