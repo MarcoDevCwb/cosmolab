@@ -26,8 +26,9 @@ export const SOLAR_RADIUS_M = 6.957e8
 /**
  * Raio de Schwarzschild r_s = 2GM/c² [m].
  *
- * Significado físico: raio do horizonte de eventos de um corpo esférico,
- * estático e sem carga de massa M (solução de Schwarzschild, 1916).
+ * Significado físico: escala gravitacional natural da solução exterior de
+ * Schwarzschild. É o raio do horizonte na extensão de buraco negro; para uma
+ * estrela com superfície R > r_s (como o Sol), não existe horizonte físico.
  */
 export function schwarzschildRadius(massKg: number): number {
   return (2 * GRAVITATIONAL_CONSTANT * massKg) / (SPEED_OF_LIGHT * SPEED_OF_LIGHT)

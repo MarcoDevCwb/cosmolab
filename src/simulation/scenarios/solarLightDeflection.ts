@@ -11,8 +11,9 @@
  * sem limite — abaixo de b_c o fóton é CAPTURADO (cruza a esfera de fótons
  * e cai no horizonte). Referência: Weinberg (1972), §8.5; MTW §25.6.
  *
- * O motor integra a geodésica nula exata de Schwarzschild, sem aproximação
- * de campo fraco: o regime forte emerge naturalmente dos mesmos Γ.
+ * O motor integra numericamente a equação geodésica nula completa de
+ * Schwarzschild, sem substituir a dinâmica pela aproximação de campo fraco:
+ * o regime forte emerge dos mesmos Γ.
  */
 
 import { SOLAR_MASS_KG, SOLAR_RADIUS_M, schwarzschildRadius } from "../../physics/constants"
@@ -48,7 +49,7 @@ export function createLightDeflectionScenario(params: ExperimentParams): Simulat
       "Dyson, Eddington & Davidson — Phil. Trans. R. Soc. A 220 (1920)",
     ],
     description:
-      "Geodésica nula exata de Schwarzschild para um fóton com parâmetro de impacto b ajustável. Aproxime b de 2,6 r_s e veja a captura.",
+      "Integração numérica da geodésica nula completa de Schwarzschild para um fóton com parâmetro de impacto b ajustável. Aproxime b de 2,6 r_s e veja a captura.",
     expectation: `Campo fraco: α = 2·r_s/b ≈ ${
       deflectionArcsec >= 3600
         ? `${(deflectionArcsec / 3600).toFixed(2)}°`

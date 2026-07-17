@@ -13,9 +13,9 @@
  *   g_φφ < 0  →  círculo TEMPORAL FECHADO — uma CTC passa por este evento
  *
  * Esta é uma condição SUFICIENTE para violação de causalidade (existem
- * CTCs mais gerais que não são círculos de φ). Vale para qualquer métrica
- * do laboratório — inclusive as definidas pelo usuário no editor, que
- * podem ser vasculhadas em busca de regiões acausais.
+ * CTCs mais gerais que não são círculos de φ). O teste só se aplica quando
+ * a carta declara x³ como o ângulo periódico φ; em cartas cartesianas ele é
+ * marcado como não aplicável. Métricas do editor usam carta esférica.
  *
  * Nota física: uma CTC ser curva não-geodésica (caso de Gödel) significa
  * que percorrê-la exige aceleração própria — o espaço-tempo permite o
@@ -26,6 +26,8 @@ import type { SpacetimeMetric } from "./metric"
 import type { Vector4 } from "./tensor"
 
 export type CausalityDiagnostic = {
+  /** O teste só se aplica quando x³ representa um ângulo φ periódico. */
+  applicable: boolean
   /** Norma g_φφ do círculo axial fechado no ponto [m²]. */
   azimuthalCircleNorm: number
   /** true quando g_φφ < 0: uma curva temporal fechada passa por aqui. */
@@ -37,8 +39,10 @@ export function causalityDiagnostic(
   position: Vector4,
 ): CausalityDiagnostic {
   const gPhiPhi = metric.metric(position)[3][3]
+  const applicable = metric.chart === "spherical" || metric.chart === "cylindrical"
   return {
+    applicable,
     azimuthalCircleNorm: gPhiPhi,
-    closedTimelikeCircle: gPhiPhi < 0,
+    closedTimelikeCircle: applicable && gPhiPhi < 0,
   }
 }

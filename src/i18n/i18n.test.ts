@@ -19,7 +19,9 @@ describe("i18n", () => {
     expect(t("Deflexão acumulada")).toBe("Accumulated deflection")
     expect(t("Através do horizonte")).toBe("Through the horizon")
     expect(t("A armadilha de luz")).toBe("The light trap")
-    expect(t("VIOLADA — matéria exótica")).toBe("VIOLATED — exotic matter")
+    expect(t("violação detectada em direção amostrada")).toBe(
+      "violation detected along a sampled direction",
+    )
     expect(t("validado")).toBe("validated")
   })
 
@@ -28,8 +30,8 @@ describe("i18n", () => {
     expect(t("b < b_crítico ≈ 2.60 r_s: o fóton será CAPTURADO pelo buraco negro.")).toBe(
       "b < b_critical ≈ 2.60 r_s: the photon will be CAPTURED by the black hole.",
     )
-    expect(t("K cresce ≈ r^−6.0 rumo ao centro (K invariante ⇒ não é artefato de carta).")).toBe(
-      "K grows ≈ r^−6.0 toward the center (K is chart-invariant ⇒ not a coordinate artifact).",
+    expect(t("K cresce ≈ r^−6.0 na borda interna do scan. É indício de divergência; confirmar singularidade exige estudar o limite e a extensão geodésica.")).toBe(
+      "K grows ≈ r^−6.0 at the scan's inner boundary. This suggests divergence; confirming a singularity requires studying the limit and geodesic extension.",
     )
   })
 

@@ -1,6 +1,6 @@
 /**
- * Passaporte de métricas: as estruturas conhecidas de cada geometria devem
- * ser detectadas automaticamente nas posições analíticas corretas.
+ * Passaporte de métricas: assinaturas locais conhecidas devem aparecer nas
+ * posições analíticas quando o alcance, a carta e as hipóteses permitem.
  */
 
 import { describe, expect, it } from "vitest"
@@ -18,7 +18,7 @@ const byKind = (passport: ReturnType<typeof generateMetricPassport>, kind: strin
   passport.findings.filter((f) => f.kind === kind)
 
 describe("passaporte de métricas", () => {
-  it("Schwarzschild: horizonte = limite estático em r_s, plana, singular no centro", () => {
+  it("Schwarzschild: candidatos coincidem em r_s e os indícios esperados aparecem", () => {
     const metric = createSchwarzschildMetric(massKg)
     const passport = generateMetricPassport(metric, 0.2 * M, 200 * M)
 
@@ -56,7 +56,11 @@ describe("passaporte de métricas", () => {
     expect(ctc).toHaveLength(1)
     expect(ctc[0].rangeM![0] / metric.ctcRadiusM).toBeGreaterThan(0.9)
     expect(ctc[0].rangeM![0] / metric.ctcRadiusM).toBeLessThan(1.1)
+    expect(ctc[0].rangeM![1]).toBeCloseTo(4 * metric.ctcRadiusM, 6)
     expect(byKind(passport, "horizon")).toHaveLength(0)
+    // g_tt e g_rr sozinhos imitam Minkowski, mas os termos tφ/φφ não:
+    // a comparação de toda a matriz não pode chamar Gödel de assintoticamente plano.
+    expect(byKind(passport, "asymptotically-flat")).toHaveLength(0)
   })
 
   it("FLRW: o scan usa a ÉPOCA dada — em x⁰ = hoje a métrica é regular (bug de auditoria)", async () => {
@@ -65,15 +69,15 @@ describe("passaporte de métricas", () => {
     const D = metric.hubbleLengthM
 
     // Época correta (hoje): a = 1, métrica regular. NÃO pode acusar
-    // horizonte, CTC nem matéria exótica; nem "plana" (g_rr = a² mas o
-    // universo não é assintoticamente Minkowski — aqui a(t₀) = 1 engana o
-    // critério g_rr→1 apenas se g_tt→−1 também, o que ocorre: FLRW plano
-    // HOJE coincide com Minkowski instantaneamente — achado aceitável).
+    // horizonte, CTC, matéria exótica ou planicidade assintótica. Embora as
+    // componentes espaciais coincidam instantaneamente com Minkowski em
+    // a(t₀)=1, ∂ₜg≠0 e a geometria FLRW não é assintoticamente estacionária.
     const passport = generateMetricPassport(metric, 0.01 * D, 2 * D, 96, metric.nowCtM)
     expect(byKind(passport, "horizon")).toHaveLength(0)
     expect(byKind(passport, "ctc-region")).toHaveLength(0)
     expect(byKind(passport, "exotic-matter")).toHaveLength(0)
     expect(byKind(passport, "curvature-singularity")).toHaveLength(0)
+    expect(byKind(passport, "asymptotically-flat")).toHaveLength(0)
     for (const f of passport.findings) {
       expect(Number.isFinite(f.radiusM ?? 0)).toBe(true)
     }

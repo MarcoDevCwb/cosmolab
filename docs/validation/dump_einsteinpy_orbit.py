@@ -2,8 +2,9 @@
 
 Integra a MESMA órbita de Schwarzschild (G = c = M = 1) que
 dump_cosmolab_orbit.mts: r0 = 40 M no apoastro, L = 3,9 M, plano equatorial.
-O einsteinpy usa formulação hamiltoniana com passo adaptativo (ordem
-simplética); as trajetórias devem coincidir ponto a ponto em r(φ).
+O einsteinpy usa sua formulação hamiltoniana independente, com integrador de
+splitting de ordem 2 (padrão da versão 0.4.0) e delta = 0,05. As trajetórias
+devem coincidir, dentro dos erros numéricos, quando comparadas como r(φ).
 
 Executar:  epy-venv/bin/python dump_einsteinpy_orbit.py
 Saída:     /tmp/einsteinpy_orbit.csv  (lambda_M, r_M, phi_rad)

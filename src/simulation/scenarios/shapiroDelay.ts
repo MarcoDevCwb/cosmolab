@@ -6,7 +6,11 @@
  * trajetória quase reta. Previsão de campo fraco (Shapiro, PRL 13, 789
  * (1964); Weinberg 1972, §8.7):
  *
- *   Δt = (2GM/c³)·ln(4·x₁·x₂/b²)
+ *   Δt_corda = (2GM/c³)·[ln(4·x₁·x₂/b²) − 1]
+ *
+ * para extremos assintóticos e comparação com a CORDA coordenada entre os
+ * extremos. O termo constante muda quando se muda a baseline; a dependência
+ * logarítmica em b é o conteúdo de primeira ordem mais robusto.
  *
  * Confirmado com radar em Vênus/Mercúrio (Shapiro et al. 1968) e até hoje
  * o teste de maior precisão via Cassini (Bertotti et al. 2003).
@@ -33,9 +37,9 @@ export function createShapiroDelayScenario(params: ExperimentParams): Simulation
 
   // Referência de campo fraco com x₁ = x₂ = 60·b, na convenção de baseline
   // por CORDA coordenada: Δt = (2GM/c³)[ln(4x₁x₂/b²) − 1]. A repartição do
-  // atraso depende da baseline escolhida (só o eco de radar completo é
-  // invariante); esta forma corresponde exatamente ao que medimos:
-  // t − d_corda/c (verificada a 5×10⁻⁵ contra a integração exata).
+  // atraso depende da baseline escolhida; esta é a referência 1PN para o
+  // observável numérico t − d_corda/c. Correções de distância finita e de
+  // ordens superiores permanecem na integração e limitam a concordância.
   const weakFieldDelayS =
     (rs / SPEED_OF_LIGHT) *
     (Math.log(4 * START_DISTANCE_IN_B * START_DISTANCE_IN_B) - 1)

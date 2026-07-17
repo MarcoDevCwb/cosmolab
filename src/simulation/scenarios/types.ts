@@ -51,7 +51,8 @@ export type ExperimentParams = {
   impactParameterRs: number
   /** Raio inicial da partícula, em unidades de r_s. */
   startRadiusRs: number
-  /** Velocidade angular inicial como fração da órbita circular (1 = circular). */
+  /** Parâmetro reutilizado por cenário: fração da velocidade tangencial local
+   * circular em Schwarzschild; Ω_m em FLRW; fração de ω_Gödel em Gödel. */
   angularVelocityFraction: number
   /** Spin de Kerr χ = a/M_geo ∈ [0, 1) (0 = Schwarzschild). */
   spinFraction: number

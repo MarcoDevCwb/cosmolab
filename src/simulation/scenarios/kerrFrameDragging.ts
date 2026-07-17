@@ -9,8 +9,8 @@
  * mesmo assim adquire dφ/dt = −g_tφ/g_φφ > 0: o espaço-tempo gira com o
  * buraco negro e a carrega junto (Bardeen, Press & Teukolsky 1972; MTW §33.4).
  *
- * L permanece EXATAMENTE zero durante toda a queda (constante de Killing) —
- * verificável ao vivo no painel de validação numérica.
+ * Na teoria, L permanece exatamente zero durante a queda (constante de
+ * Killing); numericamente, sua deriva deve ficar dentro da tolerância exibida.
  *
  * Esta é também a estreia do motor "plugin": Kerr não fornece Christoffels
  * analíticos; a integração usa diferenças finitas genéricas (christoffel.ts).
@@ -49,7 +49,8 @@ export function createKerrFrameDraggingScenario(params: ExperimentParams): Simul
   const uPhi = zamoOmegaPerMeter * uTime
 
   // Escala de λ: aproximação newtoniana da queda (documentada como estimativa
-  // apenas de RITMO de reprodução; a física vem da integração exata).
+  // apenas de RITMO de reprodução; a física vem da integração numérica das
+  // equações geodésicas completas).
   const properFallTimeS =
     (Math.PI / 2) * Math.sqrt(r0 ** 3 / (2 * GRAVITATIONAL_CONSTANT * massKg))
   const lambdaTotalM = SPEED_OF_LIGHT * properFallTimeS
@@ -66,7 +67,7 @@ export function createKerrFrameDraggingScenario(params: ExperimentParams): Simul
     description:
       "Partícula com momento angular ZERO largada perto de um buraco negro em rotação: o espaço-tempo a arrasta em φ (Lense–Thirring). Ajuste o spin a/M.",
     expectation:
-      "L = g_φμu^μ permanece 0 enquanto φ cresce — quem gira é o espaço-tempo (integração via Christoffels numéricos: Kerr roda como plugin).",
+      "L = g_φμu^μ deve permanecer 0, dentro do erro numérico, enquanto φ cresce — quem gira é o espaço-tempo (Kerr roda como plugin).",
 
     metric,
     kind: "timelike",

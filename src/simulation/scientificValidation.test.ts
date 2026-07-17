@@ -101,6 +101,30 @@ describe("cenário 3 — órbitas em Schwarzschild", () => {
   const metric = createSchwarzschildMetric(massKg)
   const rs = metric.schwarzschildRadiusM
 
+  it("o controle orbital representa a fração da velocidade tangencial LOCAL", () => {
+    const fraction = 0.85
+    const scenario = createScenario("relativistic-orbit", {
+      massSolar: 10,
+      impactParameterRs: 0,
+      startRadiusRs: 8,
+      angularVelocityFraction: fraction,
+      spinFraction: 0,
+    })
+    const state = scenario.initialState
+    const r = state[1]
+    const lapse = 1 - scenario.schwarzschildRadiusM! / r
+
+    // Na tétrade estática: u^(hat t)=√f u^t e u^(hat φ)=r u^φ;
+    // logo v_local/c = u^(hat φ)/u^(hat t).
+    const localSpeedOverC = (r * state[7]) / (Math.sqrt(lapse) * state[4])
+    const circularLocalSpeedOverC = Math.sqrt(
+      scenario.schwarzschildRadiusM! / (2 * (r - scenario.schwarzschildRadiusM!)),
+    )
+
+    expect(localSpeedOverC / circularLocalSpeedOverC).toBeCloseTo(fraction, 12)
+    expect(normConservationError(scenario.metric, state, "timelike")).toBeLessThan(1e-14)
+  })
+
   it("órbita circular em r = 8 r_s obedece Ω² = GM/r³ em tempo coordenado", () => {
     const r0 = 8 * rs
     const omega = Math.sqrt(rs / (2 * r0 ** 3)) // dφ/d(ct)
@@ -166,8 +190,8 @@ describe("cenário 3 — órbitas em Schwarzschild", () => {
   })
 
   it("RK4 converge em 4ª ordem: reduzir h à metade reduz o erro ~16×", () => {
-    // Órbita EXCÊNTRICA (a circular é ponto fixo exato do RK4 e não gera
-    // erro). Referência de Richardson: solução com passo h/8 no mesmo λ.
+    // Órbita EXCÊNTRICA (a circular preserva r em aritmética exata e mede
+    // sobretudo arredondamento). Referência de Richardson: h/8 no mesmo λ.
     const r0 = 8 * rs
     const omega = Math.sqrt(rs / (2 * r0 ** 3))
     const uTime = 1 / Math.sqrt(1 - rs / r0 - r0 * r0 * omega * omega)
@@ -254,7 +278,7 @@ describe("cenário 4 — horizonte de Schwarzschild", () => {
 })
 
 describe("cenário 9 — atraso de Shapiro (4º teste clássico)", () => {
-  it("o atraso medido converge para (2GM/c³)·ln(4x₁x₂/b²) dentro de 3%", () => {
+  it("a baseline de corda reproduz (r_s/c)[ln(4x₁x₂/b²) − 1] dentro de 1%", () => {
     const runner = new GeodesicSimulationRunner(createScenario("shapiro-delay"))
     for (let i = 0; i < 400 && !runner.snapshot().halted; i += 1) {
       runner.advanceLambda(3e9)
@@ -271,10 +295,10 @@ describe("cenário 9 — atraso de Shapiro (4º teste clássico)", () => {
     expect(shapiro!.value / shapiro!.reference!).toBeLessThan(1.01)
   })
 
-  it("dependência em b é 2·ln(b₂/b₁) — independente da convenção de baseline", () => {
+  it("em 1PN, a diferença em b cancela o termo constante da baseline", () => {
     // Mede o coeficiente (t − corda/c)/(r_s/c) para dois parâmetros de
     // impacto com o MESMO alcance X: a diferença deve ser 2·ln(b₂/b₁),
-    // pois as constantes de baseline cancelam.
+    // pois as constantes aditivas desta convenção cancelam em ordem 1PN.
     const metric = createSchwarzschildMetric(SOLAR_MASS_KG)
     const rs = metric.schwarzschildRadiusM
     const derivatives = createGeodesicDerivatives(metric)

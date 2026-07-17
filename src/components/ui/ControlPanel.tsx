@@ -81,7 +81,7 @@ const SLIDERS_BY_SCENARIO: Record<ScenarioId, SliderSpec[]> = {
     { key: "startRadiusRs", label: "Raio inicial r₀", min: 2, max: 40, step: 0.1, format: formatRs },
     {
       key: "angularVelocityFraction",
-      label: "Velocidade angular (× circular)",
+      label: "Velocidade tangencial local (× circular)",
       min: 0.3,
       max: 1.25,
       step: 0.01,

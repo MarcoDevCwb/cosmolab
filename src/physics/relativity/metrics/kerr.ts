@@ -23,8 +23,9 @@
  *
  * Significado físico do arrasto (Lense–Thirring): uma partícula largada do
  * repouso com momento angular NULO adquire dφ/dt = −g_tφ/g_φφ ≠ 0. L = g_φμu^μ
- * permanece exatamente zero (vetor de Killing ∂_φ) enquanto a partícula gira —
- * é o espaço-tempo que roda, não uma força sobre a partícula.
+ * é exatamente conservado na teoria (vetor de Killing ∂_φ) e deve permanecer
+ * numericamente próximo de zero enquanto a partícula gira — é o espaço-tempo
+ * que roda, não uma força sobre a partícula.
  *
  * IMPLEMENTAÇÃO COMO "PLUGIN": esta métrica NÃO fornece Christoffels
  * analíticos — o motor os calcula por diferenças finitas (christoffel.ts).

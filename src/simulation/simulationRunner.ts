@@ -75,12 +75,9 @@ export type RelativitySnapshot = {
   lambdaM: number
   coordinateTimeS: number
   properTimeS: number | null
-  /**
-   * Salto ao futuro Δ = t − τ [s]: quanto o observador distante envelheceu
-   * A MAIS que a partícula — dilatação temporal acumulada, que é viagem ao
-   * futuro em sentido literal (paradoxo dos gêmeos; Hafele–Keating 1972).
-   * null para fótons (não há relógio próprio).
-   */
+  /** Diferença Δ = x⁰/c − τ [s]. É dependente da carta: só representa uma
+   * comparação entre relógios físicos após especificar observador de
+   * referência, sincronização e eventos comparados. null para fótons. */
   futureTravelS: number | null
 
   position: Vector4
@@ -104,9 +101,9 @@ export type RelativitySnapshot = {
   integrator: IntegratorStats
   /** Invariantes de curvatura na posição atual (R, K) — independentes de carta. */
   invariants: CurvatureInvariants
-  /** Diagnóstico de CTC no ponto: sinal de g_φφ do círculo axial fechado. */
+  /** Diagnóstico local de círculos axiais, quando x³ é um φ periódico. */
   causality: CausalityDiagnostic
-  /** Matéria exigida pelas equações de campo no ponto (ρ, p_r, NEC). */
+  /** Tensor de matéria efetiva local e amostragem da NEC no ponto. */
   matter: MatterDiagnostic | null
 }
 

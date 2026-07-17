@@ -8,10 +8,11 @@
  *
  *   Δφ ≈ 6πGM / [c² a (1 - e²)]
  *
- * Parâmetros do experimento: r₀ (em r_s) e a fração da velocidade angular
- * circular. 1,0 = órbita circular (Ω² = GM/r³ exata em tempo coordenado —
- * MTW ex. 25.19); < 1 = excêntrica com roseta; frações menores mergulham.
- * Abaixo da ISCO (r = 3 r_s) não há órbita circular estável.
+ * Parâmetros do experimento: r₀ (em r_s) e a fração da velocidade tangencial
+ * LOCAL medida por um observador estático no raio inicial. 1,0 = velocidade
+ * da órbita circular (Ω² = GM/r³ em tempo coordenado — MTW ex. 25.19);
+ * < 1 produz uma órbita excêntrica ou, abaixo da barreira do potencial,
+ * mergulho. Abaixo da ISCO (r = 3 r_s) não há órbita circular ESTÁVEL.
  */
 
 import { GRAVITATIONAL_CONSTANT, SOLAR_MASS_KG, SPEED_OF_LIGHT } from "../../physics/constants"
@@ -37,8 +38,12 @@ export function createRelativisticOrbitScenario(params: ExperimentParams): Simul
   const rs = metric.schwarzschildRadiusM
   const r0 = params.startRadiusRs * rs
 
-  // u^φ da órbita circular: com u^φ = ω̃ u^t e norma -1,
-  // u^t = 1/√(f - r²ω̃²)  (f = 1 - r_s/r). Só existe para r > 1,5 r_s.
+  // Velocidade circular LOCAL medida pela tétrade do observador estático:
+  //   (v_circ/c)² = M/(r - 2M) = (r_s/2)/(r-r_s).
+  // Para uma velocidade local v, u^(hat t)=γ e u^(hat φ)=γv; portanto,
+  // nas coordenadas (ct,r,θ,φ), u^φ = γv/r. Essa construção faz o slider
+  // representar exatamente a grandeza anunciada na UI, em vez de escalar
+  // u^φ (ou L) e apenas aproximar a fração de velocidade.
   const omega = circularAngularVelocityPerMeter(rs, r0)
   const lapseMinusRotation = 1 - rs / r0 - r0 * r0 * omega * omega
   if (lapseMinusRotation <= 0) {
@@ -46,16 +51,26 @@ export function createRelativisticOrbitScenario(params: ExperimentParams): Simul
       "Não existe órbita circular (nem de referência) em r ≤ 1,5 r_s: escolha raio inicial maior.",
     )
   }
-  const uTimeCircular = 1 / Math.sqrt(lapseMinusRotation)
-  const uPhi = params.angularVelocityFraction * omega * uTimeCircular
+  const localCircularSpeedOverC = Math.sqrt(rs / (2 * (r0 - rs)))
+  const localSpeedOverC = params.angularVelocityFraction * localCircularSpeedOverC
+  if (!(Math.abs(localSpeedOverC) < 1)) {
+    throw new Error(
+      "A velocidade tangencial local deve ser menor que c: reduza a fração da órbita circular.",
+    )
+  }
+  const lorentzFactor = 1 / Math.sqrt(1 - localSpeedOverC * localSpeedOverC)
+  const uPhi = (lorentzFactor * localSpeedOverC) / r0
+
+  // buildInitialState recuperará u^t = γ/√(1-r_s/r₀) pela normalização.
 
   // Período kepleriano coordenado T = 2π√(r³/GM) define as escalas de λ.
   const gm = GRAVITATIONAL_CONSTANT * massKg
   const coordinatePeriodS = 2 * Math.PI * Math.sqrt(r0 ** 3 / gm)
   const lambdaPerOrbitM = SPEED_OF_LIGHT * coordinatePeriodS
 
-  // Contraste newtoniano: elipse fechada com a MESMA velocidade angular
-  // coordenada inicial dφ/dt — a diferença visível é a precessão da RG.
+  // Contraste newtoniano: elipse fechada com a mesma FRAÇÃO da velocidade
+  // circular newtoniana. As velocidades absolutas não são identificadas em
+  // campo forte, pois "velocidade local" depende do observador na RG.
   const tangentialVelocity = params.angularVelocityFraction * Math.sqrt(gm / r0)
   const newtonianEllipse = keplerEllipse(gm, r0, tangentialVelocity)
 
@@ -69,7 +84,7 @@ export function createRelativisticOrbitScenario(params: ExperimentParams): Simul
       "Goldstein — Classical Mechanics (3ª ed.), cap. 3 (elipse de Kepler)",
     ],
     description:
-      "Partícula massiva com raio e velocidade iniciais ajustáveis: 100% = órbita circular; menos = roseta de precessão; perto da ISCO (3 r_s), mergulho.",
+      "Partícula massiva com raio e velocidade tangencial local ajustáveis: 100% = órbita circular; menos = roseta de precessão ou mergulho; a ISCO fica em 3 r_s.",
     expectation: "Roseta de precessão: Δφ ≈ 6πGM/[c²a(1-e²)] por órbita.",
 
     metric,

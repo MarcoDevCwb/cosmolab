@@ -19,11 +19,11 @@ import { formatMeters, formatSeconds } from "../ui/formatters"
  *
  * A MESMA queda física (mesma massa, mesmo r₀, mesmo relógio próprio) é
  * integrada em duas cartas: Schwarzschild (esquerda) e Painlevé–Gullstrand
- * (direita). Os dois runners avançam pelo MESMO Δλ = c·Δτ — sincronização
- * pelo tempo próprio, a única fisicamente correta.
+ * (direita). Os dois runners avançam pelo MESMO Δλ = c·Δτ — uma
+ * sincronização invariante pelos eventos da mesma linha de mundo.
  *
  * O que o Atlas demonstra: invariantes (τ, raio areal r, Kretschmann K,
- * energia E) coincidem entre as cartas; grandezas de coordenada (tempo t
+ * energia E) devem coincidir dentro da tolerância; grandezas de coordenada (tempo t
  * vs T, destino da integração) divergem — o "congelamento" no horizonte é
  * artefato da carta de Schwarzschild, não física.
  *
@@ -124,7 +124,7 @@ function CompareRow({
         }
         title={
           invariant
-            ? "Grandeza invariante: independe da carta de coordenadas — a concordância é a prova de que é o MESMO espaço-tempo"
+            ? "Grandeza invariante: independe da carta — a concordância verifica numericamente a descrição do mesmo espaço-tempo"
             : "Grandeza de coordenada: depende da carta escolhida — divergir aqui não é física, é o mapa"
         }
       >

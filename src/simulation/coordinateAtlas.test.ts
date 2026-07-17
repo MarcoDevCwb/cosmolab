@@ -1,5 +1,5 @@
 /**
- * Atlas de Coordenadas — prova numérica de que Schwarzschild e
+ * Atlas de Coordenadas — verificação numérica de que Schwarzschild e
  * Painlevé–Gullstrand descrevem o MESMO espaço-tempo: a mesma queda,
  * sincronizada pelo tempo próprio (mesmo Δλ = c·Δτ), deve concordar em
  * todos os INVARIANTES enquanto as duas cartas forem válidas.

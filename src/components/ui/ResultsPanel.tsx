@@ -47,7 +47,7 @@ function ResultsTabContent({
             <span className="hud-stat-label">{t(observable.label)}</span>
             <span
               className="provenance-badge"
-              title="Origem do valor: integração numérica exata na métrica, sem aproximações"
+              title="Origem do valor: integração numérica da equação geodésica completa; erro monitorado pela norma e pelas constantes disponíveis"
             >
               {observable.provenance === "numeric" ? t("numérico") : observable.provenance === "analytic" ? t("analítico") : t("campo fraco")}
             </span>
@@ -69,7 +69,7 @@ function ResultsTabContent({
         <div className="clock-card">
           <span className="hud-stat-label">{t("Tempo coordenado")}</span>
           <strong>{snapshot ? formatSeconds(snapshot.coordinateTimeS) : "—"}</strong>
-          <small>{t("observador no infinito")}</small>
+          <small>{t("x⁰/c da carta; a interpretação depende das coordenadas")}</small>
         </div>
         <div className="clock-card">
           <span className="hud-stat-label">
@@ -93,12 +93,12 @@ function ResultsTabContent({
       {snapshot?.futureTravelS !== null && snapshot?.futureTravelS !== undefined && (
         <div
           className="future-card"
-          title="Δ = t − τ: dilatação temporal acumulada. É viagem ao futuro em sentido literal — o mesmo efeito medido com relógios atômicos em aviões (Hafele–Keating, 1972)."
+          title="Δ = t − τ compara o tempo coordenado da carta com o tempo próprio da partícula. A interpretação como diferença entre relógios físicos exige especificar um observador de referência e uma convenção de simultaneidade."
         >
-          <span className="hud-stat-label">{t("Salto ao futuro Δ = t − τ")}</span>
+          <span className="hud-stat-label">{t("Diferença coordenada Δ = t − τ")}</span>
           <strong>{formatSeconds(snapshot.futureTravelS)}</strong>
           <small>
-            {t("quanto o observador distante envelheceu a mais que a partícula — viagem ao futuro literal (paradoxo dos gêmeos)")}
+            {t("grandeza dependente da carta; compare relógios físicos apenas após definir o observador de referência")}
           </small>
         </div>
       )}
@@ -181,14 +181,38 @@ function ValidationTabContent({
           <span>{t("Erro de norma")}</span>
           <strong>{snapshot ? snapshot.validation.normError.toExponential(2) : "—"}</strong>
         </div>
-        <div className="telemetry-card" title="Deriva relativa de E desde λ = 0">
+        <div
+          className="telemetry-card"
+          title={
+            scenario.metric.symmetries?.stationary
+              ? "Deriva relativa da constante de Killing E desde λ = 0"
+              : "Não há Killing temporal declarado nesta métrica; E não precisa se conservar"
+          }
+        >
           <span>{t("Deriva de E")}</span>
-          <strong>{snapshot ? snapshot.energyDriftRelative.toExponential(2) : "—"}</strong>
+          <strong>
+            {snapshot
+              ? scenario.metric.symmetries?.stationary
+                ? snapshot.energyDriftRelative.toExponential(2)
+                : t("n/a — sem Killing temporal")
+              : "—"}
+          </strong>
         </div>
-        <div className="telemetry-card" title="Deriva relativa de L desde λ = 0">
+        <div
+          className="telemetry-card"
+          title={
+            scenario.metric.symmetries?.axisymmetric
+              ? "Deriva relativa da constante de Killing L desde λ = 0"
+              : "Não há Killing axial declarado nesta métrica; L não precisa se conservar"
+          }
+        >
           <span>{t("Deriva de L")}</span>
           <strong>
-            {snapshot ? snapshot.angularMomentumDriftRelative.toExponential(2) : "—"}
+            {snapshot
+              ? scenario.metric.symmetries?.axisymmetric
+                ? snapshot.angularMomentumDriftRelative.toExponential(2)
+                : t("n/a — sem Killing axial")
+              : "—"}
           </strong>
         </div>
         <div className="telemetry-card" title="Parâmetro afim integrado (λ = c·τ para massivas)">
@@ -197,20 +221,22 @@ function ValidationTabContent({
         </div>
         <div
           className="telemetry-card"
-          title="g_φφ: norma do círculo axial fechado no ponto. Negativa ⇒ uma curva temporal FECHADA passa por aqui (condição de CTC de Gödel/Kerr interior); positiva ⇒ causalidade normal."
+          title="Se x³=φ é periódico, g_φφ<0 prova que o círculo axial é uma CTC. g_φφ≥0 exclui apenas essa família de círculos, não todas as possíveis CTCs."
         >
           <span>{t("Causalidade (g_φφ)")}</span>
           <strong>
             {snapshot
-              ? snapshot.causality.closedTimelikeCircle
+              ? !snapshot.causality.applicable
+                ? t("n/a — x³ não é φ periódico")
+                : snapshot.causality.closedTimelikeCircle
                 ? t("CTC! (g_φφ < 0)")
-                : t("normal (g_φφ > 0)")
+                : t("nenhum círculo φ temporal detectado")
               : "—"}
           </strong>
         </div>
         <div
           className="telemetry-card"
-          title="Densidade de energia local T(û,û) que as equações de campo exigem para sustentar esta métrica, medida pelo observador estático/ZAMO [J/m³]. ≈ 0 em vácuo (Schwarzschild, Kerr); NEGATIVA em wormholes."
+          title="Densidade de energia efetiva local T(û,û), medida pelo observador estático/ZAMO [J/m³]. ≈ 0 em vácuo; é negativa no exemplo Morris–Thorne implementado. Violação da NEC e ρ<0 não são equivalentes em geral."
         >
           <span>{t("Densidade de energia ρ")}</span>
           <strong>
@@ -223,14 +249,14 @@ function ValidationTabContent({
         </div>
         <div
           className="telemetry-card"
-          title="Condição Nula de Energia (Hawking & Ellis §4.3): T(k,k) ≥ 0 para todo vetor nulo k. VIOLADA ⇒ matéria exótica (wormholes atravessáveis, warp drives)."
+          title={`NEC: T(k,k) ≥ 0 para todo k nulo. O painel amostra ${snapshot?.matter?.necDirectionsTested ?? 134} direções: T(k,k)<0 além da tolerância fornece uma direção-testemunha, sujeita à convergência do tensor numérico; ausência de violação não é prova no contínuo.`}
         >
           <span>{t("Condição de energia (NEC)")}</span>
           <strong>
             {snapshot?.matter
               ? snapshot.matter.nullEnergyConditionOk
-                ? t("satisfeita ✓")
-                : t("VIOLADA — matéria exótica")
+                ? t("sem violação detectada (amostragem)")
+                : t("violação detectada em direção amostrada")
               : "—"}
           </strong>
         </div>
@@ -243,7 +269,7 @@ function ValidationTabContent({
         </div>
         <div
           className="telemetry-card"
-          title="Kretschmann K = R_abcd·R^abcd [1/m⁴] na posição atual (numérico). Independe da carta: K finito num horizonte = singularidade de coordenada; K → ∞ = singularidade física real."
+          title="Kretschmann K = R_abcd·R^abcd [1/m⁴]. K é invariante; sua divergência sinaliza curvatura singular. K finito, sozinho, não prova regularidade de todos os invariantes nem completude geodésica."
         >
           <span>{t("Kretschmann K")}</span>
           <strong>{snapshot ? `${snapshot.invariants.kretschmann.toExponential(2)} m⁻⁴` : "—"}</strong>
@@ -287,7 +313,7 @@ function ValidationTabContent({
       )}
 
       <p className="hud-note">
-        {t("E e L são constantes de Killing; a deriva relativa e o erro de norma medem a qualidade da integração. R e K são invariantes de curvatura: K finito num horizonte indica singularidade apenas de coordenada.")}
+        {t("A norma deve conservar-se em toda geodésica. E e L só são constantes quando a métrica declara, respectivamente, simetria temporal e axial. R e K são invariantes locais; nenhum escalar isolado decide toda a estrutura global.")}
       </p>
 
       <div className="telemetry-card" title="Hash da configuração (cenário + parâmetros + métrica + versão): a mesma configuração gera sempre o mesmo ID">
@@ -401,10 +427,9 @@ const PASSPORT_ICONS: Record<string, string> = {
 }
 
 /**
- * PASSAPORTE DA MÉTRICA: dossiê automático da geometria ativa — horizontes,
- * limite estático, regiões de CTC, matéria exótica, indício de singularidade
- * e planicidade assintótica, com as condições matemáticas de cada achado.
- * O scan (simulation/metricPassport.ts) roda sob demanda.
+ * PASSAPORTE DA MÉTRICA: triagem radial local — superfícies nulas candidatas,
+ * limite estático, círculos axiais temporais, violações da NEC amostradas e
+ * indícios de singularidade/planicidade. Não substitui análise causal global.
  */
 function PassportTabContent({ scenario }: { scenario: SimulationScenario }) {
   const [passport, setPassport] = useState<MetricPassport | null>(null)
@@ -439,8 +464,10 @@ function PassportTabContent({ scenario }: { scenario: SimulationScenario }) {
     <>
       <p className="hud-note">
         Varredura radial equatorial da métrica <strong>{scenario.metric.name}</strong> em r ∈ [
-        {formatMeters(range.rMin)}, {formatMeters(range.rMax)}]: horizontes (g^rr = 0), limite
-        estático (g_tt = 0), CTCs (g_φφ &lt; 0), matéria exótica (NEC) e curvatura.
+        {formatMeters(range.rMin)}, {formatMeters(range.rMax)}]: superfícies r=const nulas
+        (g^rr = 0), limite estático estacionário (g_tt = 0), círculos φ temporais
+        (g_φφ &lt; 0), violações amostradas da NEC e curvatura. Os achados são locais e
+        dependem da carta, das simetrias declaradas e do alcance do scan.
       </p>
 
       <button type="button" className="toolbar-btn editor-apply" onClick={scan}>
@@ -449,7 +476,7 @@ function PassportTabContent({ scenario }: { scenario: SimulationScenario }) {
       </button>
 
       {passport && passport.findings.length === 0 && (
-        <p className="hud-note">{t("Nenhuma estrutura especial no alcance escaneado.")}</p>
+        <p className="hud-note">{t("Nenhuma assinatura local foi detectada no alcance e na resolução do scan; isso não prova ausência global.")}</p>
       )}
 
       {passport?.findings.map((finding, index) => (

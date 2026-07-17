@@ -22,6 +22,7 @@ describe("métrica de Gödel", () => {
 
     const just_inside = causalityDiagnostic(metric, [0, 0.99 * rCtc, 0, 0])
     const just_outside = causalityDiagnostic(metric, [0, 1.01 * rCtc, 0, 0])
+    expect(just_inside.applicable).toBe(true)
     expect(just_inside.closedTimelikeCircle).toBe(false)
     expect(just_inside.azimuthalCircleNorm).toBeGreaterThan(0)
     expect(just_outside.closedTimelikeCircle).toBe(true)
@@ -47,6 +48,13 @@ describe("métrica de Gödel", () => {
     for (const r of [1.1 * rs, 3 * rs, 50 * rs]) {
       expect(causalityDiagnostic(schw, [0, r, Math.PI / 2, 0]).closedTimelikeCircle).toBe(false)
     }
+  })
+
+  it("o teste axial não se aplica quando x³ é cartesiano, não um φ periódico", async () => {
+    const { minkowskiMetric } = await import("./minkowski")
+    const diagnostic = causalityDiagnostic(minkowskiMetric, [0, 1, 2, 3])
+    expect(diagnostic.applicable).toBe(false)
+    expect(diagnostic.closedTimelikeCircle).toBe(false)
   })
 })
 

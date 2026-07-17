@@ -1,7 +1,7 @@
 /**
  * Validação da métrica de Kerr e do arrasto de referenciais.
  *
- * Kerr roda como "plugin" (sem Christoffels analíticos): estes testes provam
+ * Kerr roda como "plugin" (sem Christoffels analíticos): estes testes verificam
  * que o caminho numérico completo — inversa analítica, diferenças finitas,
  * RK4 — reproduz limites e invariantes conhecidos.
  */

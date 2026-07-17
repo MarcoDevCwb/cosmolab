@@ -47,4 +47,18 @@ describe("relatório de laboratório", () => {
     expect(html).toContain("g_tt = -(1 - 2*M/r)")
     expect(html).toContain("speculative")
   })
+
+  it("órbita documenta velocidade local e não transforma t−τ em viagem universal", () => {
+    const params = DEFAULT_EXPERIMENT_PARAMS["relativistic-orbit"]
+    const scenario = createScenario("relativistic-orbit", params)
+    const runner = new GeodesicSimulationRunner(scenario)
+    runner.advanceLambda(scenario.stepLambdaM * 20)
+
+    const html = buildLabReportHtml(scenario, params, runner.snapshot(), [], "http://x/")
+    expect(html).toContain("v_local/v_circ")
+    expect(html).toContain("Diferença coordenada Δ = t − τ")
+    expect(html).toContain("depende da carta e do observador de referência")
+    expect(html).not.toContain("Salto ao futuro")
+    expect(html).toContain("2 ppm no observável")
+  })
 })

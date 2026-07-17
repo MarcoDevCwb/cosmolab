@@ -28,7 +28,7 @@ const PATTERNS: [RegExp, string][] = [
   [/^Campo fraco: α = 2·r_s\/b ≈ (.+) de deflexão total\.$/, "Weak field: α = 2·r_s/b ≈ $1 of total deflection."],
   [/^Campo fraco: Δt ≈ (.+) µs para esta configuração\.$/, "Weak field: Δt ≈ $1 µs for this configuration."],
   [/^Geodésicas na métrica "(.+)" definida no editor abaixo\. A validação numérica \(norma, E, L\) é o termômetro de confiabilidade\.$/, 'Geodesics in the "$1" metric defined in the editor below. The numeric validation (norm, E, L) is the reliability gauge.'],
-  [/^K cresce ≈ r\^−([\d.,]+) rumo ao centro \(K invariante ⇒ não é artefato de carta\)\.$/, "K grows ≈ r^−$1 toward the center (K is chart-invariant ⇒ not a coordinate artifact)."],
+  [/^K cresce ≈ r\^−([\d.,]+) na borda interna do scan\. É indício de divergência; confirmar singularidade exige estudar o limite e a extensão geodésica\.$/, "K grows ≈ r^−$1 at the scan's inner boundary. This suggests divergence; confirming a singularity requires studying the limit and geodesic extension."],
 ]
 
 const EN: Record<string, string> = {
@@ -57,7 +57,7 @@ const EN: Record<string, string> = {
   "Raio de partida r₀": "Starting radius r₀",
   "Raio inicial r₀ [M = GM/c²]": "Initial radius r₀ [M = GM/c²]",
   "Raio inicial r₀ [r_CTC]": "Initial radius r₀ [r_CTC]",
-  "Velocidade angular (× circular)": "Angular velocity (× circular)",
+  "Velocidade tangencial local (× circular)": "Local tangential speed (× circular)",
   "Velocidade angular inicial (× ω_Gödel)": "Initial angular velocity (× ω_Gödel)",
   "Spin a/M": "Spin a/M",
   "Schwarzschild × Painlevé–Gullstrand": "Schwarzschild × Painlevé–Gullstrand",
@@ -89,18 +89,20 @@ const EN: Record<string, string> = {
   /* ---- cenários: descrições ---- */
   "Geodésica nula na métrica de Minkowski: linha reta percorrida à velocidade da luz. Cenário de controle do integrador.":
     "Null geodesic in the Minkowski metric: a straight line traversed at the speed of light. The integrator's control scenario.",
-  "Geodésica nula exata de Schwarzschild para um fóton com parâmetro de impacto b ajustável. Aproxime b de 2,6 r_s e veja a captura.":
-    "Exact Schwarzschild null geodesic for a photon with adjustable impact parameter b. Bring b close to 2.6 r_s and watch the capture.",
+  "Integração numérica da geodésica nula completa de Schwarzschild para um fóton com parâmetro de impacto b ajustável. Aproxime b de 2,6 r_s e veja a captura.":
+    "Numerical integration of the full Schwarzschild null geodesic for a photon with adjustable impact parameter b. Bring b close to 2.6 r_s and watch the capture.",
   "O 4º teste clássico: a luz que tangencia a massa chega ATRASADA em relação ao espaço plano, mesmo quase sem entortar. Compare o atraso medido com a fórmula de Shapiro.":
     "The 4th classical test: light grazing the mass arrives DELAYED relative to flat space, even while barely bending. Compare the measured delay with Shapiro's formula.",
-  "Partícula massiva com raio e velocidade iniciais ajustáveis: 100% = órbita circular; menos = roseta de precessão; perto da ISCO (3 r_s), mergulho.":
-    "Massive particle with adjustable initial radius and velocity: 100% = circular orbit; less = precessing rosette; near the ISCO (3 r_s), a plunge.",
+  "Partícula massiva com raio e velocidade tangencial local ajustáveis: 100% = órbita circular; menos = roseta de precessão ou mergulho; a ISCO fica em 3 r_s.":
+    "Massive particle with adjustable radius and local tangential speed: 100% = circular orbit; less produces a precessing rosette or a plunge; the ISCO is at 3 r_s.",
   "Queda radial livre do repouso em raio ajustável: tempo próprio finito, tempo coordenado divergente ao se aproximar do horizonte.":
     "Radial free fall from rest at an adjustable radius: finite proper time, divergent coordinate time as the horizon is approached.",
   "A mesma queda radial, agora em coordenadas de Painlevé–Gullstrand: a partícula CRUZA o horizonte sem nada divergir e segue até perto de r = 0.":
     "The same radial fall, now in Painlevé–Gullstrand coordinates: the particle CROSSES the horizon with nothing diverging and continues to near r = 0.",
   "Partícula com momento angular ZERO largada perto de um buraco negro em rotação: o espaço-tempo a arrasta em φ (Lense–Thirring). Ajuste o spin a/M.":
     "A particle with ZERO angular momentum released near a rotating black hole: spacetime drags it in φ (Lense–Thirring). Adjust the spin a/M.",
+  "L = g_φμu^μ deve permanecer 0, dentro do erro numérico, enquanto φ cresce — quem gira é o espaço-tempo (Kerr roda como plugin).":
+    "L = g_φμu^μ should remain zero within numerical error while φ grows — spacetime is what rotates (Kerr runs as a plugin).",
   "Solução exata com rotação global: além do anel vermelho (r_CTC), círculos de φ são curvas temporais FECHADAS. Geodésicas (rosa) permanecem causais — a CTC tracejada exige propulsão.":
     "Exact solution with global rotation: beyond the red ring (r_CTC), φ-circles are CLOSED timelike curves. Geodesics (pink) remain causal — the dashed CTC requires propulsion.",
 
@@ -157,13 +159,14 @@ const EN: Record<string, string> = {
   "Tempo coordenado": "Coordinate time",
   "Tempo próprio": "Proper time",
   "Intervalo próprio": "Proper interval",
-  "observador no infinito": "observer at infinity",
+  "x⁰/c da carta; a interpretação depende das coordenadas":
+    "chart coordinate x⁰/c; its interpretation depends on the coordinates",
   "relógio da partícula": "the particle's clock",
   "geodésica nula: não há relógio próprio": "null geodesic: there is no proper clock",
   "0 (exato)": "0 (exact)",
-  "Salto ao futuro Δ = t − τ": "Jump to the future Δ = t − τ",
-  "quanto o observador distante envelheceu a mais que a partícula — viagem ao futuro literal (paradoxo dos gêmeos)":
-    "how much the distant observer aged beyond the particle — literal travel to the future (twin paradox)",
+  "Diferença coordenada Δ = t − τ": "Coordinate difference Δ = t − τ",
+  "grandeza dependente da carta; compare relógios físicos apenas após definir o observador de referência":
+    "chart-dependent quantity; compare physical clocks only after defining the reference observer",
   "Raio de Schwarzschild": "Schwarzschild radius",
   "Raio atual r": "Current radius r",
 
@@ -173,6 +176,8 @@ const EN: Record<string, string> = {
   "Erro de norma": "Norm error",
   "Deriva de E": "E drift",
   "Deriva de L": "L drift",
+  "n/a — sem Killing temporal": "n/a — no timelike Killing vector",
+  "n/a — sem Killing axial": "n/a — no axial Killing vector",
   "Parâmetro afim λ": "Affine parameter λ",
   "Integrador": "Integrator",
   "Passos (aceitos / rejeitados)": "Steps (accepted / rejected)",
@@ -180,13 +185,14 @@ const EN: Record<string, string> = {
   "Custo de CPU": "CPU cost",
   "Densidade de energia ρ": "Energy density ρ",
   "Condição de energia (NEC)": "Energy condition (NEC)",
-  "satisfeita ✓": "satisfied ✓",
-  "VIOLADA — matéria exótica": "VIOLATED — exotic matter",
+  "violação detectada em direção amostrada": "violation detected along a sampled direction",
+  "sem violação detectada (amostragem)": "no violation detected (sampled)",
   "≈ 0 (vácuo)": "≈ 0 (vacuum)",
   "Escalar de Ricci R": "Ricci scalar R",
   "Kretschmann K": "Kretschmann K",
   "Causalidade (g_φφ)": "Causality (g_φφ)",
-  "normal (g_φφ > 0)": "normal (g_φφ > 0)",
+  "nenhum círculo φ temporal detectado": "no timelike φ-circle detected",
+  "n/a — x³ não é φ periódico": "n/a — x³ is not periodic φ",
   "CTC! (g_φφ < 0)": "CTC! (g_φφ < 0)",
   "ID do experimento": "Experiment ID",
   "exportar JSON": "export JSON",
@@ -194,8 +200,8 @@ const EN: Record<string, string> = {
   "relatório de laboratório": "lab report",
   "RK4 (passo fixo)": "RK4 (fixed step)",
   "Dormand–Prince 5(4) adaptativo": "Dormand–Prince 5(4) adaptive",
-  "E e L são constantes de Killing; a deriva relativa e o erro de norma medem a qualidade da integração. R e K são invariantes de curvatura: K finito num horizonte indica singularidade apenas de coordenada.":
-    "E and L are Killing constants; the relative drift and the norm error measure integration quality. R and K are curvature invariants: finite K at a horizon indicates a coordinate-only singularity.",
+  "A norma deve conservar-se em toda geodésica. E e L só são constantes quando a métrica declara, respectivamente, simetria temporal e axial. R e K são invariantes locais; nenhum escalar isolado decide toda a estrutura global.":
+    "The norm must be conserved along every geodesic. E and L are constants only when the metric declares temporal and axial symmetry, respectively. R and K are local invariants; no single scalar determines the full global structure.",
   "Integração interrompida: a trajetória saiu do domínio de validade da carta de coordenadas.":
     "Integration halted: the trajectory left the coordinate chart's domain of validity.",
   "Integração interrompida: condição de parada física do cenário atingida (ex.: aproximação do horizonte, onde a carta degenera).":
@@ -212,22 +218,26 @@ const EN: Record<string, string> = {
   /* ---- passaporte ---- */
   "gerar passaporte": "generate passport",
   "escanear novamente": "scan again",
-  "Nenhuma estrutura especial no alcance escaneado.": "No special structure within the scanned range.",
+  "Nenhuma assinatura local foi detectada no alcance e na resolução do scan; isso não prova ausência global.":
+    "No local signature was detected within the scan range and resolution; this does not prove global absence.",
   "Horizonte:": "Horizon:",
   "Limite estático": "Static limit",
   "Região de CTCs": "CTC region",
+  "Região com círculos φ temporais": "Region with timelike φ-circles",
   "Matéria exótica": "Exotic matter",
   "Singularidade de curvatura (indício)": "Curvature singularity (indication)",
-  "Assintoticamente plana": "Asymptotically flat",
-  "g^rr = 0: superfície de não-retorno nesta carta.": "g^rr = 0: surface of no return in this chart.",
-  "g_tt = 0: além daqui nenhum observador fica parado (com horizonte distinto ⇒ ergorregião).":
-    "g_tt = 0: beyond here no observer can stand still (with a distinct horizon ⇒ ergoregion).",
-  "g_φφ < 0: círculos de φ são curvas temporais FECHADAS (acausal).":
-    "g_φφ < 0: φ-circles are CLOSED timelike curves (acausal).",
-  "NEC violada: T(k,k) < 0 — exige densidade de energia negativa.":
-    "NEC violated: T(k,k) < 0 — requires negative energy density.",
-  "g_tt → −1 e g_rr → 1 na borda do scan: aproxima Minkowski longe da fonte.":
-    "g_tt → −1 and g_rr → 1 at the scan edge: approaches Minkowski far from the source.",
+  "Horizonte candidato": "Candidate horizon",
+  "Compatível com planicidade assintótica": "Compatible with asymptotic flatness",
+  "g^rr = 0: a superfície r = constante é nula nesta carta; identificá-la como horizonte exige informação causal global ou simetria adicional.":
+    "g^rr = 0: the constant-r surface is null in this chart; identifying it as a horizon requires global causal information or additional symmetry.",
+  "g_tt = 0: o Killing temporal fica nulo; em carta estacionária adaptada, observadores em coordenadas espaciais fixas deixam de ser timelike.":
+    "g_tt = 0: the timelike Killing vector becomes null; in an adapted stationary chart, observers at fixed spatial coordinates cease to be timelike.",
+  "g_φφ < 0 com φ periódico: os círculos de φ são CTCs. É condição suficiente; outros tipos de CTC não são excluídos quando g_φφ ≥ 0.":
+    "g_φφ < 0 with periodic φ: φ-circles are CTCs. This is sufficient; other kinds of CTC are not excluded when g_φφ ≥ 0.",
+  "Violação da NEC detectada: T(k,k) < 0 para ao menos uma direção nula amostrada. Isso não implica, em geral, densidade de energia negativa no referencial escolhido.":
+    "NEC violation detected: T(k,k) < 0 for at least one sampled null direction. In general, this does not imply negative energy density in the chosen frame.",
+  "Todas as componentes normalizadas aproximam Minkowski, nesta carta, na borda de uma métrica estacionária. É indício local; planicidade assintótica requer o limite e o falloff das componentes e derivadas.":
+    "All normalized components approach Minkowski, in this chart, at the boundary of a stationary metric. This is local evidence; asymptotic flatness requires the limiting behavior and falloff of components and derivatives.",
 
   /* ---- editor de métrica ---- */
   "editor de métrica g_μν": "metric editor g_μν",
@@ -252,8 +262,8 @@ const EN: Record<string, string> = {
     "Capture a photon WITHOUT overshooting: make it fall into the black hole with an impact parameter between 2.50 and 2.60 r_s — the window just below the critical value.",
   "O preset do cenário já é o Sol; deixe o fóton completar a travessia e leia a deflexão acumulada. O valor histórico é ≈ 1,75″.":
     "The scenario preset is already the Sun; let the photon complete the crossing and read the accumulated deflection. The historical value is ≈ 1.75″.",
-  "Reduza a velocidade angular para afundar o periastro. Cuidado: reduza demais e o buraco negro fica com a partícula — a fronteira que você está tateando é a da última órbita estável.":
-    "Lower the angular velocity to sink the periastron. Careful: lower it too much and the black hole keeps the particle — the boundary you are probing is that of the last stable orbit.",
+  "Reduza a velocidade tangencial local para afundar o periastro. Cuidado: reduza demais e a partícula perde a barreira do potencial efetivo e mergulha.":
+    "Lower the local tangential speed to move the periastron inward. Lower it too far and the particle loses the effective-potential barrier and plunges.",
   "Existe um b crítico: acima dele todo fóton escapa (por mais que entorte); abaixo, é capturado. A janela pedida força você a encostar nesse limiar.":
     "There is a critical b: above it every photon escapes (however much it bends); below it, it is captured. The requested window forces you to graze that threshold.",
   "massa central = 1 M☉ (±5%)": "central mass = 1 M☉ (±5%)",
@@ -300,6 +310,8 @@ const EN: Record<string, string> = {
   "invariante ✓": "invariant ✓",
   "invariante": "invariant",
   "depende da carta": "chart-dependent",
+  "depende da carta e do observador de referência":
+    "depends on the chart and reference observer",
 
   /* ---- relatório ---- */
   "Relatório de laboratório": "Lab report",
@@ -313,8 +325,8 @@ const EN: Record<string, string> = {
   "Referências": "References",
   "Reprodutível:": "Reproducible:",
   "Gerado por CosmoLab": "Generated by CosmoLab",
-  "motor validado contra einsteinpy (2 ppm) e por suíte de testes analíticos — docs/VALIDATION.md":
-    "engine validated against einsteinpy (2 ppm) and by an analytic test suite — docs/VALIDATION.md",
+  "precessão validada contra einsteinpy (2 ppm no observável) e motor coberto por suíte científica — docs/VALIDATION.md":
+    "precession validated against einsteinpy (2 ppm in the observable) and engine covered by a scientific test suite — docs/VALIDATION.md",
   "Observável": "Observable",
   "Valor": "Value",
   "Origem": "Provenance",
@@ -322,12 +334,16 @@ const EN: Record<string, string> = {
   "Grandeza": "Quantity",
   "Interpretação": "Interpretation",
   "qualidade da integração": "integration quality",
-  "constantes de Killing conservadas": "Killing constants conserved",
+  "constante de Killing temporal": "timelike Killing constant",
+  "constante de Killing axial": "axial Killing constant",
+  "E não é conservada em geral": "E is not generally conserved",
+  "L não é conservado em geral": "L is not generally conserved",
   "≈ 0 em vácuo": "≈ 0 in vacuum",
   "invariante de curvatura (independe da carta)": "curvature invariant (chart-independent)",
-  "Matéria exigida (ρ, NEC)": "Required matter (ρ, NEC)",
-  "NEC satisfeita": "NEC satisfied",
-  "NEC violada — matéria exótica": "NEC violated — exotic matter",
+  "Matéria efetiva (ρ, NEC)": "Effective matter (ρ, NEC)",
+  "Círculos axiais (g_φφ)": "Axial circles (g_φφ)",
+  "teste suficiente para CTCs axiais; não decide causalidade global":
+    "sufficient test for axial CTCs; does not determine global causality",
   "Geodésica": "Geodesic",
   "Parâmetros": "Parameters",
   "Métrica": "Metric",

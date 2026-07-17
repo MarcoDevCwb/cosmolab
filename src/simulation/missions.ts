@@ -1,7 +1,7 @@
 /**
  * MISSÕES PEDAGÓGICAS — o modo descoberta do CosmoLab.
  *
- * Princípio: o aluno não assiste a uma animação, ele REDESCOBRE resultados
+ * Princípio: o aluno não assiste a uma animação, ele RECONSTRÓI resultados
  * históricos ajustando parâmetros e lendo instrumentos. Cada missão define
  * critérios verificáveis pelo MOTOR (nunca "resposta digitada"): a
  * avaliação lê apenas o snapshot do runner e os parâmetros — física zero
@@ -82,7 +82,7 @@ export const MISSIONS: Mission[] = [
     scenarioId: "relativistic-orbit",
     briefing:
       "Perto da ISCO o poço de estabilidade é uma lâmina: monte uma órbita que MERGULHE até um periastro ≤ 4 r_s e, ainda assim, complete 3 voltas sem ser engolida.",
-    hint: "Reduza a velocidade angular para afundar o periastro. Cuidado: reduza demais e o buraco negro fica com a partícula — a fronteira que você está tateando é a da última órbita estável.",
+    hint: "Reduza a velocidade tangencial local para afundar o periastro. Cuidado: reduza demais e a partícula perde a barreira do potencial efetivo e mergulha.",
     context:
       "A ISCO (r = 3 r_s = 6GM/c²) delimita os discos de acreção reais — dela vem a borda interna brilhante das imagens do EHT. Logo abaixo vivem as órbitas zoom-whirl, que espiralam rente à esfera de fótons antes de escapar ou cair (Bardeen, Press & Teukolsky, 1972).",
     evaluate(snapshot, _params) {

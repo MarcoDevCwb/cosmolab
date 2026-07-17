@@ -24,6 +24,29 @@ import { formatObservable, formatSeconds, formatSolarMasses } from "./formatters
 const escapeHtml = (text: string) =>
   text.replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;")
 
+function parameterSummary(scenario: SimulationScenario, params: ExperimentParams): string {
+  switch (scenario.id) {
+    case "solar-light-deflection":
+    case "shapiro-delay":
+      return `b = ${params.impactParameterRs.toPrecision(4)} r_s`
+    case "relativistic-orbit":
+      return `r₀ = ${params.startRadiusRs.toPrecision(4)} r_s · v_local/v_circ = ${params.angularVelocityFraction.toPrecision(3)}`
+    case "schwarzschild-horizon":
+    case "painleve-infall":
+      return `r₀ = ${params.startRadiusRs.toPrecision(4)} r_s`
+    case "kerr-frame-dragging":
+      return `r₀ = ${params.startRadiusRs.toPrecision(4)} r_s · a/M = ${params.spinFraction.toPrecision(3)}`
+    case "godel-universe":
+      return `r₀ = ${params.startRadiusRs.toPrecision(3)} r_CTC · ω₀/ω_Gödel = ${params.angularVelocityFraction.toPrecision(3)}`
+    case "flrw-expansion":
+      return `Ω_m = ${params.angularVelocityFraction.toPrecision(3)} · D_comóvel = ${params.startRadiusRs.toPrecision(3)} c/H₀`
+    case "custom-metric":
+      return `r₀ = ${params.startRadiusRs.toPrecision(4)} M`
+    default:
+      return "—"
+  }
+}
+
 /** Polilinha SVG normalizada a partir de uma série. */
 function sparkline(values: number[], width = 460, height = 110): string {
   if (values.length < 2) {
@@ -53,6 +76,7 @@ export function buildLabReportHtml(
   const generatedAt = new Date().toLocaleString(getLanguage() === "en" ? "en-US" : "pt-BR")
   const lineElement = lineElementFor(scenario.metric.name)
   const custom = scenario.id === "custom-metric" ? getCustomMetricDefinition() : null
+  const parameters = parameterSummary(scenario, params)
 
   const observableRows = snapshot.observables
     .map(
@@ -140,7 +164,7 @@ export function buildLabReportHtml(
   }
   <tr><th>${t("Geodésica")}</th><td>${scenario.kind === "null" ? t("nula (fóton)") : t("timelike (partícula massiva)")}</td></tr>
   <tr><th>${t("Massa central")}</th><td class="num">${scenario.centralMassKg ? formatSolarMasses(params.massSolar) : "—"}</td></tr>
-  <tr><th>${t("Parâmetros")}</th><td class="num">b = ${params.impactParameterRs.toPrecision(4)} r_s · r₀ = ${params.startRadiusRs.toPrecision(4)} · ω/ω_circ = ${params.angularVelocityFraction.toPrecision(3)} · a/M = ${params.spinFraction.toPrecision(3)}</td></tr>
+  <tr><th>${t("Parâmetros")}</th><td class="num">${escapeHtml(parameters)}</td></tr>
   <tr><th>${t("Integrador")}</th><td>${escapeHtml(t(snapshot.integrator.method))} · ${snapshot.integrator.stepsTaken.toLocaleString("pt-BR")} passos aceitos, ${snapshot.integrator.stepsRejected.toLocaleString("pt-BR")} rejeitados${snapshot.integrator.relTol ? ` · tol ${snapshot.integrator.relTol.toExponential(0)}/${snapshot.integrator.absTol?.toExponential(0)}` : ""}</td></tr>
 </table>
 
@@ -148,22 +172,23 @@ export function buildLabReportHtml(
 <table>
   <tr><th>${t("Observável")}</th><th>${t("Valor")}</th><th>${t("Origem")}</th><th>${t("Referência analítica")}</th></tr>
   ${observableRows}
-  <tr><td>${t("Tempo coordenado")} t</td><td class="num">${formatSeconds(snapshot.coordinateTimeS)}</td><td>numérico</td><td>—</td></tr>
+  <tr><td>${t("Tempo coordenado")} t</td><td class="num">${formatSeconds(snapshot.coordinateTimeS)}</td><td>${t("numérico")}</td><td>${t("x⁰/c da carta; a interpretação depende das coordenadas")}</td></tr>
   <tr><td>${scenario.kind === "null" ? `${t("Intervalo próprio")} (${t("geodésica nula")})` : `${t("Tempo próprio")} τ`}</td><td class="num">${snapshot.properTimeS === null ? t("0 (exato)") : formatSeconds(snapshot.properTimeS)}</td><td>${t("numérico")}</td><td>—</td></tr>
-  ${snapshot.futureTravelS !== null ? `<tr><td>${t("Salto ao futuro Δ = t − τ")}</td><td class="num">${formatSeconds(snapshot.futureTravelS)}</td><td>${t("numérico")}</td><td>Hafele–Keating (1972)</td></tr>` : ""}
+  ${snapshot.futureTravelS !== null ? `<tr><td>${t("Diferença coordenada Δ = t − τ")}</td><td class="num">${formatSeconds(snapshot.futureTravelS)}</td><td>${t("numérico")}</td><td>${t("depende da carta e do observador de referência")}</td></tr>` : ""}
 </table>
 
 <h2>3. ${t("Validação numérica")}</h2>
 <table>
   <tr><th>${t("Grandeza")}</th><th>${t("Valor")}</th><th>${t("Interpretação")}</th></tr>
   <tr><td>${t("Erro de norma")} |g·u·u − ε|</td><td class="num">${snapshot.validation.normError.toExponential(2)}</td><td>${t("qualidade da integração")}</td></tr>
-  <tr><td>${t("Deriva de E")} / L</td><td class="num">${snapshot.energyDriftRelative.toExponential(2)} / ${snapshot.angularMomentumDriftRelative.toExponential(2)}</td><td>${t("constantes de Killing conservadas")}</td></tr>
+  <tr><td>${t("Deriva de E")}</td><td class="num">${scenario.metric.symmetries?.stationary ? snapshot.energyDriftRelative.toExponential(2) : t("n/a — sem Killing temporal")}</td><td>${scenario.metric.symmetries?.stationary ? t("constante de Killing temporal") : t("E não é conservada em geral")}</td></tr>
+  <tr><td>${t("Deriva de L")}</td><td class="num">${scenario.metric.symmetries?.axisymmetric ? snapshot.angularMomentumDriftRelative.toExponential(2) : t("n/a — sem Killing axial")}</td><td>${scenario.metric.symmetries?.axisymmetric ? t("constante de Killing axial") : t("L não é conservado em geral")}</td></tr>
   <tr><td>${t("Escalar de Ricci R")}</td><td class="num">${snapshot.invariants.ricciScalar.toExponential(2)} m⁻²</td><td>${t("≈ 0 em vácuo")}</td></tr>
   <tr><td>${t("Kretschmann K")}</td><td class="num">${snapshot.invariants.kretschmann.toExponential(2)} m⁻⁴</td><td>${t("invariante de curvatura (independe da carta)")}</td></tr>
-  <tr><td>${t("Causalidade (g_φφ)")}</td><td class="num">${snapshot.causality.closedTimelikeCircle ? "CTC!" : "normal"}</td><td>g_φφ &lt; 0 ⇒ curva temporal fechada</td></tr>
+  <tr><td>${t("Círculos axiais (g_φφ)")}</td><td class="num">${!snapshot.causality.applicable ? t("n/a — x³ não é φ periódico") : snapshot.causality.closedTimelikeCircle ? "CTC!" : t("nenhum círculo φ temporal detectado")}</td><td>${t("teste suficiente para CTCs axiais; não decide causalidade global")}</td></tr>
   ${
     snapshot.matter
-      ? `<tr><td>${t("Matéria exigida (ρ, NEC)")}</td><td class="num">${snapshot.matter.vacuum ? t("≈ 0 (vácuo)") : `${snapshot.matter.energyDensityJm3.toExponential(2)} J/m³`}</td><td><span class="verdict ${snapshot.matter.nullEnergyConditionOk ? "ok" : "exotic"}">${snapshot.matter.nullEnergyConditionOk ? t("NEC satisfeita") : t("NEC violada — matéria exótica")}</span></td></tr>`
+      ? `<tr><td>${t("Matéria efetiva (ρ, NEC)")}</td><td class="num">${snapshot.matter.vacuum ? t("≈ 0 (vácuo)") : `${snapshot.matter.energyDensityJm3.toExponential(2)} J/m³`}</td><td><span class="verdict ${snapshot.matter.nullEnergyConditionOk ? "ok" : "exotic"}">${snapshot.matter.nullEnergyConditionOk ? t("sem violação detectada (amostragem)") : t("violação detectada em direção amostrada")}</span> · ${snapshot.matter.necDirectionsTested} k</td></tr>`
       : ""
   }
 </table>
@@ -181,7 +206,7 @@ ${missionRows ? `<h2>5. ${t("Missões verificadas pelo motor")}</h2><ul>${missio
 <ul>${referenceRows}</ul>
 
 <footer>
-  ${t("Gerado por CosmoLab")} v${COSMOLAB_VERSION} · ${t("motor validado contra einsteinpy (2 ppm) e por suíte de testes analíticos — docs/VALIDATION.md")}.<br>
+  ${t("Gerado por CosmoLab")} v${COSMOLAB_VERSION} · ${t("precessão validada contra einsteinpy (2 ppm no observável) e motor coberto por suíte científica — docs/VALIDATION.md")}.<br>
   <strong>${t("Reprodutível:")}</strong> ${escapeHtml(reproducibleUrl)}
 </footer>
 </body>

@@ -19,7 +19,7 @@ const M = geometrizedMass(massKg)
 const EINSTEIN_FACTOR = SPEED_OF_LIGHT ** 4 / (8 * Math.PI * GRAVITATIONAL_CONSTANT)
 
 describe("etiqueta de preço — diagnóstico de matéria", () => {
-  it("Schwarzschild é vácuo: ρ ≈ 0, p_r ≈ 0, NEC satisfeita", () => {
+  it("Schwarzschild é vácuo: ρ ≈ 0, p_r ≈ 0, nenhuma violação NEC amostrada", () => {
     const metric = createSchwarzschildMetric(massKg)
     const r = 8 * M
     const matter = matterDiagnostic(metric, [0, r, 1.2, 0.4], [r, r, 1, 1])
@@ -30,6 +30,7 @@ describe("etiqueta de preço — diagnóstico de matéria", () => {
     expect(Math.abs(matter!.energyDensityJm3)).toBeLessThan(1e-5 * scale)
     expect(Math.abs(matter!.radialPressureJm3)).toBeLessThan(1e-5 * scale)
     expect(matter!.nullEnergyConditionOk).toBe(true)
+    expect(matter!.necDirectionsTested).toBe(134)
     expect(matter!.vacuum).toBe(true)
     expect(matter!.observer).toBe("static")
   })
@@ -72,6 +73,8 @@ describe("etiqueta de preço — diagnóstico de matéria", () => {
     expect(matter!.energyDensityJm3).toBeLessThan(0)
     expect(Math.abs(matter!.energyDensityJm3 - expected) / Math.abs(expected)).toBeLessThan(2e-2)
     expect(matter!.nullEnergyConditionOk).toBe(false)
+    expect(matter!.necMinimumJm3).toBeLessThan(0)
+    expect(matter!.necDirectionsTested).toBe(134)
     expect(matter!.vacuum).toBe(false)
   })
 })

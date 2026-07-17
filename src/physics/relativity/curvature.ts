@@ -12,10 +12,11 @@
  * - Escalar de Ricci R = g^{σν} R^ρ_{σρν} [1/m²]: ZERO em qualquer solução
  *   de vácuo/eletrovácuo (Schwarzschild, Kerr, Reissner–Nordström) — na
  *   prática, mais um termômetro de validação ao vivo.
- * - Kretschmann K = R_{αβγδ}R^{αβγδ} [1/m⁴]: NÃO depende da carta. Se K é
- *   finito num "horizonte" (ex.: 0,75/M⁴ em r = r_s de Schwarzschild), a
- *   singularidade ali é DE COORDENADA; se K → ∞ (r → 0), é física.
- *   Para Schwarzschild: K = 48 M_geo²/r⁶.
+ * - Kretschmann K = R_{αβγδ}R^{αβγδ} [1/m⁴]: NÃO depende da carta. Em
+ *   Schwarzschild, K = 48 M_geo²/r⁶ é finito em r = 2M e a extensão por uma
+ *   carta regular prova que o horizonte não é singular. Em uma métrica
+ *   genérica, K finito sozinho não prova regularidade de todos os invariantes
+ *   nem completude geodésica; K divergente é uma assinatura de curvatura.
  *
  * Cálculo NUMÉRICO: ∂Γ por diferenças finitas centrais sobre
  * resolveChristoffel (que usa a forma analítica quando existe). Precisão
@@ -119,19 +120,26 @@ export function riemannTensor(
  *
  * Pelas equações de campo, G_μν = (8πG/c⁴)·T_μν: dado o tensor de Einstein
  * da métrica (que calculamos numericamente), a MATÉRIA necessária para
- * sustentá-la é T_μν = (c⁴/8πG)·G_μν. Este módulo responde, para qualquer
- * métrica — inclusive as escritas no editor:
+ * sustentá-la é T_μν = (c⁴/8πG)·G_μν. Este módulo responde localmente,
+ * quando a carta admite uma tétrade ortonormal válida, inclusive para
+ * métricas escritas no editor:
  *
  * - densidade de energia ρ = T(û,û) medida por um observador local [J/m³];
  * - pressão radial p_r = T(ê_r,ê_r) [J/m³ = Pa];
- * - CONDIÇÃO NULA DE ENERGIA (NEC): T(k,k) ≥ 0 para vetores nulos k.
+ * - teste amostrado da CONDIÇÃO NULA DE ENERGIA (NEC): T(k,k) ≥ 0.
  *   É a mais fraca das condições clássicas: violá-la ⇒ matéria "exótica"
  *   (wormholes atravessáveis e warp drives vivem exatamente aí).
  *
  * O observador local û e a tétrade ortonormal {û, ê_r, ê_θ, ê_φ} são
  * construídos por Gram-Schmidt genérico: observador estático quando g_tt<0;
- * dentro de ergorregiões, o ZAMO (que sempre existe fora de horizontes).
- * Vetores nulos de teste: k = û ± ê_i (nulos por construção).
+ * caso contrário, tenta-se um ZAMO e retorna-se `null` se ele não for
+ * timelike. A NEC é testada nas direções axiais e numa malha quase uniforme
+ * da esfera de direções nulas. Um valor negativo além da tolerância fornece
+ * uma direção-testemunha, sujeito à convergência do tensor numérico; uma
+ * aprovação significa apenas "nenhuma violação detectada na amostragem".
+ *
+ * Convenção cosmológica: usamos G_μν = (8πG/c⁴)T_μν. Assim, qualquer Λ já
+ * embutida na métrica aparece como parte do T_μν efetivo do lado direito.
  */
 
 export type MatterDiagnostic = {
@@ -139,11 +147,14 @@ export type MatterDiagnostic = {
   energyDensityJm3: number
   /** Pressão radial T(ê_r,ê_r) [J/m³ ≡ Pa]. */
   radialPressureJm3: number
-  /** Mínimo de T(k,k) sobre os vetores nulos de teste [J/m³]. */
+  /** Menor T(k,k) encontrado na amostragem de vetores nulos [J/m³]. */
   necMinimumJm3: number
-  /** NEC satisfeita (dentro da tolerância numérica)? false ⇒ matéria exótica. */
+  /** Nenhuma violação foi detectada? false fornece uma direção-testemunha
+   * além da tolerância; true não substitui minimização/prova no contínuo. */
   nullEnergyConditionOk: boolean
-  /** |ρ| e |p_r| abaixo da tolerância numérica: vácuo efetivo (ex.: Schwarzschild). */
+  /** Número de direções nulas efetivamente testadas. */
+  necDirectionsTested: number
+  /** Todas as componentes ortonormais de T abaixo da tolerância numérica. */
   vacuum: boolean
   /** Observador usado: "static" (g_tt<0) ou "zamo" (ergorregião). */
   observer: "static" | "zamo"
@@ -327,13 +338,34 @@ export function matterDiagnostic(
   const energyDensityJm3 = T(u, u)
   const radialPressureJm3 = T(spatial[0], spatial[0])
 
-  // NEC sobre os 6 vetores nulos k = û ± ê_i.
-  let necMinimumJm3 = Infinity
-  for (const e of spatial) {
+  // NEC: 6 direções axiais mais uma malha de Fibonacci na esfera. Para
+  // k = û + n^i ê_i com |n|=1, g(k,k)=0 por construção.
+  const nullDirections: number[][] = []
+  for (let axis = 0; axis < 3; axis += 1) {
     for (const sign of [1, -1]) {
-      const k = u.map((component, index) => component + sign * e[index])
-      necMinimumJm3 = Math.min(necMinimumJm3, T(k, k))
+      const direction = [0, 0, 0]
+      direction[axis] = sign
+      nullDirections.push(direction)
     }
+  }
+  const sphereSamples = 128
+  const goldenAngle = Math.PI * (3 - Math.sqrt(5))
+  for (let i = 0; i < sphereSamples; i += 1) {
+    const z = 1 - (2 * (i + 0.5)) / sphereSamples
+    const radius = Math.sqrt(Math.max(1 - z * z, 0))
+    const azimuth = i * goldenAngle
+    nullDirections.push([radius * Math.cos(azimuth), radius * Math.sin(azimuth), z])
+  }
+
+  let necMinimumJm3 = Infinity
+  for (const direction of nullDirections) {
+    const k = [...u]
+    for (let axis = 0; axis < 3; axis += 1) {
+      for (let mu = 0; mu < N; mu += 1) {
+        k[mu] += direction[axis] * spatial[axis][mu]
+      }
+    }
+    necMinimumJm3 = Math.min(necMinimumJm3, T(k, k))
   }
 
   // Tolerância numérica: fração da escala local de curvatura (√K ou ρ).
@@ -342,13 +374,27 @@ export function matterDiagnostic(
     Math.sqrt(Math.abs(curvatureFromRiemann(riemann, g, gInv)))
   const tolerance = Math.max(1e-4 * scale, 1e-12)
 
+  // "Vácuo" exige todas as 16 componentes numéricas de T na tétrade abaixo
+  // da tolerância (10 seriam independentes para um tensor perfeitamente
+  // simétrico), não apenas ρ e p_r.
+  const tetrad = [u, ...spatial]
+  let maximumStressMagnitude = 0
+  for (let a = 0; a < N; a += 1) {
+    for (let b = 0; b < N; b += 1) {
+      maximumStressMagnitude = Math.max(
+        maximumStressMagnitude,
+        Math.abs(T(tetrad[a], tetrad[b])),
+      )
+    }
+  }
+
   return {
     energyDensityJm3,
     radialPressureJm3,
     necMinimumJm3,
     nullEnergyConditionOk: necMinimumJm3 >= -tolerance,
-    vacuum:
-      Math.abs(energyDensityJm3) < tolerance && Math.abs(radialPressureJm3) < tolerance,
+    necDirectionsTested: nullDirections.length,
+    vacuum: maximumStressMagnitude < tolerance,
     observer,
   }
 }

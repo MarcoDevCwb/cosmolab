@@ -11,15 +11,16 @@ authors:
   - name: "MarcoDevCwba"
 abstract: >-
   CosmoLab é um laboratório interativo de relatividade geral no
-  navegador: geodésicas integradas exatamente (Dormand-Prince 5(4)
-  adaptativo) em Minkowski, Schwarzschild, Painlevé-Gullstrand, Kerr,
-  Gödel e métricas definidas pelo usuário, com validação numérica
+  navegador: equações geodésicas completas integradas numericamente
+  (Dormand-Prince 5(4) adaptativo) em Minkowski, Schwarzschild,
+  Painlevé-Gullstrand, Kerr, Gödel, FLRW e métricas definidas pelo usuário,
+  com validação numérica
   contínua exibida na interface (norma, constantes de Killing,
-  invariantes de curvatura, condições de energia), Atlas de
+  invariantes de curvatura, amostragem de condições de energia), Atlas de
   Coordenadas, os quatro testes clássicos verificáveis, missões
   pedagógicas corrigidas pelo motor e exportação reprodutível. Motor
-  validado contra o einsteinpy com concordância de 2 ppm na precessão
-  do periastro em campo forte.
+  validado contra o einsteinpy com concordância de 2 ppm no observável de
+  precessão do periastro em campo forte (a forma orbital concorda em ~10⁻⁴).
 keywords:
   - general relativity
   - physics education

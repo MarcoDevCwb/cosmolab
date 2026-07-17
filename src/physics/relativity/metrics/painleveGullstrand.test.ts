@@ -18,6 +18,16 @@ describe("métrica de Painlevé–Gullstrand", () => {
   const metric = createPainleveGullstrandMetric(massKg)
   const rs = metric.schwarzschildRadiusM
 
+  it("g_TT zera no horizonte, mas g^TT = −1 e o bloco T–r não degenera", () => {
+    const g = metric.metric([0, rs, Math.PI / 2, 0])
+    const gInv = metric.inverseMetric([0, rs, Math.PI / 2, 0])
+
+    expect(g[0][0]).toBeCloseTo(0, 14)
+    expect(g[0][1]).toBeCloseTo(1, 14)
+    expect(gInv[0][0]).toBeCloseTo(-1, 14)
+    expect(g[0][0] * g[1][1] - g[0][1] ** 2).toBeCloseTo(-1, 14)
+  })
+
   it("inversa analítica coincide com Gauss-Jordan (dentro E fora do horizonte)", () => {
     for (const r of [0.4 * rs, 1 * rs, 3.7 * rs]) {
       const position: Vector4 = [0, r, 1.2, 0.5]

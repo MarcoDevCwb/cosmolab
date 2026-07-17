@@ -1,20 +1,23 @@
 /**
- * PASSAPORTE DE MÉTRICAS — dossiê automático de uma geometria.
+ * PASSAPORTE DE MÉTRICAS — triagem numérica local de uma geometria.
  *
  * Varre o perfil radial equatorial (t = 0, θ = π/2 ou plano z = 0) e
- * detecta as estruturas clássicas, cada uma com sua condição matemática:
+ * procura assinaturas clássicas sob hipóteses explícitas:
  *
- * - HORIZONTE:            g^rr = 0  (r deixa de ser coordenada espacial)
- * - LIMITE ESTÁTICO:      g_tt = 0  (ninguém fica parado além daqui;
- *                         entre ele e o horizonte: ergorregião)
+ * - SUPERFÍCIE NULA r=cte: g^rr = 0. É candidata a horizonte apenas quando
+ *                         a geometria/simetria justifica essa identificação;
+ *                         horizonte de eventos é uma noção GLOBAL.
+ * - LIMITE ESTÁTICO:      g_tt = 0 em carta estacionária adaptada ao Killing.
  * - REGIÃO DE CTCs:       g_φφ < 0  (círculos de φ são curvas temporais
  *                         fechadas — causality.ts)
- * - MATÉRIA EXÓTICA:      NEC violada (T(k,k) < 0 — curvature.ts)
- * - SINGULARIDADE:        K = R·R cresce sem limite na borda interna
- * - PLANICIDADE ASSINT.:  g_tt → −1 e g_rr → 1 na borda externa
+ * - MATÉRIA EXÓTICA:      violação da NEC encontrada na amostragem de k.
+ * - SINGULARIDADE:        crescimento de K na borda interna (indício apenas).
+ * - PLANICIDADE ASSINT.:  compatibilidade na borda externa, somente para
+ *                         métricas estacionárias (indício, não prova).
  *
- * Funciona para QUALQUER SpacetimeMetric — inclusive as do editor. As
- * fronteiras são refinadas por bissecção. Módulo puro (sem UI/Three).
+ * O algoritmo pode ser executado para qualquer SpacetimeMetric, mas a
+ * interpretação depende da carta, simetrias, periodicidade de φ, domínio do
+ * scan e resolução. Resultado negativo não prova ausência global.
  */
 
 import { curvatureInvariants, matterDiagnostic } from "../physics/relativity/curvature"
@@ -71,6 +74,30 @@ function bisect(f: (r: number) => number, a: number, b: number, iterations = 40)
   return (lo + hi) / 2
 }
 
+/** Máximo desvio adimensional em relação a Minkowski na mesma carta, no
+ * equador. Isso usa todas as componentes, inclusive termos cruzados; ainda é
+ * apenas um teste em raio finito, não uma condição de falloff assintótico. */
+function minkowskiComponentDeviation(metric: SpacetimeMetric, radiusM: number, epochCt: number): number {
+  const g = metric.metric(equatorialPosition(metric, radiusM, epochCt))
+  const spatialAngularScale = radiusM * radiusM
+  const referenceDiagonal =
+    metric.chart === "spherical"
+      ? [-1, 1, spatialAngularScale, spatialAngularScale]
+      : metric.chart === "cylindrical"
+        ? [-1, 1, 1, spatialAngularScale]
+        : [-1, 1, 1, 1]
+
+  let maximumDeviation = 0
+  for (let mu = 0; mu < 4; mu += 1) {
+    for (let nu = 0; nu < 4; nu += 1) {
+      const reference = mu === nu ? referenceDiagonal[mu] : 0
+      const scale = Math.sqrt(Math.abs(referenceDiagonal[mu] * referenceDiagonal[nu]))
+      maximumDeviation = Math.max(maximumDeviation, Math.abs(g[mu][nu] - reference) / scale)
+    }
+  }
+  return maximumDeviation
+}
+
 export function generateMetricPassport(
   metric: SpacetimeMetric,
   rMinM: number,
@@ -97,49 +124,64 @@ export function generateMetricPassport(
   const grrInv = radii.map(grrInvAt)
   const gphiphi = radii.map(gphiphiAt)
 
-  // Horizontes: zeros de g^rr.
+  // Superfícies r=const nulas: zeros de g^rr. Não são automaticamente
+  // horizontes de eventos, cuja definição depende do futuro causal global.
   for (let i = 1; i < radii.length; i += 1) {
     if (Number.isFinite(grrInv[i - 1]) && Number.isFinite(grrInv[i]) && grrInv[i - 1] * grrInv[i] < 0) {
       const radiusM = bisect(grrInvAt, radii[i - 1], radii[i])
       findings.push({
         kind: "horizon",
-        label: "Horizonte",
-        radiusM,
-        detail: "g^rr = 0: superfície de não-retorno nesta carta.",
-      })
-    }
-  }
-
-  // Limite estático: zeros de g_tt.
-  for (let i = 1; i < radii.length; i += 1) {
-    if (gtt[i - 1] * gtt[i] < 0) {
-      const radiusM = bisect(gttAt, radii[i - 1], radii[i])
-      findings.push({
-        kind: "static-limit",
-        label: "Limite estático",
+        label: "Horizonte candidato",
         radiusM,
         detail:
-          "g_tt = 0: além daqui nenhum observador fica parado (com horizonte distinto ⇒ ergorregião).",
+          "g^rr = 0: a superfície r = constante é nula nesta carta; identificá-la como horizonte exige informação causal global ou simetria adicional.",
       })
     }
   }
 
-  // Região de CTCs: g_φφ < 0 contígua.
-  let ctcStart: number | null = null
-  for (let i = 0; i <= radii.length; i += 1) {
-    const inside = i < radii.length && gphiphi[i] < 0
-    if (inside && ctcStart === null) {
-      ctcStart = radii[Math.max(i - 1, 0)]
+  // Limite estático: norma do Killing temporal em carta estacionária.
+  if (metric.symmetries?.stationary) {
+    for (let i = 1; i < radii.length; i += 1) {
+      if (gtt[i - 1] * gtt[i] < 0) {
+        const radiusM = bisect(gttAt, radii[i - 1], radii[i])
+        findings.push({
+          kind: "static-limit",
+          label: "Limite estático",
+          radiusM,
+          detail:
+            "g_tt = 0: o Killing temporal fica nulo; em carta estacionária adaptada, observadores em coordenadas espaciais fixas deixam de ser timelike.",
+        })
+      }
     }
-    if (!inside && ctcStart !== null) {
-      const endM = i < radii.length ? radii[i] : rMaxM
-      findings.push({
-        kind: "ctc-region",
-        label: "Região de CTCs",
-        rangeM: [ctcStart, i < radii.length ? endM : Infinity],
-        detail: "g_φφ < 0: círculos de φ são curvas temporais FECHADAS (acausal).",
-      })
-      ctcStart = null
+  }
+
+  // Círculos axiais temporais. Só faz sentido quando x³ é um φ periódico;
+  // nas cartas esférica/cilíndrica do laboratório essa é a convenção.
+  // g_φφ<0 é condição suficiente, não necessária, para existência de CTCs.
+  let ctcStart: number | null = null
+  if (metric.chart !== "cartesian" && metric.symmetries?.axisymmetric) {
+    for (let i = 0; i <= radii.length; i += 1) {
+      const inside = i < radii.length && gphiphi[i] < 0
+      if (inside && ctcStart === null) {
+        ctcStart =
+          i > 0 && gphiphi[i - 1] * gphiphi[i] < 0
+            ? bisect(gphiphiAt, radii[i - 1], radii[i])
+            : radii[i]
+      }
+      if (!inside && ctcStart !== null) {
+        const endM =
+          i < radii.length && i > 0 && gphiphi[i - 1] * gphiphi[i] < 0
+            ? bisect(gphiphiAt, radii[i - 1], radii[i])
+            : rMaxM
+        findings.push({
+          kind: "ctc-region",
+          label: "Região com círculos φ temporais",
+          rangeM: [ctcStart, endM],
+          detail:
+            "g_φφ < 0 com φ periódico: os círculos de φ são CTCs. É condição suficiente; outros tipos de CTC não são excluídos quando g_φφ ≥ 0.",
+        })
+        ctcStart = null
+      }
     }
   }
 
@@ -161,7 +203,8 @@ export function generateMetricPassport(
         kind: "exotic-matter",
         label: "Matéria exótica",
         rangeM: [exoticStart, lastExotic],
-        detail: "NEC violada: T(k,k) < 0 — exige densidade de energia negativa.",
+        detail:
+          "Violação da NEC detectada: T(k,k) < 0 para ao menos uma direção nula amostrada. Isso não implica, em geral, densidade de energia negativa no referencial escolhido.",
       })
       exoticStart = null
     }
@@ -171,7 +214,8 @@ export function generateMetricPassport(
       kind: "exotic-matter",
       label: "Matéria exótica",
       rangeM: [exoticStart, rMaxM],
-      detail: "NEC violada: T(k,k) < 0 — exige densidade de energia negativa.",
+      detail:
+        "Violação da NEC detectada: T(k,k) < 0 para ao menos uma direção nula amostrada. Isso não implica, em geral, densidade de energia negativa no referencial escolhido.",
     })
   }
 
@@ -186,19 +230,23 @@ export function generateMetricPassport(
       kind: "curvature-singularity",
       label: "Singularidade de curvatura (indício)",
       radiusM: rA,
-      detail: `K cresce ≈ r^−${exponent.toFixed(1)} rumo ao centro (K invariante ⇒ não é artefato de carta).`,
+      detail: `K cresce ≈ r^−${exponent.toFixed(1)} na borda interna do scan. É indício de divergência; confirmar singularidade exige estudar o limite e a extensão geodésica.`,
     })
   }
 
   // Planicidade assintótica na borda externa.
-  const gttFar = gtt[gtt.length - 1]
-  const grrFar = metric.metric(equatorialPosition(metric, rMaxM, epochCt))[1][1]
-  if (Math.abs(gttFar + 1) < 0.05 && Math.abs(grrFar - 1) < 0.05) {
+  const minkowskiDeviation = minkowskiComponentDeviation(metric, rMaxM, epochCt)
+  if (
+    metric.symmetries?.stationary &&
+    Number.isFinite(minkowskiDeviation) &&
+    minkowskiDeviation < 0.05
+  ) {
     findings.push({
       kind: "asymptotically-flat",
-      label: "Assintoticamente plana",
+      label: "Compatível com planicidade assintótica",
       radiusM: rMaxM,
-      detail: "g_tt → −1 e g_rr → 1 na borda do scan: aproxima Minkowski longe da fonte.",
+      detail:
+        "Todas as componentes normalizadas aproximam Minkowski, nesta carta, na borda de uma métrica estacionária. É indício local; planicidade assintótica requer o limite e o falloff das componentes e derivadas.",
     })
   }
 

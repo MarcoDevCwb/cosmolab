@@ -1,7 +1,7 @@
 /**
  * FLRW: a solução exata deve satisfazer Friedmann, os Christoffels
  * analíticos devem bater com as diferenças finitas, e o diagnóstico de
- * matéria deve REDESCOBRIR a equação de Friedmann a partir de G_μν.
+ * matéria deve reconstruir a componente 00 de Friedmann a partir de G_μν.
  */
 
 import { describe, expect, it } from "vitest"
@@ -57,7 +57,7 @@ describe("métrica FLRW", () => {
     }
   })
 
-  it("o motor REDESCOBRE Friedmann: ρ medido = 3c²H(t)²/(8πG), NEC ok", () => {
+  it("G_00 reconstrói Friedmann: ε_total = 3c²H(t)²/(8πG), NEC amostrada ok", () => {
     const ct = 0.7 * metric.nowCtM
     const a = metric.scaleFactorAt(ct)
     const hubblePerSecond =
@@ -72,6 +72,7 @@ describe("métrica FLRW", () => {
     expect(Math.abs(matter!.energyDensityJm3 - expected) / expected).toBeLessThan(1e-3)
     // Matéria + Λ satisfaz a condição nula de energia (ρ_m ≥ 0).
     expect(matter!.nullEnergyConditionOk).toBe(true)
+    expect(matter!.necDirectionsTested).toBe(134)
   })
 })
 

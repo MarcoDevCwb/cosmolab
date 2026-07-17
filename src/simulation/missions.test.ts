@@ -27,10 +27,11 @@ describe("missões pedagógicas", () => {
     expect(wrongMass.checks[0].done).toBe(false)
   })
 
-  it("beira do abismo: periastro 3,4 r_s sobrevivendo aprova; tímido ou engolido reprova", () => {
+  it("beira do abismo: periastro ~3,1 r_s sobrevivendo aprova; tímido ou engolido reprova", () => {
     const mission = MISSION_BY_ID.get("isco-edge")!
 
-    // Ousado na medida: r₀ = 8 r_s a 85% → periastro ~3,4 r_s, sobrevive.
+    // Ousado na medida: r₀ = 8 r_s a 85% da velocidade LOCAL circular
+    // → periastro analítico ≈ 3,12 r_s, sobrevive.
     const goodParams = {
       ...DEFAULT_EXPERIMENT_PARAMS["relativistic-orbit"],
       startRadiusRs: 8,
@@ -38,7 +39,12 @@ describe("missões pedagógicas", () => {
     }
     const good = new GeodesicSimulationRunner(createScenario("relativistic-orbit", goodParams))
     good.advanceLambda(good.scenario.stepLambdaM * 4000 * 4.5)
-    expect(mission.evaluate(good.snapshot(), goodParams).complete).toBe(true)
+    const goodSnapshot = good.snapshot()
+    expect(mission.evaluate(goodSnapshot, goodParams).complete).toBe(true)
+    const goodPeriastronRs = Math.min(...goodSnapshot.history.map((point) => point.radiusM)) /
+      good.scenario.schwarzschildRadiusM!
+    expect(goodPeriastronRs).toBeGreaterThan(3.0)
+    expect(goodPeriastronRs).toBeLessThan(3.25)
 
     // Tímido: preset padrão (periastro ~6 r_s) não cumpre o mergulho.
     const timidParams = DEFAULT_EXPERIMENT_PARAMS["relativistic-orbit"]
@@ -48,10 +54,11 @@ describe("missões pedagógicas", () => {
     expect(timidEval.complete).toBe(false)
     expect(timidEval.checks[1].done).toBe(false)
 
-    // Exagerado: 99% em r₀ = 3,2 r_s mergulha e é engolido.
+    // Exagerado: 99% da velocidade LOCAL circular em r₀ = 3,1 r_s deixa
+    // L² < 12M², elimina os extremos do potencial e causa mergulho.
     const doomedParams = {
       ...DEFAULT_EXPERIMENT_PARAMS["relativistic-orbit"],
-      startRadiusRs: 3.2,
+      startRadiusRs: 3.1,
       angularVelocityFraction: 0.99,
     }
     const doomed = new GeodesicSimulationRunner(createScenario("relativistic-orbit", doomedParams))

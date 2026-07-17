@@ -38,7 +38,7 @@ export type ScenarioObservable = {
   label: string
   value: number
   unit: ObservableUnit
-  /** Origem do valor principal (padrão: integração numérica exata). */
+  /** Origem do valor principal (padrão: integração numérica das equações completas). */
   provenance: ObservableProvenance
   /** Valor de referência analítico/perturbativo, quando existir. */
   reference?: number
@@ -321,8 +321,10 @@ export function createRedshiftTracker(
  * partida (a correção de comprimento pela deflexão é O(α²), desprezível).
  * NOTA DE CONVENÇÃO: a repartição do atraso entre "geométrico" e
  * "gravitacional" depende da baseline (corda, arco, √(r²−r₀²)...); a
- * referência exibida usa a forma exata desta baseline. Apenas o eco de
- * radar completo é invariante de convenção.
+ * referência exibida usa a expressão de primeira ordem correspondente a
+ * esta baseline coordenada. Um observável operacional completo (emissão e
+ * recepção em linhas de mundo especificadas, medido por relógio próprio) é
+ * que elimina a ambiguidade de uma baseline coordenada isolada.
  */
 export function createShapiroTracker(
   initialState: GeodesicState,
@@ -469,7 +471,7 @@ export function createCausalityTracker(
  * Arrasto de referenciais (Lense–Thirring) em Kerr: a partícula parte do
  * repouso com momento angular NULO e mesmo assim gira — φ acumulado mede o
  * arrasto do próprio espaço-tempo. L = g_φμu^μ permanece zero (Killing ∂_φ),
- * o que a validação numérica exibe como prova de consistência.
+ * o que a validação numérica exibe como verificação de consistência.
  */
 export function createFrameDraggingTracker(): ObservableTracker {
   return {

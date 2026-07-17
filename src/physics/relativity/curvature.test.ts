@@ -34,7 +34,8 @@ describe("invariantes de curvatura", () => {
   })
 
   it("Painlevé–Gullstrand NO horizonte: K finito e igual ao de Schwarzschild", () => {
-    // A prova numérica de que r = r_s é singularidade DE COORDENADA:
+    // Regressão numérica da regularidade conhecida: a carta PG atravessa
+    // r_s e o invariante coincide com Schwarzschild no horizonte.
     // o invariante é finito e vale 48M²/(2M)⁶ = 0,75/M⁴.
     const metric = createPainleveGullstrandMetric(massKg)
     const rs = 2 * M

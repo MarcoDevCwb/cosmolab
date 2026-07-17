@@ -11,10 +11,12 @@
  *
  *   ds² = -f(r)(c·dt)² + f(r)⁻¹ dr² + r² dθ² + r² sin²θ dφ²
  *
- * Significado físico: descreve a geometria fora do Sol, de estrelas e de
- * buracos negros sem rotação. r = r_s é o horizonte de eventos (singularidade
- * apenas de coordenada); r = 1.5·r_s é a esfera de fótons; r = 3·r_s é a
- * última órbita circular estável (ISCO) de partículas massivas.
+ * Significado físico: descreve a região de vácuo exterior de corpos esféricos
+ * e a geometria de buracos negros sem rotação. Na extensão de buraco negro,
+ * r = r_s é o horizonte de eventos (a singularidade da carta é removível).
+ * Para uma estrela com superfície R > r_s, a solução exterior termina em R e
+ * não há horizonte. Na geometria de buraco negro, r = 1,5r_s é a esfera de
+ * fótons e r = 3r_s é a ISCO de partículas massivas.
  *
  * Unidades SI: r e c·t em metros; θ, φ em radianos; massa M em kg convertida
  * para r_s em metros via `schwarzschildRadius` (physics/constants.ts).
@@ -33,10 +35,13 @@ import { zeroRank3 } from "../tensor"
  * Raios característicos do exterior de Schwarzschild, em unidades de r_s
  * (MTW cap. 25; Wald §6.3):
  * - Esfera de fótons r = 1,5 r_s: última órbita circular (instável) da luz.
- * - ISCO r = 3 r_s (= 6GM/c²): última órbita circular ESTÁVEL de partículas
- *   massivas; abaixo dela qualquer perturbação leva ao mergulho.
+ * - ISCO r = 3 r_s (= 6GM/c²): órbita circular ESTÁVEL mais interna de
+ *   partículas massivas. Entre 1,5 r_s e 3 r_s existem órbitas circulares
+ *   timelike instáveis; órbitas excêntricas também podem penetrar abaixo da
+ *   ISCO e retornar. "Abaixo da ISCO" não significa captura automática.
  * - Parâmetro de impacto crítico b_c = (3√3/2) r_s ≈ 2,598 r_s: fótons com
- *   b < b_c são capturados pelo buraco negro; b > b_c são defletidos.
+ *   para fótons vindos do infinito, b < b_c implica captura, b > b_c
+ *   espalhamento e b = b_c aproximação assintótica à esfera de fótons.
  */
 export const PHOTON_SPHERE_RADIUS_RS = 1.5
 export const ISCO_RADIUS_RS = 3
