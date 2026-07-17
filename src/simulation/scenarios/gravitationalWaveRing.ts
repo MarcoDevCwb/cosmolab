@@ -256,6 +256,28 @@ function createGwRingTracker(
         })
       }
 
+      if (companions && companions.length >= 5) {
+        // MEMÓRIA GRAVITACIONAL: desvio RMS do anel em relação ao círculo
+        // inicial. Depois que a onda passa, NÃO volta a zero — soma de
+        // memória de velocidade (Zel'dovich–Polnarev 1974) e focalização
+        // acumulada (deriva ponderomotriz ∝ h², prevista ≈ −K²h²L·t²/32).
+        let sumSquares = 0
+        for (const companion of companions) {
+          const radial =
+            Math.hypot(companion[1] - state[1], companion[2] - state[2]) - RING_RADIUS_M
+          sumSquares += (radial / RING_RADIUS_M) ** 2
+        }
+        observables.push({
+          id: "gw-memory",
+          label: "Desvio RMS do anel (memória + focalização)",
+          value: Math.sqrt(sumSquares / companions.length),
+          unit: "ratio",
+          provenance: "numeric",
+          referenceLabel:
+            "após a onda passar, o anel NÃO volta ao círculo: memória de velocidade (Zel'dovich–Polnarev 1974) + focalização O(h²)",
+        })
+      }
+
       observables.push(
         {
           id: "gw-frequency",

@@ -380,6 +380,9 @@ const EN: Record<string, string> = {
   "h ampliado para visualização ⇒ fluxo ampliado ~10³⁸×":
     "h amplified for visualization ⇒ flux amplified ~10³⁸×",
   "anel de massas de teste (16 geodésicas reais)": "ring of test masses (16 real geodesics)",
+  "Desvio RMS do anel (memória + focalização)": "Ring RMS deviation (memory + focusing)",
+  "após a onda passar, o anel NÃO volta ao círculo: memória de velocidade (Zel'dovich–Polnarev 1974) + focalização O(h²)":
+    "after the wave passes, the ring does NOT return to a circle: velocity memory (Zel'dovich–Polnarev 1974) + O(h²) focusing",
   "massa central (referência do interferômetro)": "central mass (interferometer reference)",
 
   /* ---- warp (Alcubierre) ---- */

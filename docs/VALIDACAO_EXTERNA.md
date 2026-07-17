@@ -369,6 +369,90 @@ avaliação por especialistas fortalecem substancialmente a submissão.
 | Produto vizinho cobre parte dos recursos | atualizar matriz competitiva; não apagar a diferenciação restante |
 | Produto equivalente cobre a combinação completa | revisar a alegação de novidade e focar contribuição pedagógica medida |
 
+## Bloco 10 — bolha de Alcubierre: observador euleriano e fatura exótica
+
+```text
+Considere a métrica de Alcubierre em unidades x⁰=c·t [m], β=v_s/c:
+  ds² = −(dx⁰)² + (dx − β f(r_s) dx⁰)² + dy² + dz²,
+  f(r) = [tanh σ(r+R) − tanh σ(r−R)]/(2 tanh σR).
+Afirmações:
+(1) det g = −1 em toda parte e as fatias t=const são euclidianas;
+(2) o campo n^μ = (1, β f, 0, 0) é unitário timelike EXATO em todo ponto e
+    o centro da bolha é geodésico, com dτ = dt para o piloto;
+(3) para β ≥ 1 existe região onde g_tt ≥ 0 sem g_tφ: nem observador
+    estático nem ZAMO existem, mas o euleriano n^μ = −g^μ0/√(−g^00)
+    existe sempre que g^00 < 0;
+(4) a densidade euleriana é ρ = −(c⁴/32πG)·β²·(df/dr)²·(y²+z²)/r²
+    (Alcubierre 1994, eq. 19) e a energia total é
+    E = −(c⁴β²/12G)·∫(df/dr)²r²dr, com estimativa de parede fina
+    E ≈ −c⁴β²R²σ/(36G).
+Verifique cada item por derivação; classifique.
+```
+
+**Critério interno de avaliação:** o CosmoLab reproduz (4) numericamente
+(pipeline Γ→Riemann→Einstein, FD sobre Christoffels analíticos) com erro
+relativo < 1e-3 e a estimativa de parede fina dentro de 5% para σR = 8.
+"Superluminal" deve sempre ser qualificado como afirmação de coordenadas.
+
+## Bloco 11 — pp-waves: VSI e por que interferômetros medem distâncias
+
+```text
+Considere a onda plana exata de Brinkmann,
+  ds² = −(dx⁰)² + dx² + dy² + dz² + H(u,x,y)du², u=(x⁰−z)/√2,
+  H = A₊(u)(x²−y²) + 2A×(u)xy.
+Afirmações:
+(1) a solução é vácuo EXATO para quaisquer perfis A₊(u), A×(u), porque
+    ∇⊥²H = 0 (não é teoria linearizada);
+(2) TODOS os invariantes escalares polinomiais da curvatura se anulam
+    (espaço-tempo VSI): R = 0 e K = R_{αβγδ}R^{αβγδ} = 0, embora
+    R^μ_{ναβ} ≠ 0 — nenhum medidor de invariantes detecta a onda; o
+    desvio geodésico (anel de massas), sim;
+(3) ∂_v é Killing NULO ⇒ p_v = (u³−u⁰)/√2 é conservado em geodésicas;
+(4) consequência prática de (2) para heurísticas numéricas: qualquer
+    tolerância de "vácuo" normalizada por √K colapsa a zero em VSI;
+    uma escala robusta é o máximo do Riemann projetado numa tétrade
+    ortonormal local (escala de maré).
+Verifique (1)–(3) por derivação e avalie se (4) é uma observação de
+métodos numéricos correta e digna de registro.
+```
+
+**Critério interno de avaliação:** (1)–(3) são resultados clássicos
+(Brinkmann 1925; Penrose 1965; literatura VSI — Pravda–Pravdová–Coley–
+Milson 2002). (4) é a lição de engenharia científica descoberta nesta
+base de código: o critério antigo (√K) rotulava a onda como não-vácuo por
+tolerância nula. A suíte cobre tudo em `ppWave.test.ts`.
+
+## Bloco 12 — focalização ponderomotriz e memória de velocidade
+
+```text
+Na mesma pp-wave, com A₊ = A₀cos(K_u·u), A₀ = ½K_u²h₀, uma partícula de
+teste em repouso em x = L (braço transversal) satisfaz, com p_v conservado,
+uma equação de Hill: d²x/du² ∝ A₊(u)·x.
+Afirmações:
+(1) a resposta oscilatória linearizada tem amplitude (h₀/2)·L por braço,
+    em antifase entre os braços x e y (polarização +);
+(2) em segunda ordem, a média sobre ciclos sofre deriva PONDEROMOTRIZ
+    atrativa ⟨Δx̄⟩ ≈ −K²h₀²L·t²/32 — a manifestação em geodésicas da
+    focalização de ondas exatas (Penrose 1965) e do fato de a onda
+    transportar energia (Bondi);
+(3) os braços x e y derivam ao longo da propagação (z) com SINAIS OPOSTOS
+    (H_u ∝ ±A₊′·L²), dessincronizando as fases locais em O(h²);
+(4) após um trem de onda passar, o anel reteve deslocamento e velocidade
+    residuais (memória de velocidade; Zel'dovich & Polnarev 1974;
+    Grishchuk–Polnarev; Zhang–Duval–Gibbons–Horváthy 2017).
+Verifique (1) exatamente e (2)–(4) em ordem dominante; diga que precisão
+esperar de (2) dado que (3) contribui na mesma ordem.
+```
+
+**Critério interno de avaliação:** o motor mede (1) com 3% (h₀ = 2e-3,
+janela de 2 ciclos), confirma o sinal e o escalonamento ∝ h² de (2) com
+concordância de ~10–20% nos ciclos tardios (o resíduo é consistente com
+(3), não modelado), e exibe (4) como observável ("desvio RMS do anel").
+Formulação exata candidata a artigo: com p_v constante, o problema é a
+equação de Mathieu com a = 0, que fica na REGIÃO ESTÁVEL para q pequeno —
+a "focalização" periódica é o modo lento ponderomotriz, não instabilidade
+exponencial; para PULSOS, recupera-se o foco de Penrose clássico.
+
 ## Cobertura local correspondente
 
 Execute:
@@ -379,7 +463,13 @@ npm run lint
 npm run build
 ```
 
-A suíte atual tem **75 testes**. Os principais arquivos são:
+A suíte atual tem **88 testes**. Os principais arquivos são:
+
+- `src/physics/relativity/metrics/alcubierre.test.ts` (Bloco 10): piloto
+  geodésico com dτ = dt, observador euleriano, eq. 19 numérica ≡ analítica,
+  NEC amostrada, fatura ∝ β² e corrida contra o fóton;
+- `src/physics/relativity/metrics/ppWave.test.ts` (Blocos 11–12): vácuo
+  exato, VSI, p_v, amplitude linearizada a 3%, focalização ∝ h², memória;
 
 - `src/simulation/scientificValidation.test.ts`: deflexão, velocidade local,
   órbitas, Richardson, queda radial e Shapiro;
