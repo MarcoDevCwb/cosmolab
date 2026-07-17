@@ -35,6 +35,7 @@ export type ScenarioId =
   | "flrw-expansion"
   | "warp-bubble"
   | "gw-ring"
+  | "colliding-waves"
 
 /**
  * Parâmetros ajustáveis do experimento (a "bancada" do laboratório).

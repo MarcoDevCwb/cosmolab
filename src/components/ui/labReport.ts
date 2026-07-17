@@ -44,6 +44,8 @@ function parameterSummary(scenario: SimulationScenario, params: ExperimentParams
       return `β = ${params.spinFraction.toPrecision(3)} · D = ${params.startRadiusRs.toPrecision(3)} min-luz`
     case "gw-ring":
       return `M_c = ${params.massSolar.toPrecision(3)} M☉ · h_pico = ${params.startRadiusRs.toPrecision(3)} · pol. = ${params.angularVelocityFraction.toPrecision(2)}`
+    case "colliding-waves":
+      return `anel = ${params.startRadiusRs.toPrecision(3)} a (Khan–Penrose)`
     case "custom-metric":
       return `r₀ = ${params.startRadiusRs.toPrecision(4)} M`
     default:

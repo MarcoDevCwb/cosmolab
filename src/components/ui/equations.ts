@@ -9,6 +9,8 @@ export const LINE_ELEMENTS: Record<string, string> = {
   Gödel:
     "ds² = −(c dt)² + dr² + dz² + 4a·sinh²(χ)·(c dt)·dφ + 2a²·sinh²χ(1 − sinh²χ)·dφ²,  χ = r/(√2 a) — CTCs onde g_φφ < 0",
   Kerr: "ds² = −(1 − 2Mr/Σ)(c dt)² − (4Mar sin²θ/Σ)·c dt·dφ + (Σ/Δ)dr² + Σdθ² + (r² + a² + 2Ma²r sin²θ/Σ)sin²θ·dφ²",
+  "Khan–Penrose":
+    "ds² = −F(dx⁰)² + F dz² + W·(1−t̃)/(1+t̃)·dx² + W·(1+t̃)/(1−t̃)·dy²,  W = 1−u²−v²,  t̃ = u√(1−v²)+v√(1−u²),  F = W^{3/2}/[pq(pq+uv)²] — singularidade em W = 0",
   "pp-wave":
     "ds² = −(c dt)² + dx² + dy² + dz² + H·du²,  H = A₊(u)(x²−y²) + 2A×(u)xy,  u = (ct−z)/√2 — vácuo exato p/ qualquer A(u)",
   Alcubierre:

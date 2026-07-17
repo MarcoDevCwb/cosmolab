@@ -125,6 +125,16 @@ const SLIDERS_BY_SCENARIO: Record<ScenarioId, SliderSpec[]> = {
       format: (v) => `${v.toFixed(2)} c/H₀`,
     },
   ],
+  "colliding-waves": [
+    {
+      key: "startRadiusRs",
+      label: "Raio do anel [a]",
+      min: 0.05,
+      max: 0.4,
+      step: 0.01,
+      format: (v) => `${v.toFixed(2)} a`,
+    },
+  ],
   "gw-ring": [
     {
       key: "massSolar",
@@ -198,6 +208,10 @@ function physicalWarning(scenarioId: ScenarioId, params: ExperimentParams): stri
 
   if (scenarioId === "relativistic-orbit" && params.startRadiusRs < ISCO_RADIUS_RS) {
     return `r₀ < ISCO = ${ISCO_RADIUS_RS} r_s: não há órbita circular estável — a partícula tende a mergulhar.`
+  }
+
+  if (scenarioId === "colliding-waves") {
+    return "Duas ondas individualmente inofensivas criam uma singularidade REAL: o colapso chega em tempo próprio finito — não há como escapar dentro da região de interação."
   }
 
   if (scenarioId === "gw-ring") {

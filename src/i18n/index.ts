@@ -385,6 +385,29 @@ const EN: Record<string, string> = {
     "after the wave passes, the ring does NOT return to a circle: velocity memory (Zel'dovich–Polnarev 1974) + O(h²) focusing",
   "massa central (referência do interferômetro)": "central mass (interferometer reference)",
 
+  /* ---- colisão de ondas (Khan–Penrose) ---- */
+  "Colisão de ondas": "Colliding waves",
+  "Khan–Penrose (1971): duas ondas planas impulsivas — cada uma inofensiva sozinha — colidem (eixo vertical da cena) e criam uma singularidade REAL em tempo próprio finito. O anel congela em coordenadas; a cena mostra distâncias PRÓPRIAS: compressão em x, estiramento em y (Kasner), K → ∞ no painel.":
+    "Khan–Penrose (1971): two impulsive plane waves — each harmless alone — collide (vertical axis of the scene) and create a REAL singularity in finite proper time. The ring freezes in coordinates; the scene shows PROPER distances: compression in x, stretching in y (Kasner), K → ∞ on the panel.",
+  "W = 1−u²−v² cai a 0; colapso do observador central em τ finito (~a/c); anisotropia √g_yy/√g_xx cresce sem limite; região de interação ≅ interior de Schwarzschild.":
+    "W = 1−u²−v² drops to 0; central observer collapses in finite τ (~a/c); anisotropy √g_yy/√g_xx grows without bound; interaction region ≅ Schwarzschild interior.",
+  "Raio do anel [a]": "Ring radius [a]",
+  "Duas ondas individualmente inofensivas criam uma singularidade REAL: o colapso chega em tempo próprio finito — não há como escapar dentro da região de interação.":
+    "Two individually harmless waves create a REAL singularity: collapse arrives in finite proper time — there is no escape inside the interaction region.",
+  "Fator de área W = 1 − u² − v²": "Area factor W = 1 − u² − v²",
+  "1 antes das ondas; 0 na singularidade (u² + v² = 1)":
+    "1 before the waves; 0 at the singularity (u² + v² = 1)",
+  "τ restante até a singularidade": "Proper time left to the singularity",
+  "integral de √F pela métrica (observador central)":
+    "∫√F from the metric (central observer)",
+  "após a colisão (integral de √F pela métrica; observador central)":
+    "after the collision (∫√F from the metric; central observer)",
+  "Fator próprio em x (compressão)": "Proper factor in x (compression)",
+  "√g_xx → 0 na singularidade": "√g_xx → 0 at the singularity",
+  "Fator próprio em y (estiramento)": "Proper factor in y (stretching)",
+  "√g_yy → ∞ na singularidade (anisotropia de Kasner)":
+    "√g_yy → ∞ at the singularity (Kasner anisotropy)",
+
   /* ---- warp (Alcubierre) ---- */
   "Warp — Alcubierre": "Warp — Alcubierre",
   "O piloto cruza a distância em queda livre DENTRO da bolha: dτ = dt (sem paradoxo dos gêmeos) e, com β > 1, chega antes do fóton de referência — em coordenadas. O preço, medido pelo motor: densidade de energia NEGATIVA na parede (NEC violada).":

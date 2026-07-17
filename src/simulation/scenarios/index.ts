@@ -21,6 +21,7 @@ import {
   SOLAR_IMPACT_PARAMETER_RS,
   createLightDeflectionScenario,
 } from "./solarLightDeflection"
+import { createCollidingWavesScenario } from "./collidingWaves"
 import { createGravitationalWaveRingScenario } from "./gravitationalWaveRing"
 import { createWarpBubbleScenario } from "./warpBubble"
 import type { ExperimentParams, ScenarioId, SimulationScenario } from "./types"
@@ -107,6 +108,15 @@ export const DEFAULT_EXPERIMENT_PARAMS: Record<ScenarioId, ExperimentParams> = {
     angularVelocityFraction: 0,
     spinFraction: 0,
   },
+  // Colisão de ondas: startRadiusRs → raio do anel em unidades da escala
+  // focal a (toda a física de Khan–Penrose escala com a).
+  "colliding-waves": {
+    massSolar: 0,
+    impactParameterRs: 0,
+    startRadiusRs: 0.25,
+    angularVelocityFraction: 0,
+    spinFraction: 0,
+  },
   // Warp: spinFraction → β = v/c; startRadiusRs → distância em minutos-luz.
   "warp-bubble": {
     massSolar: 0,
@@ -142,6 +152,7 @@ const SCENARIO_FACTORIES: Record<
   "flrw-expansion": createFlrwExpansionScenario,
   "warp-bubble": createWarpBubbleScenario,
   "gw-ring": createGravitationalWaveRingScenario,
+  "colliding-waves": createCollidingWavesScenario,
 }
 
 export const SCENARIO_IDS = Object.keys(SCENARIO_FACTORIES) as ScenarioId[]
@@ -162,6 +173,7 @@ export const SCENARIO_SUMMARIES: { id: ScenarioId; label: string }[] = [
   { id: "godel-universe", label: "Gödel — CTCs" },
   { id: "flrw-expansion", label: "Expansão cósmica" },
   { id: "gw-ring", label: "Onda gravitacional" },
+  { id: "colliding-waves", label: "Colisão de ondas" },
   { id: "warp-bubble", label: "Warp — Alcubierre" },
   { id: "custom-metric", label: "Métrica personalizada" },
 ]
