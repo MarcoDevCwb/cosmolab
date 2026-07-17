@@ -156,8 +156,10 @@ export type MatterDiagnostic = {
   necDirectionsTested: number
   /** Todas as componentes ortonormais de T abaixo da tolerância numérica. */
   vacuum: boolean
-  /** Observador usado: "static" (g_tt<0) ou "zamo" (ergorregião). */
-  observer: "static" | "zamo"
+  /** Observador usado: "static" (g_tt<0), "zamo" (ergorregião) ou
+   * "eulerian" (normal às fatias t = const; existe onde g^tt < 0 — ex.:
+   * bolha de Alcubierre superluminal, onde nem estático nem ZAMO existem). */
+  observer: "static" | "zamo" | "eulerian"
 }
 
 /** R e K no ponto dado. */
@@ -297,21 +299,31 @@ export function matterDiagnostic(
     return EINSTEIN_FACTOR * sum
   }
 
-  // Observador local: estático se g_tt < 0; senão ZAMO (ω = −g_tφ/g_φφ).
-  let observer: "static" | "zamo"
+  // Observador local, em ordem de preferência:
+  // 1. estático (g_tt < 0); 2. ZAMO (ergorregiões com g_tφ ≠ 0);
+  // 3. euleriano n^μ = −g^μ0/√(−g^00), normal às fatias t = const —
+  //    existe sempre que as fatias são espaciais (g^00 < 0), inclusive
+  //    onde g_tt ≥ 0 sem rotação (ex.: Alcubierre com β ≥ 1).
+  let observer: "static" | "zamo" | "eulerian"
   let u: number[]
   if (g[0][0] < 0) {
     observer = "static"
     u = [1 / Math.sqrt(-g[0][0]), 0, 0, 0]
-  } else {
+  } else if (g[0][3] !== 0 && g[3][3] !== 0) {
     observer = "zamo"
-    const omega = g[3][3] !== 0 ? -g[0][3] / g[3][3] : 0
+    const omega = -g[0][3] / g[3][3]
     const norm = g[0][0] + 2 * g[0][3] * omega + g[3][3] * omega * omega
     if (norm >= 0) {
       return null
     }
     const uTime = 1 / Math.sqrt(-norm)
     u = [uTime, 0, 0, omega * uTime]
+  } else if (gInv[0][0] < 0) {
+    observer = "eulerian"
+    const lapse = 1 / Math.sqrt(-gInv[0][0])
+    u = [-gInv[0][0] * lapse, -gInv[1][0] * lapse, -gInv[2][0] * lapse, -gInv[3][0] * lapse]
+  } else {
+    return null
   }
 
   // Tétrade ortonormal por Gram-Schmidt sobre {∂_1, ∂_2, ∂_3}.

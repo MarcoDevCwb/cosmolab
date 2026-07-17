@@ -9,6 +9,8 @@ export const LINE_ELEMENTS: Record<string, string> = {
   Gödel:
     "ds² = −(c dt)² + dr² + dz² + 4a·sinh²(χ)·(c dt)·dφ + 2a²·sinh²χ(1 − sinh²χ)·dφ²,  χ = r/(√2 a) — CTCs onde g_φφ < 0",
   Kerr: "ds² = −(1 − 2Mr/Σ)(c dt)² − (4Mar sin²θ/Σ)·c dt·dφ + (Σ/Δ)dr² + Σdθ² + (r² + a² + 2Ma²r sin²θ/Σ)sin²θ·dφ²",
+  Alcubierre:
+    "ds² = −(c dt)² + (dx − v_s·f(r)·dt)² + dy² + dz²,  f = [tanh σ(r+R) − tanh σ(r−R)]/(2 tanh σR),  r = |x⃗ − x⃗_bolha(t)|",
 }
 
 export function lineElementFor(metricName: string): string | null {

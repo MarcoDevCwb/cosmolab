@@ -56,15 +56,32 @@ export function buildInitialState(
     }
   }
 
-  const discriminant = b * b - 4 * a * c
-  if (discriminant < 0) {
-    throw new Error(
-      "Condições iniciais inconsistentes: nenhuma quadrivelocidade real satisfaz a norma exigida.",
-    )
+  // Caso degenerado g_00 = 0 (ex.: PG no horizonte; Alcubierre com β·f = 1):
+  // a quadrática vira linear e u⁰ = −c/b é a única solução.
+  const scale = Math.abs(b) + Math.abs(c) + 1
+  let root: number
+  if (Math.abs(a) < 1e-14 * scale) {
+    if (b === 0) {
+      throw new Error(
+        "Condições iniciais inconsistentes: nenhuma quadrivelocidade real satisfaz a norma exigida.",
+      )
+    }
+    root = -c / b
+  } else {
+    const discriminant = b * b - 4 * a * c
+    if (discriminant < 0) {
+      throw new Error(
+        "Condições iniciais inconsistentes: nenhuma quadrivelocidade real satisfaz a norma exigida.",
+      )
+    }
+    // Com g_00 < 0, a raiz positiva (futuro-dirigida) é (−b − √Δ)/(2a).
+    // Com g_00 > 0 (t espacial, ex.: bolha superluminal) ambas as raízes
+    // podem ser futuras; tomamos a menor e, se não-positiva, a outra.
+    root = (-b - Math.sqrt(discriminant)) / (2 * a)
+    if (!(root > 0)) {
+      root = (-b + Math.sqrt(discriminant)) / (2 * a)
+    }
   }
-
-  // Com g_00 < 0, a raiz de u⁰ positiva (futuro-dirigida) é (-b - √Δ)/(2a).
-  const root = (-b - Math.sqrt(discriminant)) / (2 * a)
   if (!(root > 0)) {
     throw new Error("Condições iniciais inválidas: quadrivelocidade não é futuro-dirigida.")
   }

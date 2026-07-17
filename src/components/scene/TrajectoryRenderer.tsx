@@ -95,6 +95,21 @@ export function TrajectoryRenderer({
           />
         </mesh>
       )}
+
+      {/* Bolha warp centrada no piloto: interior translúcido + parede de
+          energia negativa (raio e centro vêm do cenário — só desenho). */}
+      {currentPosition && scenario.bubbleRadiusM !== undefined && (
+        <group position={[currentPosition.x, currentPosition.y, currentPosition.z]}>
+          <mesh>
+            <sphereGeometry args={[scenario.bubbleRadiusM / scenario.renderScaleM, 40, 40]} />
+            <meshBasicMaterial color="#38bdf8" transparent opacity={0.09} toneMapped={false} />
+          </mesh>
+          <mesh>
+            <sphereGeometry args={[scenario.bubbleRadiusM / scenario.renderScaleM, 28, 28]} />
+            <meshBasicMaterial color="#f87171" wireframe transparent opacity={0.28} toneMapped={false} />
+          </mesh>
+        </group>
+      )}
     </>
   )
 }

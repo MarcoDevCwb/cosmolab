@@ -19,9 +19,10 @@ export function SceneLegend() {
     scenario.surface !== "flat" && rsM > 0 && rsM / scenario.renderScaleM > 0.02
   const isPhoton = scenario.kind === "null"
 
-  const hasGalaxies = scenario.comovingMarkers !== undefined
+  const isWarp = scenario.bubbleRadiusM !== undefined
+  const hasGalaxies = scenario.comovingMarkers !== undefined && !isWarp
 
-  if (!flammVisible && !isKerr && !hasCtc && !hasGalaxies && !scenario.comparisonPath) {
+  if (!flammVisible && !isKerr && !hasCtc && !hasGalaxies && !isWarp && !scenario.comparisonPath) {
     return null
   }
 
@@ -76,6 +77,24 @@ export function SceneLegend() {
         <span style={{ color: "#94a3b8" }}>
           <i className="legend-dash" />
           {t(scenario.comparisonPath.label)}
+        </span>
+      )}
+      {isWarp && (
+        <span style={{ color: "#f87171" }}>
+          <i className="legend-dot" style={{ background: "transparent", boxShadow: "0 0 0 1.5px #f87171" }} />
+          {t("parede da bolha (energia NEGATIVA)")}
+        </span>
+      )}
+      {isWarp && (
+        <span>
+          <i className="legend-dot" style={{ background: "#f8fafc" }} />
+          {t("fóton de referência (corrida)")}
+        </span>
+      )}
+      {isWarp && (
+        <span>
+          <i className="legend-dot" style={{ background: "#fde68a" }} />
+          {t("partida e chegada")}
         </span>
       )}
       {hasGalaxies && (

@@ -33,6 +33,7 @@ export type ScenarioId =
   | "custom-metric"
   | "godel-universe"
   | "flrw-expansion"
+  | "warp-bubble"
 
 /**
  * Parâmetros ajustáveis do experimento (a "bancada" do laboratório).
@@ -116,8 +117,24 @@ export type SimulationScenario = {
    * renderização apenas aplica.
    */
   toRenderFrame?: (position: GeodesicState | [number, number, number, number]) => [number, number, number, number]
-  /** Marcadores comóveis (ex.: galáxias) desenhados via toRenderFrame. */
-  comovingMarkers?: { xM: number; yM: number; label?: string }[]
+  /** Marcadores comóveis (ex.: galáxias) desenhados via toRenderFrame.
+   * `worldline`, quando presente, dá a posição (x, y) [m] em função de
+   * x⁰ = c·t — usado para referências MÓVEIS (ex.: o fóton de corrida no
+   * cenário warp). A física da linha-mundo vive na fábrica do cenário;
+   * a renderização apenas a avalia no tempo do snapshot. */
+  comovingMarkers?: {
+    xM: number
+    yM: number
+    label?: string
+    worldline?: (ct: number) => [number, number]
+  }[]
+  /** Raio da bolha warp [m] — desenhada centrada na partícula (Alcubierre). */
+  bubbleRadiusM?: number
+  /** Escala de comprimento [m] por eixo para as diferenças finitas dos
+   * diagnósticos de curvatura/matéria do runner. Sem ela o runner usa
+   * max(|x¹|, 1) — inadequado quando a estrutura relevante (ex.: parede da
+   * bolha) é muito menor que a coordenada. */
+  diagnosticScaleM?: [number, number, number, number]
 
   /** Condição de parada física (ex.: aproximação do horizonte). */
   stopCondition?: (state: GeodesicState) => boolean

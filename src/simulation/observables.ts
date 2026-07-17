@@ -26,6 +26,8 @@ export type ObservableUnit =
   | "rs"
   | "m"
   | "s"
+  | "kg"
+  | "jm3"
 
 /**
  * Origem epistemológica do valor exibido — a UI NUNCA deve apresentar uma
@@ -521,6 +523,97 @@ export function createStraightnessTracker(initialState: GeodesicState): Observab
           reference: 0,
           referenceLabel: "geodésica de Minkowski é reta exata",
           hero: true,
+        },
+      ]
+    },
+  }
+}
+
+/**
+ * Rastreador do cenário warp (Alcubierre): a FATURA da geometria.
+ *
+ * - velocidade média da bolha medida em coordenadas (Δx/Δx⁰) — numérica,
+ *   comparada ao β programado;
+ * - envelhecimento do piloto dτ/dt = 1/u⁰ — numérico; a previsão analítica
+ *   no centro da bolha é EXATAMENTE 1 (sem dilatação, sem paradoxo);
+ * - vantagem sobre a luz: x_nave − x_fóton para um fóton de referência
+ *   partindo junto e viajando em linha reta no vácuo distante (análise em
+ *   coordenadas; localmente NENHUM fóton é ultrapassado);
+ * - massa-energia exótica total e densidade na parede — ANALÍTICAS
+ *   (Alcubierre 1994, eq. 19; integradas pela métrica), com a violação da
+ *   NEC verificada numericamente pelo diagnóstico de matéria em testes.
+ */
+export function createWarpTracker(
+  metric: {
+    betaWarp: number
+    exoticMassKg: number
+    wallDensityJm3: number
+  },
+  initialState: GeodesicState,
+): ObservableTracker {
+  const ct0 = initialState[0]
+  const x0 = initialState[1]
+
+  return {
+    update() {
+      /* tudo é lido do estado atual */
+    },
+    read(state) {
+      const elapsedCt = state[0] - ct0
+      const measuredBeta = elapsedCt > 0 ? (state[1] - x0) / elapsedCt : Number.NaN
+      const agingRate = state[4] !== 0 ? 1 / state[4] : Number.NaN
+      const lightLeadM = state[1] - x0 - elapsedCt
+
+      return [
+        {
+          id: "warp-speed",
+          label: "Velocidade média da bolha",
+          value: measuredBeta,
+          unit: "ratio",
+          provenance: "numeric",
+          reference: metric.betaWarp,
+          referenceLabel: "β programado na métrica",
+          regimeWarning:
+            metric.betaWarp >= 1
+              ? "superluminal em COORDENADAS: localmente nenhum fóton é ultrapassado"
+              : undefined,
+          hero: true,
+        },
+        {
+          id: "warp-exotic-mass",
+          label: "Massa-energia exótica exigida",
+          value: metric.exoticMassKg,
+          unit: "kg",
+          provenance: "analytic",
+          referenceLabel: "∫T(n,n)dV dos observadores eulerianos (Alcubierre 1994)",
+          regimeWarning:
+            "NEGATIVA: nenhuma matéria clássica conhecida fornece isso (Ford–Roman 1996)",
+          hero: true,
+        },
+        {
+          id: "warp-aging",
+          label: "Envelhecimento do piloto dτ/dt",
+          value: agingRate,
+          unit: "ratio",
+          provenance: "numeric",
+          reference: 1,
+          referenceLabel: "no centro da bolha dτ = dt exato: sem paradoxo dos gêmeos",
+        },
+        {
+          id: "warp-light-lead",
+          label: "Vantagem sobre a luz",
+          value: lightLeadM,
+          unit: "m",
+          provenance: "numeric",
+          referenceLabel: "fóton de referência partindo junto, no vácuo distante",
+        },
+        {
+          id: "warp-wall-density",
+          label: "Densidade na parede (euleriano)",
+          value: metric.wallDensityJm3,
+          unit: "jm3",
+          provenance: "analytic",
+          referenceLabel: "ρ_E = −(c⁴/32πG)·β²·(df/dr)² no equador da parede",
         },
       ]
     },

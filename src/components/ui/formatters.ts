@@ -6,6 +6,7 @@
  */
 
 import { getLanguage } from "../../i18n"
+import { SOLAR_MASS_KG } from "../../physics/constants"
 import type { ObservableUnit } from "../../simulation/observables"
 
 export function formatSeconds(seconds: number): string {
@@ -117,5 +118,15 @@ export function formatObservable(value: number, unit: ObservableUnit): string {
       return formatMeters(value)
     case "s":
       return formatSeconds(value)
+    case "kg": {
+      // Massas astronômicas em M☉; abaixo disso, notação científica em kg.
+      const solar = value / SOLAR_MASS_KG
+      if (Math.abs(solar) >= 0.001) {
+        return `${solar >= 1000 || solar <= -1000 ? solar.toExponential(2) : solar.toPrecision(3)} M☉`
+      }
+      return `${value.toExponential(2)} kg`
+    }
+    case "jm3":
+      return `${value.toExponential(2)} J/m³`
   }
 }

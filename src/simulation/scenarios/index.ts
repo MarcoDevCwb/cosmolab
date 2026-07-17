@@ -21,6 +21,7 @@ import {
   SOLAR_IMPACT_PARAMETER_RS,
   createLightDeflectionScenario,
 } from "./solarLightDeflection"
+import { createWarpBubbleScenario } from "./warpBubble"
 import type { ExperimentParams, ScenarioId, SimulationScenario } from "./types"
 
 export type { ExperimentParams, ScenarioId, SimulationScenario } from "./types"
@@ -95,6 +96,15 @@ export const DEFAULT_EXPERIMENT_PARAMS: Record<ScenarioId, ExperimentParams> = {
     angularVelocityFraction: 0.35,
     spinFraction: 0,
   },
+  // Warp: spinFraction → β = v/c; startRadiusRs → distância em minutos-luz.
+  "warp-bubble": {
+    massSolar: 0,
+    impactParameterRs: 0,
+    startRadiusRs: 10,
+    angularVelocityFraction: 0,
+    // β = 1,8: superluminal — a nave vence o fóton de referência.
+    spinFraction: 1.8,
+  },
   // Métrica do usuário: r₀ em unidades de M = GM/c² (não de r_s).
   "custom-metric": {
     massSolar: 10,
@@ -119,6 +129,7 @@ const SCENARIO_FACTORIES: Record<
   "custom-metric": createCustomGeodesicScenario,
   "godel-universe": createGodelUniverseScenario,
   "flrw-expansion": createFlrwExpansionScenario,
+  "warp-bubble": createWarpBubbleScenario,
 }
 
 export const SCENARIO_IDS = Object.keys(SCENARIO_FACTORIES) as ScenarioId[]
@@ -138,5 +149,6 @@ export const SCENARIO_SUMMARIES: { id: ScenarioId; label: string }[] = [
   { id: "kerr-frame-dragging", label: "Kerr — arrasto" },
   { id: "godel-universe", label: "Gödel — CTCs" },
   { id: "flrw-expansion", label: "Expansão cósmica" },
+  { id: "warp-bubble", label: "Warp — Alcubierre" },
   { id: "custom-metric", label: "Métrica personalizada" },
 ]

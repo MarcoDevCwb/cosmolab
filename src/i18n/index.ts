@@ -353,6 +353,40 @@ const EN: Record<string, string> = {
 
   /* ---- FLRW ---- */
   "Expansão cósmica": "Cosmic expansion",
+
+  /* ---- warp (Alcubierre) ---- */
+  "Warp — Alcubierre": "Warp — Alcubierre",
+  "O piloto cruza a distância em queda livre DENTRO da bolha: dτ = dt (sem paradoxo dos gêmeos) e, com β > 1, chega antes do fóton de referência — em coordenadas. O preço, medido pelo motor: densidade de energia NEGATIVA na parede (NEC violada).":
+    "The pilot crosses the distance in free fall INSIDE the bubble: dτ = dt (no twin paradox) and, with β > 1, arrives before the reference photon — in coordinates. The price, measured by the engine: NEGATIVE energy density in the wall (NEC violated).",
+  "Chegada em t = D/(βc); envelhecimento do piloto 1:1; fatura de massa exótica ∝ β² e ao tamanho da bolha.":
+    "Arrival at t = D/(βc); pilot ages 1:1; exotic-mass bill ∝ β² and bubble size.",
+  "Velocidade da bolha β = v/c": "Bubble speed β = v/c",
+  "Distância da viagem": "Journey distance",
+  "β ≥ 1: superluminal em coordenadas (localmente nenhum fóton é ultrapassado). Duas bolhas em rotas opostas permitiriam CTCs (Everett 1996).":
+    "β ≥ 1: superluminal in coordinates (locally no photon is overtaken). Two bubbles on opposite routes would allow CTCs (Everett 1996).",
+  "A parede da bolha exige densidade de energia NEGATIVA (NEC violada) — a fatura está nos resultados.":
+    "The bubble wall requires NEGATIVE energy density (NEC violated) — the bill is in the results.",
+  "Velocidade média da bolha": "Mean bubble speed",
+  "β programado na métrica": "β programmed into the metric",
+  "superluminal em COORDENADAS: localmente nenhum fóton é ultrapassado":
+    "superluminal in COORDINATES: locally no photon is overtaken",
+  "Massa-energia exótica exigida": "Exotic mass-energy required",
+  "∫T(n,n)dV dos observadores eulerianos (Alcubierre 1994)":
+    "∫T(n,n)dV of the Eulerian observers (Alcubierre 1994)",
+  "NEGATIVA: nenhuma matéria clássica conhecida fornece isso (Ford–Roman 1996)":
+    "NEGATIVE: no known classical matter provides this (Ford–Roman 1996)",
+  "Envelhecimento do piloto dτ/dt": "Pilot aging rate dτ/dt",
+  "no centro da bolha dτ = dt exato: sem paradoxo dos gêmeos":
+    "at the bubble center dτ = dt exactly: no twin paradox",
+  "Vantagem sobre a luz": "Lead over light",
+  "fóton de referência partindo junto, no vácuo distante":
+    "reference photon departing together, in the distant vacuum",
+  "Densidade na parede (euleriano)": "Wall density (Eulerian)",
+  "ρ_E = −(c⁴/32πG)·β²·(df/dr)² no equador da parede":
+    "ρ_E = −(c⁴/32πG)·β²·(df/dr)² at the wall equator",
+  "parede da bolha (energia NEGATIVA)": "bubble wall (NEGATIVE energy)",
+  "fóton de referência (corrida)": "reference photon (race)",
+  "partida e chegada": "departure and arrival",
   "Expansão cósmica — FLRW": "Cosmic expansion — FLRW",
   "Um fóton emitido rumo a nós quando o universo tinha metade do tamanho: em distância PRÓPRIA ele primeiro RECUA (expansão superluminal) antes de chegar, avermelhando como 1/a. Sem Killing temporal, E não se conserva — o conservado é a²·u^x.":
     "A photon emitted toward us when the universe was half its size: in PROPER distance it first RECEDES (superluminal expansion) before arriving, redshifting as 1/a. With no timelike Killing vector, E is not conserved — the conserved quantity is a²·u^x.",

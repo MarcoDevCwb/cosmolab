@@ -40,6 +40,8 @@ function parameterSummary(scenario: SimulationScenario, params: ExperimentParams
       return `r₀ = ${params.startRadiusRs.toPrecision(3)} r_CTC · ω₀/ω_Gödel = ${params.angularVelocityFraction.toPrecision(3)}`
     case "flrw-expansion":
       return `Ω_m = ${params.angularVelocityFraction.toPrecision(3)} · D_comóvel = ${params.startRadiusRs.toPrecision(3)} c/H₀`
+    case "warp-bubble":
+      return `β = ${params.spinFraction.toPrecision(3)} · D = ${params.startRadiusRs.toPrecision(3)} min-luz`
     case "custom-metric":
       return `r₀ = ${params.startRadiusRs.toPrecision(4)} M`
     default:

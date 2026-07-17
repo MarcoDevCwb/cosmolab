@@ -125,6 +125,24 @@ const SLIDERS_BY_SCENARIO: Record<ScenarioId, SliderSpec[]> = {
       format: (v) => `${v.toFixed(2)} c/H₀`,
     },
   ],
+  "warp-bubble": [
+    {
+      key: "spinFraction",
+      label: "Velocidade da bolha β = v/c",
+      min: 0.1,
+      max: 2.5,
+      step: 0.01,
+      format: (v) => `${v.toFixed(2)} c`,
+    },
+    {
+      key: "startRadiusRs",
+      label: "Distância da viagem",
+      min: 2,
+      max: 30,
+      step: 0.5,
+      format: (v) => `${v.toFixed(1)} min-luz`,
+    },
+  ],
   "custom-metric": [
     MASS_SLIDER,
     { key: "startRadiusRs", label: "Raio inicial r₀ [M = GM/c²]", min: 3, max: 60, step: 0.5, format: (v) => `${v.toFixed(1)} M` },
@@ -154,6 +172,12 @@ function physicalWarning(scenarioId: ScenarioId, params: ExperimentParams): stri
 
   if (scenarioId === "relativistic-orbit" && params.startRadiusRs < ISCO_RADIUS_RS) {
     return `r₀ < ISCO = ${ISCO_RADIUS_RS} r_s: não há órbita circular estável — a partícula tende a mergulhar.`
+  }
+
+  if (scenarioId === "warp-bubble") {
+    return params.spinFraction >= 1
+      ? "β ≥ 1: superluminal em coordenadas (localmente nenhum fóton é ultrapassado). Duas bolhas em rotas opostas permitiriam CTCs (Everett 1996)."
+      : "A parede da bolha exige densidade de energia NEGATIVA (NEC violada) — a fatura está nos resultados."
   }
 
   return null

@@ -27,16 +27,20 @@ export function GalaxyMarkers({
   return (
     <>
       {scenario.comovingMarkers.map((marker, index) => {
-        const mapped = mapToSurface([nowCt, marker.xM, marker.yM, 0])
+        // Marcadores com linha-mundo (ex.: fóton de corrida) são avaliados
+        // no tempo do snapshot; os demais são posições fixas.
+        const [xM, yM] = marker.worldline ? marker.worldline(nowCt) : [marker.xM, marker.yM]
+        const mapped = mapToSurface([nowCt, xM, yM, 0])
         const isUs = marker.label === "nós"
+        const isPhoton = marker.label === "fóton"
         return (
           <mesh key={index} position={[mapped.x, 0.05, mapped.z]}>
-            <sphereGeometry args={[isUs ? 0.22 : 0.16, 20, 20]} />
+            <sphereGeometry args={[isUs ? 0.22 : isPhoton ? 0.13 : 0.16, 20, 20]} />
             <meshBasicMaterial
-              color={isUs ? "#7dd3fc" : "#fde68a"}
+              color={isUs ? "#7dd3fc" : isPhoton ? "#f8fafc" : "#fde68a"}
               toneMapped={false}
               transparent
-              opacity={isUs ? 1 : 0.85}
+              opacity={isUs || isPhoton ? 1 : 0.85}
             />
           </mesh>
         )

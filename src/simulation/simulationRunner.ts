@@ -228,6 +228,19 @@ export class GeodesicSimulationRunner {
     return [...this.state]
   }
 
+  /** Escala de FD dos diagnósticos: a do cenário quando declarada (estruturas
+   * menores que a coordenada, ex.: parede da bolha warp), senão |x¹|. */
+  private diagnosticScale(position: Vector4): Vector4 {
+    return (
+      this.scenario.diagnosticScaleM ?? [
+        Math.max(Math.abs(position[1]), 1),
+        Math.max(Math.abs(position[1]), 1),
+        1,
+        1,
+      ]
+    )
+  }
+
   snapshot(): RelativitySnapshot {
     const { scenario } = this
     const validation = buildValidationReport(scenario.metric, this.state, scenario.kind)
@@ -259,19 +272,9 @@ export class GeodesicSimulationRunner {
         this.initialValidation.angularMomentum,
       ),
 
-      invariants: curvatureInvariants(scenario.metric, position, [
-        Math.max(Math.abs(position[1]), 1),
-        Math.max(Math.abs(position[1]), 1),
-        1,
-        1,
-      ]),
+      invariants: curvatureInvariants(scenario.metric, position, this.diagnosticScale(position)),
       causality: causalityDiagnostic(scenario.metric, position),
-      matter: matterDiagnostic(scenario.metric, position, [
-        Math.max(Math.abs(position[1]), 1),
-        Math.max(Math.abs(position[1]), 1),
-        1,
-        1,
-      ]),
+      matter: matterDiagnostic(scenario.metric, position, this.diagnosticScale(position)),
       halted: this.halted,
       haltReason: this.haltReason,
       samples: [...this.samples],
