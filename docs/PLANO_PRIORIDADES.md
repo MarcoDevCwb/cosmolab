@@ -50,9 +50,17 @@ CITATION.cff.** Repositório renomeado de `cosmoslab` para `cosmolab`
 **DOI 10.5281/zenodo.21436967**. Badge no README, `doi:` no CITATION.cff.
 O CosmoLab agora é formalmente citável, antes de qualquer periódico.
 
-**0.4 Pré-requisitos JOSS: README científico em inglês, CONTRIBUTING.md,
-paper.md (~1 página).** Os testes (95) e a arquitetura já cumprem o resto.
-Custo: 2–3 dias. Entrega: pacote de submissão pronto.
+**0.4 [CONCLUÍDO 2026-07-19] Pré-requisitos JOSS: README científico em
+inglês, CONTRIBUTING.md, paper.md (~1 página).** README atualizado (10
+métricas, 95 testes, seções de Contributing/License) nas duas línguas;
+CONTRIBUTING.md com as regras da casa (física pura, toda afirmação com
+teste, hipóteses explícitas) e o processo de reportar erro científico;
+`paper.md` (741 palavras) + `paper.bib` (13 referências, chaves conferidas
+uma a uma contra o texto) no formato JOSS, cobrindo Summary, Statement of
+need, os dois achados de métodos (VSI, arbitragem KP) e a nota de memória
+de velocidade. Os testes (95) e a arquitetura já cumpriam o resto.
+Entrega: **pacote de submissão ao JOSS pronto** — falta só abrir a
+submissão em joss.theoj.org.
 
 ---
 

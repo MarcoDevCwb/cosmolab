@@ -15,10 +15,11 @@ on screen. Interface in Portuguese and English (`🌐` toggle, or `?lang=en`).
 ## What makes it different
 
 - **Full equations, numerically integrated** — geodesics evolved by adaptive Dormand–Prince 5(4)
-  (or fixed RK4) on Minkowski, Schwarzschild, Painlevé–Gullstrand, Kerr, Gödel, FLRW and
-  **user-defined metrics** typed as `g_μν` expressions in the built-in editor. “Full” means that
-  the engine does not replace strong-field dynamics with a weak-field formula; it does not mean
-  zero discretization or floating-point error.
+  (or fixed RK4) on ten plugin spacetimes — Minkowski, Schwarzschild, Painlevé–Gullstrand, Kerr,
+  Gödel, FLRW, an Alcubierre warp bubble, an exact Brinkmann plane gravitational wave, a
+  Khan–Penrose colliding-wave spacetime — and **user-defined metrics** typed as `g_μν` expressions
+  in the built-in editor. “Full” means that the engine does not replace strong-field dynamics with
+  a weak-field formula; it does not mean zero discretization or floating-point error.
 - **Honesty as interface** — every value carries its provenance (*numeric / analytic /
   weak-field*), every scenario carries a scientific status (*validated / theoretical /
   speculative*), regime warnings fire when approximations stop being trustworthy, and the live
@@ -49,7 +50,7 @@ The engine is validated in three layers (see [docs/VALIDATION.md](docs/VALIDATIO
 | Layer | Result |
 |---|---|
 | **Cross-check vs einsteinpy** (independent Python engine) | periastron-precession observable **262.1508° vs 262.1514°/orbit — 2 ppm** in deep strong field (periastron at 2.7 r_s); pointwise orbit-shape differences are separately reported at ~10⁻⁴ |
-| **75 automated tests** (scientific core + reporting/i18n regressions) | light deflection 4GM/c²b to 1%, Ω² = GM/r³ to 10⁻⁴, RK4 4th-order convergence (Richardson), local orbital-speed semantics, Kretschmann closed forms (Schwarzschild, Reissner–Nordström *through the plugin editor*), PG horizon regularity, sampled NEC and Morris–Thorne exotic density, FLRW/Friedmann reconstruction, and more |
+| **95 automated tests** (scientific core + reporting/i18n regressions) | light deflection 4GM/c²b to 1%, Ω² = GM/r³ to 10⁻⁴, RK4 4th-order convergence (Richardson), local orbital-speed semantics, Kretschmann closed forms (Schwarzschild, Reissner–Nordström *through the plugin editor*), PG horizon regularity, sampled NEC and Morris–Thorne exotic density, FLRW/Friedmann reconstruction, exact vacuum + VSI in the Brinkmann plane wave, Khan–Penrose vacuum arbitration by the numerical Einstein tensor, and more |
 | **Continuous in-app diagnostics** | norm \|g·u·u − ε\| always; E/L drift only when the corresponding temporal/axial symmetries exist; local curvature scalars, sampled axial CTC and matter/NEC diagnostics with their domains of applicability |
 
 ## Quickstart
@@ -57,7 +58,7 @@ The engine is validated in three layers (see [docs/VALIDATION.md](docs/VALIDATIO
 ```bash
 npm install
 npm run dev     # open the printed URL (LAN-exposed for WSL2)
-npm test        # 75 automated tests
+npm test        # 95 automated tests
 npm run build
 ```
 
@@ -78,6 +79,16 @@ Gödel all entered as pure plugins (no analytic Christoffels needed).
 
 ![Gödel universe with the closed-timelike-curve region](docs/img/godel-ctc.png)
 
+## Contributing
+
+See [CONTRIBUTING.md](CONTRIBUTING.md) for the ground rules — in short: physics stays pure
+(no rendering imports), every scientific claim ships with a test, and every assumption (chart,
+observer, perturbative order, convention) is stated explicitly rather than implied.
+
+## License
+
+MIT — see [LICENSE](LICENSE).
+
 ---
 
 # CosmoLab — um laboratório de relatividade geral no navegador (PT-BR)
@@ -90,8 +101,10 @@ integração numérica da equação geodésica completa em uma métrica explíci
 constantes de Killing quando aplicáveis e o status epistêmico de cada observável **exibidos na
 tela**.
 
-- **Equações completas, integração numérica**: Minkowski, Schwarzschild,
-  Painlevé–Gullstrand, Kerr, Gödel, FLRW e métricas **definidas pelo usuário** no editor de g_μν;
+- **Equações completas, integração numérica**: dez espaço-tempos plugáveis — Minkowski,
+  Schwarzschild, Painlevé–Gullstrand, Kerr, Gödel, FLRW, bolha de Alcubierre, onda plana exata
+  de Brinkmann, colisão de ondas de Khan–Penrose — e métricas **definidas pelo usuário** no
+  editor de g_μν;
 - **Honestidade como interface**: proveniência (numérico/analítico/campo fraco), status
   científico por cenário, avisos de regime e validação numérica contínua;
 - **Atlas de Coordenadas**: a mesma queda em duas cartas, sincronizada por τ — invariantes
@@ -106,10 +119,21 @@ tela**.
 
 Validação em três camadas ([docs/VALIDATION.md](docs/VALIDATION.md)): cross-check independente
 contra o einsteinpy com concordância de **2 ppm no observável de precessão** em campo forte
-(diferenças da forma orbital ~10⁻⁴); **75 testes automatizados** (núcleo científico mais
+(diferenças da forma orbital ~10⁻⁴); **95 testes automatizados** (núcleo científico mais
 regressões de relatório/i18n); e diagnósticos contínuos no app com hipóteses de aplicabilidade
 explícitas.
 
+## Contribuindo
+
+Veja [CONTRIBUTING.md](CONTRIBUTING.md) (em inglês) para as regras básicas — em resumo: física
+fica pura (sem imports de renderização), toda afirmação científica vem com teste, e toda hipótese
+(carta, observador, ordem perturbativa, convenção) é declarada explicitamente.
+
+## Licença
+
+MIT — ver [LICENSE](LICENSE).
+
 ## Citação
 
-Se o CosmoLab for útil no seu ensino ou pesquisa, cite-o (ver [CITATION.cff](CITATION.cff)).
+Se o CosmoLab for útil no seu ensino ou pesquisa, cite-o (ver [CITATION.cff](CITATION.cff) ou
+[paper.md](paper.md) para a submissão ao JOSS).
