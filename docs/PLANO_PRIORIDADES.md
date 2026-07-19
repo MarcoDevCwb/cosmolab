@@ -28,27 +28,27 @@ conforme energia. A ordem dentro de cada fase é a ordem recomendada.
 Nada aqui é glamoroso; tudo aqui é pré-requisito de credibilidade. Um
 auditor que encontre um número desatualizado desconta TODOS os outros.
 
-**0.1 Sincronizar a documentação com o código real.**
-VALIDATION.md diz 75 testes/v0.8.0; ARTIGO.md diz 88 testes/12 cenários/
-8 métricas; o real (medido) é 95 testes, 13 cenários, 10 métricas.
-VALIDATION.md também não cobre o arco de ondas (pp-wave, Khan–Penrose,
-Alcubierre, DP54) na tabela de testes. Unificar o número da arbitragem
-KP (DESCOBERTAS diz "dez ordens"; RELATORIO diz "100×+" — decidir a régua
-e usar uma só). Declarar em cada documento: "números de inventário: ver
-RELATORIO_ESTADO §1" — uma única fonte canônica elimina a classe inteira
-de dessincronia.
-Custo: meio dia. Entrega: docs consistentes. Destrava: qualquer auditoria.
+**0.1 [CONCLUÍDO 2026-07-18] Sincronizar a documentação com o código real.**
+VALIDATION.md dizia 75 testes/v0.8.0; ARTIGO.md dizia 88 testes/12 cenários/
+8 métricas; o real (medido) é 95 testes, 13 cenários, 10 métricas — corrigido
+nos quatro documentos. VALIDATION.md ganhou a tabela do arco de ondas
+(pp-wave, Khan–Penrose, Alcubierre, DP54). A razão da arbitragem KP (DESCOBERTAS
+dizia "dez ordens"; RELATORIO dizia "100×+") foi medida por sonda direta:
+10⁷–10⁹×, unificada nos três lugares e no comentário do teste. Todos os
+documentos agora apontam RELATORIO_ESTADO §1 como fonte canônica.
 
-**0.2 Escolher a licença** (decisão do Marco: MIT maximiza adoção e
-citação; GPL protege contra fechamento; para ferramenta científica que
-quer virar referência citada, MIT ou Apache-2.0 são o padrão de facto).
-Custo: uma decisão. Destrava: JOSS, Zenodo, qualquer distribuição.
+**0.2 [CONCLUÍDO 2026-07-19] Licença: MIT.** Decisão do Marco — maximiza
+adoção e citação (padrão de facto em software científico: EinsteinPy é MIT);
+monetização futura permanece possível via dual licensing/open core, já que
+o copyright é dele. `LICENSE` criado, `package.json` com `"license": "MIT"`.
 
-**0.3 Tornar o repositório citável AGORA: tag v1.0 + Zenodo DOI +
-CITATION.cff.** O Zenodo emite DOI para releases do GitHub sem revisão —
-em um dia o CosmoLab passa a ser citável formalmente, antes de qualquer
-periódico. O CITATION.cff faz o GitHub exibir "cite este software".
-Custo: 1 dia. Entrega: DOI. Destrava: citações desde já; JOSS referencia.
+**0.3 [CONCLUÍDO 2026-07-19] Repositório citável: tag v1.0.0 + Zenodo DOI +
+CITATION.cff.** Repositório renomeado de `cosmoslab` para `cosmolab`
+(corrige typo antes do primeiro DOI — GitHub redireciona a URL antiga);
+47 commits locais enviados a `origin/main`; ORCID do autor criado
+(0009-0005-0545-3791); release `v1.0.0` publicada; Zenodo arquivou e emitiu
+**DOI 10.5281/zenodo.21436967**. Badge no README, `doi:` no CITATION.cff.
+O CosmoLab agora é formalmente citável, antes de qualquer periódico.
 
 **0.4 Pré-requisitos JOSS: README científico em inglês, CONTRIBUTING.md,
 paper.md (~1 página).** Os testes (95) e a arquitetura já cumprem o resto.

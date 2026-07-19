@@ -1,5 +1,8 @@
 # CosmoLab — a general relativity laboratory in your browser
 
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.21436967.svg)](https://doi.org/10.5281/zenodo.21436967)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+
 > **The place where anyone can see, measure, compare and verify how spacetime steers matter and light.**
 
 CosmoLab is not only a black-hole visualizer. Its scientific trajectories come from numerical

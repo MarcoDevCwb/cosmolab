@@ -7,6 +7,7 @@ title: "CosmoLab: um laboratório de relatividade geral no navegador"
 type: software
 version: 1.0.0
 date-released: "2026-07-19"
+doi: "10.5281/zenodo.21436967"
 repository-code: "https://github.com/MarcoDevCwb/cosmolab"
 authors:
   - given-names: "Marco Vinicius"
