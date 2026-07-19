@@ -70,12 +70,22 @@ A preocupação com anterioridade corta nos dois sentidos: alguém pode
 publicar a armadilha VSI antes de nós. Preprint estabelece prioridade
 com data pública; a revisão lenta do periódico deixa de ser risco.
 
-**1.1 Preprint arXiv da nota de métodos: VSI × tolerâncias + o motor
-como árbitro.** Em inglês, 4–6 páginas, physics.comp-ph (cross-list
-gr-qc). Conteúdo já existe em DESCOBERTAS Partes 1.1–1.2; os testes
-`ppWave.test.ts` e `khanPenrose.test.ts` são o material suplementar.
-Custo: 1–2 semanas. Entrega: arXiv ID citável, prioridade datada.
-Destrava: a nota CQG/CPC (Fase 3) sem pressa.
+**1.1 [RASCUNHO PRONTO 2026-07-19, aguardando compilação] Preprint arXiv
+da nota de métodos: VSI × tolerâncias + o motor como árbitro.**
+`docs/preprint/vsi-arbiter.tex` (REVTeX 4-2, bibliografia embutida, 5
+referências, chaves \cite/\bibitem conferidas uma a uma) cobre os dois
+achados com números medidos por sonda direta nesta sessão (não só os já
+registrados em DESCOBERTAS): a demonstração VSI usa um ponto real dentro
+da onda monocromática (R≈1.7e-26, K≈-9.0e-44, T(u,u)≈1.9e17 J/m³— a
+tolerância antiga por √K colapsaria a ~3e-26, onze ordens abaixo do
+ruído); a arbitragem KP usa os três pontos de `khanPenrose.test.ts` com
+razões 1.7e9/1.9e9/1.7e7. Balanceamento de chaves/ambientes/citações
+verificado por script; compilação real ainda não feita (sem LaTeX
+local) — pendente: colar em Overleaf (template REVTeX) para compilar e
+revisar antes de submeter. Custo restante: revisão humana + compilação +
+escolha final de categoria arXiv (physics.comp-ph, cross-list gr-qc).
+Entrega: arXiv ID citável, prioridade datada. Destrava: a nota CQG/CPC
+(Fase 3) sem pressa.
 
 **1.2 Matriz de anterioridade datada (Bloco 9).** Comparar por recursos
 (não por impressão) contra EinsteinPy, GYOTO, Black Hole Vision, General
