@@ -2,8 +2,8 @@
  * Khan–Penrose: as quatro regiões batem com as formas exatas; o VÁCUO da
  * região de interação é verificado numericamente — e foi o próprio motor
  * que ARBITROU o fator conforme (o candidato algébrico alternativo, com o
- * limite correto nas regiões I–III, falha o teste de vácuo por ~4 ordens
- * de grandeza); K diverge rumo à singularidade; o colapso chega em tempo
+ * limite correto nas regiões I–III, falha o teste de vácuo por 7–9 ordens
+ * de grandeza medidas); K diverge rumo à singularidade; o colapso chega em tempo
  * próprio finito com anisotropia de Kasner.
  */
 
@@ -73,7 +73,7 @@ describe("métrica de Khan–Penrose", () => {
       expect(good).not.toBeNull()
       expect(bad).not.toBeNull()
       // A forma de 1971 passa no selo de vácuo (tolerância de maré local);
-      // a alternativa exige matéria 3+ ordens de grandeza acima do ruído.
+      // a alternativa exige matéria 7–9 ordens acima do ruído (piso: ≥100×).
       expect(good!.vacuum).toBe(true)
       expect(bad!.vacuum).toBe(false)
       expect(Math.abs(bad!.energyDensityJm3 / good!.energyDensityJm3)).toBeGreaterThan(100)

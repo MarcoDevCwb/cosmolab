@@ -463,7 +463,8 @@ npm run lint
 npm run build
 ```
 
-A suíte atual tem **88 testes**. Os principais arquivos são:
+A suíte atual tem **95 testes** (inventário canônico:
+docs/RELATORIO_ESTADO.md §1). Os principais arquivos são:
 
 - `src/physics/relativity/metrics/alcubierre.test.ts` (Bloco 10): piloto
   geodésico com dτ = dt, observador euleriano, eq. 19 numérica ≡ analítica,

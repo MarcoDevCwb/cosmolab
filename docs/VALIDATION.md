@@ -1,14 +1,15 @@
 # Validação científica do CosmoLab
 
-Este documento descreve o que foi efetivamente validado no CosmoLab v0.8.0,
-com quais hipóteses e com que precisão. O motor resolve numericamente as
+Este documento descreve o que foi efetivamente validado no CosmoLab
+(estado de jul/2026; inventário canônico — testes, cenários, métricas —
+em docs/RELATORIO_ESTADO.md §1), com quais hipóteses e com que precisão. O motor resolve numericamente as
 equações geodésicas completas; “completas” significa que a dinâmica não é
 substituída por fórmulas de campo fraco. Não significa solução analítica,
 aritmética exata ou ausência de erro de truncamento e arredondamento.
 
 A validação tem três camadas:
 
-1. **75 testes automatizados no total**; o núcleo científico confronta
+1. **95 testes automatizados no total**; o núcleo científico confronta
    identidades, soluções analíticas, limites conhecidos e propriedades
    numéricas, e o restante protege relatório e internacionalização;
 2. **cross-check independente com einsteinpy 0.4.0** para uma órbita de
@@ -112,6 +113,12 @@ escala, passo, carta e condicionamento das diferenças finitas.
 | FLRW | `ε_total=3c²H²/(8πG)` | erro relativo `<10⁻³` |
 | redshift FLRW | `1+z=a_obs/a_em`; `a²u^x` conservado | erro/deriva `<10⁻⁸` |
 | Atlas de Coordenadas | mesmo `τ`, raio areal, `K` e `E` | `r<10⁻⁶`, `K<10⁻³`, `E<10⁻⁷` relativos/absolutos conforme teste |
+| Alcubierre | `det g=−1`; piloto com `u=(1,β,0,0)` e `dτ=dt`; eq. 19 (densidade euleriana) e NEC | norma `−1` exata; eq. 19 `<10⁻³`; fatura `∝β²` e parede fina a 5% |
+| pp-wave (Brinkmann) | vácuo exato p/ qualquer `A(u)`; VSI (`R=K=0` com Riemann `≠0`); `p_v` Killing nulo | `T≈0` na tolerância de maré; `p_v` a `10⁻¹⁰` |
+| anel × onda exata | teoria linearizada emerge: antifase e `(h/2)L` por braço | `3%` (`h=2×10⁻³`, 2 ciclos) |
+| focalização ponderomotriz | deriva secular `⟨Δx̄⟩≈−K²h²Lt²/32`, atrativa | sinal e escala `∝h²` confirmados; magnitude a `10–20%` |
+| Khan–Penrose | Christoffels analíticos ≡ FD; arbitragem do fator conforme; Kasner `√g_xx·√g_yy=W`; `p_x` | `6×10⁻¹¹`; razão errado/ruído `≥100` (medida `10⁷–10⁹`); `10⁻¹⁰`; `10⁻⁸` no interior |
+| DP54 adaptativo | tolerância no oscilador; conservação na queda ao horizonte; `h` encolhe no horizonte | norma `<10⁻⁷`; adaptação verificada |
 
 ### Por que a órbita circular não mede bem a ordem do RK4
 

@@ -48,7 +48,8 @@ Nunca dizer "precisão de X%" sem dizer de qual observável.
 1. **O motor como árbitro (rodada Khan–Penrose)** — reconstruímos a métrica
    de 1971 com uma ambiguidade algébrica e deixamos o tensor de Einstein
    numérico decidir: só (pq+uv)² é vácuo; o candidato errado exige matéria
-   100×+ acima do ruído. O teste documenta a arbitragem. É metodologia
+   10⁷–10⁹× acima do ruído (sonda jul/2026; a suíte aceita ≥100× como piso).
+   O teste documenta a arbitragem. É metodologia
    replicável: qualquer implementador de soluções exatas pode usar.
 2. **Colapso de tolerâncias em espaços VSI** — heurísticas normalizadas por
    invariantes (√K) falham silenciosamente em ondas exatas (invariantes

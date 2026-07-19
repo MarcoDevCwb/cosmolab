@@ -1,6 +1,7 @@
 # O que o CosmoLab descobriu — e o que disso é publicável
 
-Análise de portfólio (jul/2026, 88 testes, 12 cenários, 8 métricas como
+Análise de portfólio (jul/2026 — inventário canônico em
+docs/RELATORIO_ESTADO.md §1: 95 testes, 13 cenários, 10 métricas como
 plugins). Regra de ouro herdada da auditoria: **classificar cada achado com
 honestidade antes de escrever qualquer frase de novidade**. Três camadas:
 

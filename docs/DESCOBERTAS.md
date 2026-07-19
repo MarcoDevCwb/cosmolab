@@ -100,8 +100,9 @@ as regiões de onda única.
 decidir: a solução de Khan–Penrose é vácuo; então implementamos os dois
 candidatos e medimos G_μν na região de interação. Resultado: (pq+uv)² dá
 ρ no nível do ruído de diferenças finitas (~10¹⁶ J/m³, com Christoffels
-analíticos) — vácuo certificado; (pq−uv)² exige matéria ~10²⁶ J/m³, dez
-ordens de grandeza acima — rejeitado. O teste de regressão
+analíticos) — vácuo certificado; (pq−uv)² exige matéria ~10²⁵–10²⁶ J/m³,
+sete a nove ordens de grandeza acima (razão medida 10⁷–10⁹ nos três
+pontos da sonda; o teste de regressão aceita ≥100×) — rejeitado. O teste de regressão
 (`khanPenrose.test.ts`, "ARBITRAGEM PELO MOTOR") mantém os DOIS
 candidatos no código para documentar o método.
 
