@@ -11,7 +11,7 @@ authors:
   - given-names: "Marco Vinicius"
     family-names: "Amorin de Lima"
     alias: "MarcoDevCwba"
-    # orcid: "https://orcid.org/0000-0000-0000-0000" # preencher após criar o ORCID
+    orcid: "https://orcid.org/0009-0005-0545-3791"
 abstract: >-
   CosmoLab é um laboratório interativo de relatividade geral no
   navegador: equações geodésicas completas integradas numericamente
