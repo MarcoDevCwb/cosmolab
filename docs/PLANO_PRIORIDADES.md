@@ -85,10 +85,25 @@ COM ela, vira a rubrica de auditabilidade da Fase 5.4.
 Custo: 1 semana de pesquisa. Destrava: artigo principal, todas as frases
 de novidade.
 
-**1.3 Submeter ao JOSS.** Revisores instalam, rodam os 95 testes, avaliam
-docs. Primeira credencial revisada por pares; DOI de artigo.
-Custo: submissão em 1 dia (após 0.2–0.4); revisão leva semanas–meses mas
-não bloqueia nada em paralelo.
+**1.3 [BLOQUEADO até ~2027-01-19] Submeter ao JOSS.** Descoberta em
+2026-07-19: a JOSS atualizou o escopo (resposta a IA generativa) e agora
+exige **≥6 meses de histórico PÚBLICO** de desenvolvimento (releases,
+issues, PRs reais) antes da submissão — não apenas código antigo. O
+histórico real do CosmoLab, mesmo por data de autoria dos commits, vai
+de 2026-07-13 a 2026-07-19: um projeto de uma semana. Isso não é
+questão de reescrever datas; é preciso ACUMULAR os 6 meses de verdade.
+Ação até lá: manter o repositório publicamente ativo (commits, ao menos
+uma release intermediária v1.x, idealmente issues próprias documentando
+o roadmap) — não silêncio seguido de nova rajada, que reproduziria o
+mesmo problema. Criar a conta JOSS via ORCID agora é inofensivo mas não
+urgente. Reavaliar esta entrada em 2027-01. Isso NÃO bloqueia o resto:
+Zenodo DOI, arXiv (1.1) e AJP/RBEF (3.2) não têm essa exigência.
+Custo: já pago (pacote pronto); o que falta é só tempo civil.
+Pendência adicional para quando reabrir: a JOSS agora exige uma
+declaração de uso de IA generativa ("AI usage disclosure") — parte
+substancial deste repositório (docs, commits, e este próprio plano) foi
+produzida com assistência de IA; `paper.md` vai precisar dessa seção
+antes da submissão real.
 
 ---
 
