@@ -5,16 +5,20 @@ message: >-
   research, please cite it using the metadata below.
 title: "CosmoLab: um laboratório de relatividade geral no navegador"
 type: software
-version: 0.8.0
-date-released: "2026-07-16"
+version: 0.9.0
+date-released: "2026-07-18"
 authors:
-  - name: "MarcoDevCwba"
+  - given-names: "Marco Vinicius"
+    family-names: "Amorin de Lima"
+    alias: "MarcoDevCwba"
+    # orcid: "https://orcid.org/0000-0000-0000-0000" # preencher após criar o ORCID
 abstract: >-
   CosmoLab é um laboratório interativo de relatividade geral no
   navegador: equações geodésicas completas integradas numericamente
   (Dormand-Prince 5(4) adaptativo) em Minkowski, Schwarzschild,
-  Painlevé-Gullstrand, Kerr, Gödel, FLRW e métricas definidas pelo usuário,
-  com validação numérica
+  Painlevé-Gullstrand, Kerr, Gödel, FLRW, Alcubierre, onda plana exata
+  (Brinkmann), colisão de ondas (Khan-Penrose) e métricas definidas pelo
+  usuário, com validação numérica
   contínua exibida na interface (norma, constantes de Killing,
   invariantes de curvatura, amostragem de condições de energia), Atlas de
   Coordenadas, os quatro testes clássicos verificáveis, missões
@@ -28,4 +32,4 @@ keywords:
   - black holes
   - numerical relativity
   - interactive simulation
-license: NOASSERTION
+license: MIT
